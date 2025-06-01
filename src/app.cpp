@@ -4,6 +4,7 @@
 #include <new.hpp>
 #include <config.hpp>
 #include <SDL3/SDL.h>
+#include <ui.hpp>
 #if IS_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -50,7 +51,7 @@ bool app::init() {
     data->win = SDL_CreateWindow(
         "tinyfoo",
         1024, 768,
-        SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN
+        SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE
     );
     if (!data->win) {
         TF_FATAL(<< "Failed to create SDL Window (" << SDL_GetError() << ")");
@@ -64,10 +65,10 @@ bool app::init() {
         destroy();
         return false;
     }
-#if IS_IMGUI
-    ImGui::StyleColorsDark();
-#endif
     data->stage = 3;
+    // This one actually never fails
+    ui::init();
+    data->stage = 4;
     return true;
 }
 
@@ -89,15 +90,17 @@ void app::run() {
         while (SDL_PollEvent(&ev)) {
             app::process_event(ev);
         }
-        // if (!data->running)
-        //     break;
-        SDL_Delay(16);
+        ren::begin_frame();
+        ui::draw();
+        ren::end_frame();
     }
     data->running = false;
 }
 
 void app::destroy() {
     data->running = false;
+    if (data->stage > 3)
+        ui::destroy();
     if (data->stage > 2)
         ren::destroy();
     if (data->stage > 1)

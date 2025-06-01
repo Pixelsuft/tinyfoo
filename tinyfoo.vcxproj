@@ -167,6 +167,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
     <ClCompile Include="src\ren.cpp" />
+    <ClCompile Include="src\ui_imgui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\alloc.hpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\str.hpp" />
     <ClInclude Include="include\str_view.hpp" />
+    <ClInclude Include="include\ui.hpp" />
     <ClInclude Include="include\unreachable.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -44,6 +44,26 @@ bool ren::init(void* win) {
     return true;
 }
 
+void ren::begin_frame() {
+    SDL_SetRenderDrawColorFloat(data->ren, 32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
+    SDL_RenderClear(data->ren);
+#if IS_IMGUI
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+#endif
+}
+
+void ren::end_frame() {
+#if IS_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Render();
+    // SDL_SetRenderScale(data->ren, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), data->ren);
+#endif
+    SDL_RenderPresent(data->ren);
+}
+
 void ren::destroy() {
 #if IS_IMGUI
     ImGui_ImplSDLRenderer3_Shutdown();
