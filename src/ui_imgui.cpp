@@ -7,16 +7,26 @@
 
 namespace ui {
     struct UiData {
+        ImFont* font1;
         Point size;
     };
 
     UiData* data;
 
     void draw_menubar();
+    void draw_playback_buttons();
+    void draw_volume_control();
+    void draw_position();
 }
 
 bool ui::init() {
+    ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
+    // TODO: customize, handle errors
+    data->font1 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeuib.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+    if (!data->font1) {
+        TF_ERROR(<< "Failed to load ImGui Font 1");
+    }
     ImGui::StyleColorsDark();
     return true;
 }
@@ -48,6 +58,31 @@ void ui::draw_menubar() {
     }
 }
 
+void ui::draw_playback_buttons() {
+    ImGui::Button("0");
+    ImGui::Button(">");
+    ImGui::Button("||");
+    ImGui::Button("<|");
+    ImGui::Button(">|");
+    ImGui::Button(">?");
+}
+
+void ui::draw_volume_control() {
+    static float vol = 1.f;
+    ImGui::PushID("VolumeSlider");
+    ImGui::PushItemWidth(100.f);
+    ImGui::SliderFloat("", &vol, 0.f, 1.f);
+    ImGui::PopItemWidth();
+    ImGui::PopID();
+}
+
+void ui::draw_position() {
+    static float pos = 1.f;
+    ImGui::PushID("PositionSlider");
+    ImGui::SliderFloat("", &pos, 0.f, 1.f);
+    ImGui::PopID();
+}
+
 void ui::draw() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::SetNextWindowPos({ 0.f, 0.f }, 1);
@@ -57,10 +92,18 @@ void ui::draw() {
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar)) {
+        ImGui::PushFont(data->font1);
         if (ImGui::BeginMenuBar()) {
             ui::draw_menubar();
+            ImGui::Separator();
+            ui::draw_playback_buttons();
+            ImGui::Separator();
+            ui::draw_volume_control();
+            ImGui::Separator();
+            ui::draw_position();
             ImGui::EndMenuBar();
         }
+        ImGui::PopFont();
         ImGui::Text("Hello, world!!!");
         ImGui::SameLine();
         ImGui::Button("Test Button");
