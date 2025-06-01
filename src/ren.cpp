@@ -47,9 +47,12 @@ bool ren::init(void* win) {
 }
 
 void ren::begin_frame() {
-    SDL_SetRenderDrawColorFloat(data->ren, 32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
-    SDL_RenderClear(data->ren);
+    // SDL_SetRenderDrawColorFloat(data->ren, 32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
+    // SDL_RenderClear(data->ren);
 #if IS_IMGUI
+    ImVec4 bg_col = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+    SDL_SetRenderDrawColorFloat(data->ren, bg_col.x, bg_col.y, bg_col.z, 1.f);
+    SDL_RenderClear(data->ren);
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();

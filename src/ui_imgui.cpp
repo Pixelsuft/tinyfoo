@@ -1,4 +1,5 @@
 #include <ui.hpp>
+#include <app.hpp>
 #include <new.hpp>
 #include <log.hpp>
 #include <imgui.h>
@@ -26,16 +27,42 @@ void ui::update_size(const Point& size) {
 
 void ui::draw() {
 #if IS_IMGUI
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::SetNextWindowPos({ 0.f, 0.f }, 1);
     ImGui::SetNextWindowSize({ data->size.x, data->size.y }, 1);
+    // ImGuiWindowFlags_NoBackground ?
     if (ImGui::Begin("tinyfoo", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoDecoration)) {
+        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar)) {
+        // Menu
+        // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp#L641
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
+                    app::stop();
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Edit")) {
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Playback")) {
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Help")) {
+                if (ImGui::MenuItem("About", nullptr, nullptr)) {
+                    TF_INFO(<< "TODO: show about dialog");
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
         ImGui::Text("Hello, world!!!");
         ImGui::Button("Test Button");
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 #endif
 }
 

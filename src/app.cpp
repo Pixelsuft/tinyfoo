@@ -102,6 +102,10 @@ void app::run() {
     data->running = false;
 }
 
+void app::stop() {
+    data->running = false;
+}
+
 void app::destroy() {
     data->running = false;
     if (data->stage > 3)
