@@ -176,6 +176,7 @@
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
     <ClInclude Include="include\new.hpp" />
+    <ClInclude Include="include\rect.hpp" />
     <ClInclude Include="include\ren.hpp" />
     <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\str.hpp" />

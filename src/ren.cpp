@@ -11,6 +11,7 @@
 
 namespace ren {
     struct RenData {
+        SDL_Window* win;
         SDL_Renderer* ren;
     };
 
@@ -19,6 +20,7 @@ namespace ren {
 
 bool ren::init(void* win) {
     data = tf::bump_nw<RenData>();
+    data->win = (SDL_Window*)win;
     // Should I handle props errors?
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
@@ -38,7 +40,7 @@ bool ren::init(void* win) {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    ImGui_ImplSDL3_InitForSDLRenderer((SDL_Window*)win, data->ren);
+    ImGui_ImplSDL3_InitForSDLRenderer(data->win, data->ren);
     ImGui_ImplSDLRenderer3_Init(data->ren);
 #endif
     return true;
@@ -62,6 +64,19 @@ void ren::end_frame() {
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), data->ren);
 #endif
     SDL_RenderPresent(data->ren);
+}
+
+Point ren::get_size() {
+    int w_buf, h_buf;
+    if (!SDL_GetRenderOutputSize(data->ren, &w_buf, &h_buf)) {
+        TF_ERROR(<< "Failed to get renderer output size (" << SDL_GetError() << ")");
+        w_buf = 640;
+        h_buf = 480;
+    }
+    Point res;
+    res.x = (float)w_buf;
+    res.y = (float)h_buf;
+    return res;
 }
 
 void ren::destroy() {

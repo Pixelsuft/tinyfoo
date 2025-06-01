@@ -79,11 +79,16 @@ void app::process_event(const SDL_Event& ev) {
             data->running = false;
             break;
         }
+        case SDL_EVENT_WINDOW_RESIZED: {
+            ui::update_size(ren::get_size());
+            break;
+        }
     }
 }
 
 void app::run() {
     SDL_Event ev;
+    ui::update_size(ren::get_size());
     data->running = true;
     SDL_ShowWindow(data->win);
     while (data->running) {
