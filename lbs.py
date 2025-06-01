@@ -1,0 +1,76 @@
+import os
+import sys
+import json
+from liblbs import LbsApp
+
+
+logo = b'ICAgX18gIF8gICAgICAgICAgICAgX19fXyAgICAgICAgICAKICAvIC9fKF8pX19fICBfXyAgX18vIF9fL19fXyAgX19fXyAKIC8gX18vIC8gX18gXC8gLyAvIC8gL18vIF9fIFwvIF9fIFwKLyAvXy8gLyAvIC8gLyAvXy8gLyBfXy8gL18vIC8gL18vIC8KXF9fL18vXy8gL18vXF9fLCAvXy8gIFxfX19fL1xfX19fLyAKICAgICAgICAgICAvX19fXy8gICAgICAgICAgICAgICAgICA='
+app = LbsApp(sys.argv[1:], __file__)
+if app.exit_code:
+    sys.exit(app.exit_code)
+app.print_logo(logo)
+
+if not app.stage:
+    app.warn('TODO: write to use help')
+    sys.exit(0)
+
+if app.stage == 'init':
+    if not app.default_stage_init():
+        sys.exit(1)
+    if app.conf['msvc'] and not app.b_name == 'msvc':
+        app.warn('Please use "msvc" dir for Visual Studio builds')
+    app.save_conf()
+    app.info('Inited!')
+    sys.exit(0)
+
+if app.stage == 'fetch':
+    if not app.load_conf():
+        sys.exit(1)
+    if app.conf['msvc']:
+        app.download_sdl_lib('', '-VC.zip', 3, os.path.join(app.b_path, 'SDL'))
+    elif app.conf['mingw']:
+        app.download_sdl_lib('', '-mingw.zip', 3, os.path.join(app.b_path, 'SDL'))
+    else:
+        pass
+    app.download_imgui_files(os.path.join(app.b_path, 'imgui'), (
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imconfig.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_draw.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_internal.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_tables.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_widgets.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_rectpack.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_textedit.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_truetype.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdl3.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdl3.h',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.cpp',
+        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.h'
+    ))
+    # TODO: custom imconfig
+    if not os.path.isdir(os.path.join(app.b_path, 'bpstd')):
+        os.mkdir(os.path.join(app.b_path, 'bpstd'))
+    if not os.path.isdir(os.path.join(app.b_path, 'bpstd', 'bpstd')):
+        os.mkdir(os.path.join(app.b_path, 'bpstd', 'bpstd'))
+    app.download_bpstd_string_view_lib(os.path.join(app.b_path, 'bpstd', 'bpstd', 'string_view.hpp'))
+    app.info('Fetched!')
+    sys.exit(0)
+
+if app.stage == 'conf':
+    if not app.load_conf():
+        sys.exit(1)
+    app.conf['extra_libs'] = []
+    conf_header = open(os.path.join(app.b_path, 'lbs', 'config.hpp'), 'w', encoding='utf-8')
+    # TODO: write configuration info like time, os info, etc
+    is_win = int(sys.platform == 'win32')
+    is_release = int('--release' in app.args)
+    conf_header.write('#pragma once\n\n')
+    conf_header.write(f'#define IS_RELEASE {is_release}\n')
+    conf_header.write(f'#define IS_WIN {is_win}\n')
+    conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')
+    conf_header.write('#define BUMP_SIZE 4096\n')
+    conf_header.close()
+    app.save_conf()
+    app.info('Configured!')
+    sys.exit(0)
