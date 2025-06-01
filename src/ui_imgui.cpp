@@ -28,26 +28,23 @@ void ui::update_size(const Point& size) {
 void ui::draw_menubar() {
     // Menu
     // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp#L641
-    if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
-                app::stop();
-            }
-            ImGui::EndMenu();
+    if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
+            app::stop();
         }
-        if (ImGui::BeginMenu("Edit")) {
-            ImGui::EndMenu();
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit")) {
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Playback")) {
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Help")) {
+        if (ImGui::MenuItem("About", nullptr, nullptr)) {
+            TF_INFO(<< "TODO: show about dialog");
         }
-        if (ImGui::BeginMenu("Playback")) {
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Help")) {
-            if (ImGui::MenuItem("About", nullptr, nullptr)) {
-                TF_INFO(<< "TODO: show about dialog");
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
+        ImGui::EndMenu();
     }
 }
 
@@ -60,8 +57,12 @@ void ui::draw() {
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar)) {
-        ui::draw_menubar();
+        if (ImGui::BeginMenuBar()) {
+            ui::draw_menubar();
+            ImGui::EndMenuBar();
+        }
         ImGui::Text("Hello, world!!!");
+        ImGui::SameLine();
         ImGui::Button("Test Button");
     }
     ImGui::End();
