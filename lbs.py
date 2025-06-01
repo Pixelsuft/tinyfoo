@@ -69,6 +69,7 @@ if app.stage == 'conf':
     conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')
+    conf_header.write(f'#define IS_IMGUI 1\n')
     conf_header.write('#define BUMP_SIZE 4096\n')
     conf_header.close()
     app.save_conf()

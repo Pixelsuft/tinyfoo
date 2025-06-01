@@ -1,7 +1,13 @@
 #include <ren.hpp>
 #include <new.hpp>
 #include <log.hpp>
+#include <config.hpp>
 #include <SDL3/SDL.h>
+#if IS_IMGUI
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
+#endif
 
 namespace ren {
     struct RenData {
@@ -26,9 +32,23 @@ bool ren::init(void* win) {
         return false;
     }
     SDL_DestroyProperties(props);
+#if IS_IMGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui_ImplSDL3_InitForSDLRenderer((SDL_Window*)win, data->ren);
+    ImGui_ImplSDLRenderer3_Init(data->ren);
+#endif
     return true;
 }
 
 void ren::destroy() {
+#if IS_IMGUI
+    ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+#endif
     tf::bump_dl(data);
 }

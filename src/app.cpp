@@ -4,6 +4,10 @@
 #include <new.hpp>
 #include <config.hpp>
 #include <SDL3/SDL.h>
+#if IS_IMGUI
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#endif
 
 namespace logger {
     extern int log_level;
@@ -60,11 +64,15 @@ bool app::init() {
         destroy();
         return false;
     }
+#if IS_IMGUI
+    ImGui::StyleColorsDark();
+#endif
     data->stage = 3;
     return true;
 }
 
 void app::process_event(const SDL_Event& ev) {
+    ImGui_ImplSDL3_ProcessEvent(&ev);
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
             data->running = false;
@@ -81,8 +89,8 @@ void app::run() {
         while (SDL_PollEvent(&ev)) {
             app::process_event(ev);
         }
-        if (!data->running)
-            break;
+        // if (!data->running)
+        //     break;
         SDL_Delay(16);
     }
     data->running = false;
