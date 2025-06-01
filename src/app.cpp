@@ -1,4 +1,5 @@
 #include <app.hpp>
+#include <ren.hpp>
 #include <log.hpp>
 #include <new.hpp>
 #include <config.hpp>
@@ -55,6 +56,11 @@ bool app::init() {
     data->stage = 2;
     if (!SDL_SetWindowMinimumSize(data->win, 320, 200))
         TF_WARN(<< "Failed to set window minimum size (" << SDL_GetError() << ")");
+    if (!ren::init(data->win)) {
+        destroy();
+        return false;
+    }
+    data->stage = 3;
     return true;
 }
 
@@ -84,6 +90,8 @@ void app::run() {
 
 void app::destroy() {
     data->running = false;
+    if (data->stage > 2)
+        ren::destroy();
     if (data->stage > 1)
         SDL_DestroyWindow(data->win);
     if (data->stage > 0)

@@ -166,6 +166,7 @@
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
+    <ClCompile Include="src\ren.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\alloc.hpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
     <ClInclude Include="include\new.hpp" />
+    <ClInclude Include="include\ren.hpp" />
     <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\str.hpp" />
     <ClInclude Include="include\str_view.hpp" />
