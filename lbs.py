@@ -33,7 +33,7 @@ if app.stage == 'fetch':
     else:
         pass
     app.download_imgui_files(os.path.join(app.b_path, 'imgui'), (
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imconfig.h',
+        # 'https://github.com/ocornut/imgui/raw/refs/heads/master/imconfig.h',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.cpp',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.h',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_draw.cpp',
@@ -48,7 +48,18 @@ if app.stage == 'fetch':
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.cpp',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.h'
     ))
-    # TODO: custom imconfig
+    open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(
+'''#pragma once
+#include <config.hpp>
+
+#define IMGUI_DISABLE_DEFAULT_ALLOCATORS
+#if IS_RELEASE
+#define IM_ASSERT(_EXPR)  ((void)(_EXPR))
+#define IMGUI_DISABLE_DEMO_WINDOWS
+#define IMGUI_DISABLE_DEBUG_TOOLS
+#endif
+'''
+    )
     if not os.path.isdir(os.path.join(app.b_path, 'bpstd')):
         os.mkdir(os.path.join(app.b_path, 'bpstd'))
     if not os.path.isdir(os.path.join(app.b_path, 'bpstd', 'bpstd')):

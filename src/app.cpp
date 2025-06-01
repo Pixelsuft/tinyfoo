@@ -59,8 +59,12 @@ bool app::init() {
         return false;
     }
     data->stage = 2;
-    if (!SDL_SetWindowMinimumSize(data->win, 320, 200))
+    if (!SDL_SetWindowMinimumSize(data->win, 640, 480))
         TF_WARN(<< "Failed to set window minimum size (" << SDL_GetError() << ")");
+#ifdef IS_IMGUI
+    // Hacky
+    ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)SDL_malloc, (ImGuiMemFreeFunc)SDL_free, nullptr);
+#endif
     if (!ren::init(data->win)) {
         destroy();
         return false;

@@ -71,15 +71,18 @@ void ui::draw_volume_control() {
     static float vol = 1.f;
     ImGui::PushID("VolumeSlider");
     ImGui::PushItemWidth(100.f);
-    ImGui::SliderFloat("", &vol, 0.f, 1.f);
+    ImGui::SliderFloat("", &vol, 0.f, 1.f, "", ImGuiSliderFlags_NoRoundToFormat);
     ImGui::PopItemWidth();
     ImGui::PopID();
 }
 
 void ui::draw_position() {
-    static float pos = 1.f;
+    static float pos = 0.f;
+    ImVec2 hacky_rect = ImGui::GetItemRectMax();
     ImGui::PushID("PositionSlider");
-    ImGui::SliderFloat("", &pos, 0.f, 1.f);
+    ImGui::PushItemWidth(data->size.x - (hacky_rect.x + 16.f));
+    ImGui::SliderFloat("", &pos, 0.f, 1.f, "", ImGuiSliderFlags_NoRoundToFormat);
+    ImGui::PopItemWidth();
     ImGui::PopID();
 }
 
@@ -104,9 +107,6 @@ void ui::draw() {
             ImGui::EndMenuBar();
         }
         ImGui::PopFont();
-        ImGui::Text("Hello, world!!!");
-        ImGui::SameLine();
-        ImGui::Button("Test Button");
     }
     ImGui::End();
     ImGui::PopStyleVar();
