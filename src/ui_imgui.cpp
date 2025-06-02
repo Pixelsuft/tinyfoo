@@ -102,25 +102,28 @@ void ui::draw_playlist_tabs() {
 }
 
 void ui::draw_meta() {
-    ImGui::Button("Test1 btn");
+    ImGui::Button("Test1 btn?");
     ImGui::Button("Test2 btn");
     ImGui::Button("Test3 btn");
     ImGui::Button("Test4 btn");
 }
 
 void ui::draw_playlist_view() {
-    ImGui::Button("Test 2 btn");
+    ImGui::Button("Test 2 btn!!!!!");
 }
 
 void ui::draw_tab() {
-    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, { 0.f, 0.f });
-    if (ImGui::BeginTable("PlaylistTableMain", 2, ImGuiTableFlags_NoPadOuterX | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoPadInnerX)) {
+    //ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, { 0.f, 0.f });
+    if (ImGui::BeginTable("PlaylistTableMain", 2, ImGuiTableFlags_Resizable)) {
+        ImGui::TableSetupColumn("PlaylistMetaCol", ImGuiTableColumnFlags_IndentDisable);
+        ImGui::TableSetupColumn("PlaylistViewCol", ImGuiTableColumnFlags_IndentDisable);
+        ImGui::TableNextColumn();
         draw_meta();
         ImGui::TableNextColumn();
         draw_playlist_view();
         ImGui::EndTable();
     }
-    ImGui::PopStyleVar();
+    //ImGui::PopStyleVar();
 }
 
 void ui::draw() {
