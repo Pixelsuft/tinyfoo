@@ -113,11 +113,14 @@ void ui::draw_playlist_view() {
 }
 
 void ui::draw_tab() {
-    ImGui::Columns(2, "PlaylistMainColumns");
-    draw_meta();
-    ImGui::NextColumn();
-    draw_playlist_view();
-    ImGui::Columns(1);
+    ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, { 0.f, 0.f });
+    if (ImGui::BeginTable("PlaylistTableMain", 2, ImGuiTableFlags_NoPadOuterX | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoPadInnerX)) {
+        draw_meta();
+        ImGui::TableNextColumn();
+        draw_playlist_view();
+        ImGui::EndTable();
+    }
+    ImGui::PopStyleVar();
 }
 
 void ui::draw() {
