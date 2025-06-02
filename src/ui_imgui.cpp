@@ -17,6 +17,10 @@ namespace ui {
     void draw_playback_buttons();
     void draw_volume_control();
     void draw_position();
+    void draw_playlist_tabs();
+    void draw_tab();
+    void draw_meta();
+    void draw_playlist_view();
 }
 
 bool ui::init() {
@@ -62,7 +66,7 @@ void ui::draw_playback_buttons() {
     ImGui::Button("0");
     ImGui::Button(">");
     ImGui::Button("||");
-    ImGui::Button("<|");
+    ImGui::Button("|<");
     ImGui::Button(">|");
     ImGui::Button(">?");
 }
@@ -86,6 +90,36 @@ void ui::draw_position() {
     ImGui::PopID();
 }
 
+void ui::draw_playlist_tabs() {
+    if (ImGui::BeginTabBar("PlaylistTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton |
+        ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
+        if (ImGui::BeginTabItem("TestTab", nullptr, 0)) {
+            draw_tab();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+}
+
+void ui::draw_meta() {
+    ImGui::Button("Test1 btn");
+    ImGui::Button("Test2 btn");
+    ImGui::Button("Test3 btn");
+    ImGui::Button("Test4 btn");
+}
+
+void ui::draw_playlist_view() {
+    ImGui::Button("Test 2 btn");
+}
+
+void ui::draw_tab() {
+    ImGui::Columns(2, "PlaylistMainColumns");
+    draw_meta();
+    ImGui::NextColumn();
+    draw_playlist_view();
+    ImGui::Columns(1);
+}
+
 void ui::draw() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::SetNextWindowPos({ 0.f, 0.f }, 1);
@@ -97,16 +131,17 @@ void ui::draw() {
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar)) {
         ImGui::PushFont(data->font1);
         if (ImGui::BeginMenuBar()) {
-            ui::draw_menubar();
+            draw_menubar();
             ImGui::Separator();
-            ui::draw_playback_buttons();
+            draw_playback_buttons();
             ImGui::Separator();
-            ui::draw_volume_control();
+            draw_volume_control();
             ImGui::Separator();
-            ui::draw_position();
+            draw_position();
             ImGui::EndMenuBar();
         }
         ImGui::PopFont();
+        draw_playlist_tabs();
     }
     ImGui::End();
     ImGui::PopStyleVar();
