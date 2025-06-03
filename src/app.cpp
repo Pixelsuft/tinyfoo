@@ -3,8 +3,9 @@
 #include <log.hpp>
 #include <new.hpp>
 #include <config.hpp>
-#include <SDL3/SDL.h>
 #include <ui.hpp>
+#include <audio_base.hpp>
+#include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -73,6 +74,7 @@ bool app::init() {
     // This one actually never fails
     ui::init();
     data->stage = 4;
+    audio::au = audio::create_sdl2_mixer();
     return true;
 }
 
@@ -112,8 +114,10 @@ void app::stop() {
 
 void app::destroy() {
     data->running = false;
-    if (data->stage > 3)
+    if (data->stage > 3) {
+        audio::free_audio(audio::au);
         ui::destroy();
+    }
     if (data->stage > 2)
         ren::destroy();
     if (data->stage > 1)

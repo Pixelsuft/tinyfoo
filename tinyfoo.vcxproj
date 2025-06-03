@@ -163,6 +163,8 @@
     <ClCompile Include="msvc\imgui\imgui_tables.cpp" />
     <ClCompile Include="msvc\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\audio_base.cpp" />
+    <ClCompile Include="src\audio_sdl2_mixer.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
@@ -172,6 +174,8 @@
   <ItemGroup>
     <ClInclude Include="include\alloc.hpp" />
     <ClInclude Include="include\app.hpp" />
+    <ClInclude Include="include\audio_base.hpp" />
+    <ClInclude Include="include\audio_sdl2_mixer.hpp" />
     <ClInclude Include="include\break.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />

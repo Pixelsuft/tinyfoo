@@ -3,8 +3,8 @@
 #include <mem.hpp>
 #if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L)
 #include <new>
-#include <memory>
 #endif
+#include <memory>
 #include <utility>
 
 namespace tf {

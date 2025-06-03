@@ -59,6 +59,12 @@
     <ClCompile Include="src\ui_imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\audio_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\audio_sdl2_mixer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.hpp">
@@ -98,6 +104,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rect.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_base.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio_sdl2_mixer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
