@@ -13,19 +13,6 @@ typedef enum {
     MIX_INIT_WAVPACK = 0x00000080
 } MIX_InitFlags;
 
-typedef struct Mix_Chunk {
-    int allocated;
-    Uint8* abuf;
-    Uint32 alen;
-    Uint8 volume;
-} Mix_Chunk;
-
-typedef enum {
-    MIX_NO_FADING,
-    MIX_FADING_OUT,
-    MIX_FADING_IN
-} Mix_Fading;
-
 typedef enum {
     MUS_NONE,
     MUS_CMD,
@@ -95,11 +82,7 @@ namespace audio {
         SDL2MixerApi mix;
         public:
         AudioSDL2Mixer(bool use_mixer_x) {
-#if IS_WIN
-            const char* lib_name = use_mixer_x ? "SDL2_mixer_ex.dll" : "SDL2_mixer.dll";
-#else
-            const char* lib_name = use_mixer_x ? "libSDL2_mixer_ex.so" : "libSDL2_mixer.so";
-#endif
+            const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ex.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ex.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
                 TF_WARN(<< "Failed to load SDL2_mixer library (" << SDL_GetError() << ")");
