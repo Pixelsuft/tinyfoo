@@ -24,7 +24,7 @@ bool ren::init(void* win) {
     // Should I handle props errors?
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
-    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "direct3d"); // TODO
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, IS_WIN ? "direct3d" : "opengl"); // TODO
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1);
     data->ren = SDL_CreateRendererWithProperties(props);
     if (!data->ren) {

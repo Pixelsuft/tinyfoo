@@ -7,6 +7,7 @@ vs
 temp
 tmp
 tinybar
+tinyfoo
 .DS_Store
 __pycache__
 include/gen

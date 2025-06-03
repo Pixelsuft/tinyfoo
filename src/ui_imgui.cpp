@@ -2,6 +2,7 @@
 #include <app.hpp>
 #include <new.hpp>
 #include <log.hpp>
+#include <config.hpp>
 #include <imgui.h>
 #include <SDL3/SDL.h>
 
@@ -27,7 +28,12 @@ bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
     // TODO: customize, handle errors
-    data->font1 = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeuib.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+#if IS_WIN
+#define TEMP_FONTS_DIR "c:\\Windows\\Fonts\\"
+#else
+#define TEMP_FONTS_DIR "/home/lexa/Documents/st/"
+#endif
+    data->font1 = io.Fonts->AddFontFromFileTTF(TEMP_FONTS_DIR "segoeuib.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
     if (!data->font1) {
         TF_ERROR(<< "Failed to load ImGui Font 1");
     }
