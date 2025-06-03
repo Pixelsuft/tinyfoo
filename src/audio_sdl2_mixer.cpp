@@ -1,16 +1,141 @@
 #include <audio_base.hpp>
 #include <new.hpp>
 #include <log.hpp>
+#include <SDL3/SDL.h>
+#if 1
+typedef enum {
+    MIX_INIT_FLAC = 0x00000001,
+    MIX_INIT_MOD = 0x00000002,
+    MIX_INIT_MP3 = 0x00000008,
+    MIX_INIT_OGG = 0x00000010,
+    MIX_INIT_MID = 0x00000020,
+    MIX_INIT_OPUS = 0x00000040,
+    MIX_INIT_WAVPACK = 0x00000080
+} MIX_InitFlags;
+
+typedef struct Mix_Chunk {
+    int allocated;
+    Uint8* abuf;
+    Uint32 alen;
+    Uint8 volume;
+} Mix_Chunk;
+
+typedef enum {
+    MIX_NO_FADING,
+    MIX_FADING_OUT,
+    MIX_FADING_IN
+} Mix_Fading;
+
+typedef enum {
+    MUS_NONE,
+    MUS_CMD,
+    MUS_WAV,
+    MUS_MOD,
+    MUS_MID,
+    MUS_OGG,
+    MUS_MP3,
+    MUS_MP3_MAD_UNUSED,
+    MUS_FLAC,
+    MUS_MODPLUG_UNUSED,
+    MUS_OPUS,
+    MUS_WAVPACK,
+    MUS_GME
+} Mix_MusicType;
+
+typedef struct _Mix_Music Mix_Music;
+
+#ifndef MIX_CHANNELS
+#define MIX_CHANNELS    8
+#endif
+
+#define MIX_DEFAULT_FREQUENCY   44100
+#define MIX_DEFAULT_FORMAT      AUDIO_S16SYS
+#define MIX_DEFAULT_CHANNELS    2
+#define MIX_MAX_VOLUME          SDL_MIX_MAXVOLUME
+
+#define MIX_LOAD_FUNC(func_name) do { \
+    *(void**)&mix.func_name = SDL_LoadFunction(mix.handle, #func_name); \
+    if (!mix.func_name) { \
+        TF_ERROR(<< "Failed to load SDL2_mixer function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
+        SDL_UnloadObject(mix.handle); \
+        return; \
+    } \
+} while (0)
+#endif
 
 namespace audio {
+    struct SDL2MixerApi {
+        SDL_SharedObject* handle;
+        int (SDLCALL *Mix_Init)(int);
+        void (SDLCALL *Mix_Quit)(void);
+        int (SDLCALL *Mix_OpenAudioDevice)(int, uint16_t, int, int, const char*, int);
+        int (SDLCALL *Mix_QuerySpec)(int*, uint16_t*, int*);
+        int (SDLCALL *Mix_AllocateChannels)(int);
+        void (SDLCALL *Mix_FreeMusic)(Mix_Music*);
+        void (SDLCALL *Mix_HookMusic)(void (SDLCALL *)(void*, uint8_t*, int), void*);
+        void (SDLCALL *Mix_HookMusicFinished)(void (SDLCALL *)(void));
+        void* (SDLCALL *Mix_GetMusicHookData)(void);
+        void (SDLCALL *Mix_ChannelFinished)(void (SDLCALL *)(int));
+        int (SDLCALL *Mix_PlayMusic)(Mix_Music*, int);
+        int (SDLCALL *Mix_VolumeMusic)(int);
+        int (SDLCALL *Mix_HaltMusic)(void);
+        void (SDLCALL *Mix_PauseMusic)(void);
+        void (SDLCALL *Mix_ResumeMusic)(void);
+        void (SDLCALL *Mix_RewindMusic)(void);
+        int (SDLCALL *Mix_PausedMusic)(void);
+        int (SDLCALL *Mix_SetMusicPosition)(double);
+        double (SDLCALL *Mix_GetMusicPosition)(Mix_Music*);
+        double (SDLCALL *Mix_MusicDuration)(Mix_Music*);
+        int (SDLCALL *Mix_PlayingMusic)(void);
+        void (SDLCALL *Mix_CloseAudio)(void);
+    };
+
     class AudioSDL2Mixer : public AudioBase {
+        protected:
+        SDL2MixerApi mix;
         public:
         AudioSDL2Mixer(bool use_mixer_x) {
-            TF_INFO(<< "TODO: SDL2_mixer support!");
+#if IS_WIN
+            const char* lib_name = use_mixer_x ? "SDL2_mixer_ex.dll" : "SDL2_mixer.dll";
+#else
+            const char* lib_name = use_mixer_x ? "libSDL2_mixer_ex.so" : "libSDL2_mixer.so";
+#endif
+            mix.handle = SDL_LoadObject(lib_name);
+            if (!mix.handle) {
+                TF_WARN(<< "Failed to load SDL2_mixer library (" << SDL_GetError() << ")");
+                return;
+            }
+            MIX_LOAD_FUNC(Mix_Init);
+            MIX_LOAD_FUNC(Mix_Quit);
+            MIX_LOAD_FUNC(Mix_OpenAudioDevice);
+            MIX_LOAD_FUNC(Mix_QuerySpec);
+            MIX_LOAD_FUNC(Mix_AllocateChannels);
+            MIX_LOAD_FUNC(Mix_FreeMusic);
+            MIX_LOAD_FUNC(Mix_HookMusic);
+            MIX_LOAD_FUNC(Mix_HookMusicFinished);
+            MIX_LOAD_FUNC(Mix_GetMusicHookData);
+            MIX_LOAD_FUNC(Mix_ChannelFinished);
+            MIX_LOAD_FUNC(Mix_PlayMusic);
+            MIX_LOAD_FUNC(Mix_VolumeMusic);
+            MIX_LOAD_FUNC(Mix_HaltMusic);
+            MIX_LOAD_FUNC(Mix_PauseMusic);
+            MIX_LOAD_FUNC(Mix_ResumeMusic);
+            MIX_LOAD_FUNC(Mix_RewindMusic);
+            MIX_LOAD_FUNC(Mix_PausedMusic);
+            MIX_LOAD_FUNC(Mix_SetMusicPosition);
+            MIX_LOAD_FUNC(Mix_GetMusicPosition);
+            MIX_LOAD_FUNC(Mix_MusicDuration);
+            MIX_LOAD_FUNC(Mix_PlayingMusic);
+            MIX_LOAD_FUNC(Mix_CloseAudio);
+            TF_INFO(<< "SDL2_mixer inited successfully");
+            inited = true;
         }
 
         ~AudioSDL2Mixer() {
-
+            if (!inited)
+                return;
+            inited = false;
+            SDL_UnloadObject(mix.handle);
         }
     };
 }

@@ -6,7 +6,7 @@ using audio::AudioBase;
 AudioBase* audio::au;
 
 AudioBase::AudioBase() {
-
+    inited = false;
 }
 
 AudioBase::~AudioBase() {

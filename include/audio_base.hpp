@@ -3,6 +3,7 @@
 namespace audio {
     class AudioBase {
         public:
+        bool inited;
         AudioBase();
         virtual ~AudioBase();
     };
