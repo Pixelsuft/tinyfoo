@@ -14,9 +14,9 @@ AudioBase::~AudioBase() {
 }
 
 AudioBase* audio::create_base() {
-    return tf::bump_nw<AudioBase>();
+    return tf::nw<AudioBase>();
 }
 
 void audio::free_audio(AudioBase* handle) {
-    tf::bump_dl(handle);
+    tf::dl(handle);
 }

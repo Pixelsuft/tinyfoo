@@ -74,7 +74,7 @@ bool app::init() {
     // This one actually never fails
     ui::init();
     data->stage = 4;
-    audio::au = audio::create_sdl2_mixer();
+    audio::au = audio::create_sdl2_mixer(false);
     return true;
 }
 

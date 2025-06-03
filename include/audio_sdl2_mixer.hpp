@@ -4,7 +4,7 @@
 namespace audio {
     class AudioSDL2Mixer : public AudioBase {
         public:
-        AudioSDL2Mixer();
+        AudioSDL2Mixer(bool use_mixer_x);
         ~AudioSDL2Mixer();
     };
 }
