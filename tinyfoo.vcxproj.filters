@@ -109,8 +109,5 @@
     <ClInclude Include="include\audio_base.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\audio_sdl2_mixer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

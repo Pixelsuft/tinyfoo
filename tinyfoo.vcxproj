@@ -175,7 +175,6 @@
     <ClInclude Include="include\alloc.hpp" />
     <ClInclude Include="include\app.hpp" />
     <ClInclude Include="include\audio_base.hpp" />
-    <ClInclude Include="include\audio_sdl2_mixer.hpp" />
     <ClInclude Include="include\break.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
