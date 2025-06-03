@@ -118,14 +118,23 @@ void ui::draw_playlist_view() {
         ImGui::TableSetupColumn("Codec");
         ImGui::TableSetupColumn("Bitrate");
         ImGui::TableSetupColumn("Last Modified");
+        ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
         static bool test[10000] = { 0 };
-        for (int i = 0; i < 10000; i++) {
-            ImGui::TableNextColumn();
-            char buf[20];
-            SDL_snprintf(buf, 20, "%i", i);
-            ImGui::Selectable(buf, &test[i - i % 5], ImGuiSelectableFlags_SpanAllColumns);
-            // ImGui::Text("%s", buf);
+        ImGuiListClipper clipper;
+        clipper.Begin(10000);
+        while (clipper.Step()) {
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+            {
+                ImGui::TableNextRow();
+                for (int column = 0; column < 5; column++)
+                {
+                    char buf[60];
+                    SDL_snprintf(buf, 60, "Test %i %i!!!!!!!!!!!!", column, row);
+                    ImGui::TableSetColumnIndex(column);
+                    ImGui::Selectable(buf, &test[row], ImGuiSelectableFlags_SpanAllColumns);
+                }
+            }
         }
         ImGui::EndTable();
     }
