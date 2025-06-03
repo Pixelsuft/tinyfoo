@@ -106,10 +106,29 @@ void ui::draw_meta() {
     ImGui::Button("Test2 btn");
     ImGui::Button("Test3 btn");
     ImGui::Button("Test4 btn");
+    ImGui::Button("Test 2 btn!!!!!");
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
 }
 
 void ui::draw_playlist_view() {
-    ImGui::Button("Test 2 btn!!!!!");
+    if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+        ImGui::TableSetupColumn("File Name");
+        ImGui::TableSetupColumn("Duration");
+        ImGui::TableSetupColumn("Codec");
+        ImGui::TableSetupColumn("Bitrate");
+        ImGui::TableSetupColumn("Last Modified");
+        ImGui::TableHeadersRow();
+        static bool test[10000] = { 0 };
+        for (int i = 0; i < 10000; i++) {
+            ImGui::TableNextColumn();
+            char buf[20];
+            SDL_snprintf(buf, 20, "%i", i);
+            ImGui::Selectable(buf, &test[i - i % 5], ImGuiSelectableFlags_SpanAllColumns);
+            // ImGui::Text("%s", buf);
+        }
+        ImGui::EndTable();
+    }
 }
 
 void ui::draw_tab() {
