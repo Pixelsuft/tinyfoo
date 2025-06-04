@@ -71,19 +71,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

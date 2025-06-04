@@ -162,10 +162,20 @@ class LbsApp:
                 data = self.request_bin(url.replace('json.hpp', 'json_fwd.hpp'))
                 open(dst_fwd, 'wb').write(data)
             return True
+
+    def download_toml11_lib(self, dst: str, url: str = 'https://github.com/ToruNiina/toml11/raw/refs/heads/main/single_include/toml.hpp') -> None:
+        if os.path.isfile(dst):
+            self.info('toml11 found')
+            return True
+        else:
+            self.info('Fetching toml11...')
+            data = self.request_bin(url)
+            open(dst, 'wb').write(data)
+            return True
     
     def download_bpstd_string_view_lib(self, dst: str, url: str = 'https://github.com/bitwizeshift/string_view-standalone/raw/refs/heads/master/single_include/bpstd/string_view.hpp') -> None:
         if os.path.isfile(dst):
-            self.info('bpstd string_view found found')
+            self.info('bpstd string_view found')
             return True
         else:
             self.info('Fetching bpstd string_view...')
