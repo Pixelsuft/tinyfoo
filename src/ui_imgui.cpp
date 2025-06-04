@@ -29,11 +29,11 @@ bool ui::init() {
     data = tf::bump_nw<UiData>();
     // TODO: customize, handle errors
 #if IS_WIN
-#define TEMP_FONTS_DIR "c:\\Windows\\Fonts\\"
+#define TEMP_FONTS_DIR "C:\\Users\\Lexa\\AppData\\Local\\Microsoft\\Windows\\Fonts\\"
 #else
 #define TEMP_FONTS_DIR "/home/lexa/Documents/st/"
 #endif
-    data->font1 = io.Fonts->AddFontFromFileTTF(TEMP_FONTS_DIR "segoeuib.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+    data->font1 = io.Fonts->AddFontFromFileTTF(TEMP_FONTS_DIR "Roboto-Regular.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
     if (!data->font1) {
         TF_ERROR(<< "Failed to load ImGui Font 1");
     }
