@@ -82,7 +82,7 @@ namespace audio {
         SDL2MixerApi mix;
         public:
         AudioSDL2Mixer(bool use_mixer_x) {
-            const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ex.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ex.so" : "libSDL2_mixer.so");
+            const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
                 TF_WARN(<< "Failed to load SDL2_mixer library (" << SDL_GetError() << ")");
@@ -110,7 +110,7 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_MusicDuration);
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
-            int init_flags = MIX_INIT_MP3 | MIX_INIT_OGG;
+            int init_flags = MIX_INIT_MP3; // TODO
             int ret_flags = mix.Mix_Init(init_flags);
             if (ret_flags == 0) {
                 TF_ERROR(<< "Failed to init SDL2_mixer (" << SDL_GetError() << ")");
