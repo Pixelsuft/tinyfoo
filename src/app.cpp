@@ -74,7 +74,13 @@ bool app::init() {
     // This one actually never fails
     ui::init();
     data->stage = 4;
+    // TODO
     audio::au = audio::create_sdl2_mixer(false);
+    if (!audio::au->inited) {
+        audio::free_audio(audio::au);
+        audio::au = audio::create_base();
+        TF_WARN(<< "Using dummy audio library");
+    }
     return true;
 }
 

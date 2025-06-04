@@ -110,6 +110,15 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_MusicDuration);
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
+            int init_flags = MIX_INIT_MP3 | MIX_INIT_OGG;
+            int ret_flags = mix.Mix_Init(init_flags);
+            if (ret_flags == 0) {
+                TF_ERROR(<< "Failed to init SDL2_mixer (" << SDL_GetError() << ")");
+                SDL_UnloadObject(mix.handle);
+                return;
+            }
+            if (ret_flags < init_flags)
+                TF_WARN(<< "Failed to init some SDL2_mixer formats (" << SDL_GetError() << ")");
             TF_INFO(<< "SDL2_mixer inited successfully");
             inited = true;
         }
@@ -118,6 +127,7 @@ namespace audio {
             if (!inited)
                 return;
             inited = false;
+            mix.Mix_Quit();
             SDL_UnloadObject(mix.handle);
         }
     };
