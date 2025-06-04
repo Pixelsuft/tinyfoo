@@ -5,6 +5,7 @@
 #include <config.hpp>
 #include <ui.hpp>
 #include <audio_base.hpp>
+#include <str.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
@@ -23,6 +24,8 @@ namespace app {
     void process_event(const SDL_Event& ev);
 
     struct AppData {
+        tf::str base_path;
+        tf::str data_path;
         SDL_Window* win;
         Uint8* orig_bump;
         int stage;
@@ -43,11 +46,32 @@ bool app::init() {
     data->orig_bump = temp_bump;
     data->stage = 0;
     data->running = false;
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "tinyfoo the music player");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, "1.0.0");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "com.pixelsuft.tinyfoo");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Pixelsuft");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Pixelsuft, 2025");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://github.com/Pixelsuft/tinyfoo");
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "mediaplayer");
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
         TF_FATAL(<< "Failed to init SDL (" << SDL_GetError() << ")");
         destroy();
         return false;
     }
+    const char* temp_path = SDL_GetBasePath();
+    if (temp_path) {
+        data->base_path = tf::str(temp_path);
+        TF_INFO(<< "App base path: " << data->base_path);
+    }
+    else
+        TF_WARN(<< "Failed to get app base path (" << SDL_GetError() << ")");
+    temp_path = SDL_GetPrefPath(nullptr, "tinyfoo");
+    if (temp_path) {
+        data->data_path = tf::str(temp_path);
+        TF_INFO(<< "App data path: " << data->data_path);
+    }
+    else
+        TF_WARN(<< "Failed to get app data path (" << SDL_GetError() << ")");
     data->stage = 1;
     data->win = SDL_CreateWindow(
         "tinyfoo",

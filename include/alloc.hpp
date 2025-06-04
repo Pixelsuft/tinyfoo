@@ -25,7 +25,7 @@ namespace mem {
         if (n > static_cast<size_t>(-1) / sizeof(T)) {
             // throw std::bad_array_new_length();
         }
-        void* const pv = mem::alloc(n * sizeof(T));
+        void* const pv = mem::alloc((int)(n * sizeof(T)));
         if (!pv) {
             // throw std::bad_alloc();
         }
