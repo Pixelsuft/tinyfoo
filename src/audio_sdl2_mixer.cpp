@@ -41,7 +41,7 @@ typedef struct _Mix_Music Mix_Music;
 #define MIX_MAX_VOLUME          SDL_MIX_MAXVOLUME
 
 #define MIX_LOAD_FUNC(func_name) do { \
-    *(void**)&mix.func_name = SDL_LoadFunction(mix.handle, #func_name); \
+    *(void**)&mix.func_name = (void*)SDL_LoadFunction(mix.handle, #func_name); \
     if (!mix.func_name) { \
         TF_ERROR(<< "Failed to load SDL2_mixer function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
         SDL_UnloadObject(mix.handle); \
