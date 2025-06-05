@@ -5,7 +5,7 @@
 #include <config.hpp>
 #include <ui.hpp>
 #include <audio_base.hpp>
-#include <str.hpp>
+#include <util.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
@@ -68,6 +68,7 @@ bool app::init() {
     temp_path = SDL_GetPrefPath(nullptr, "tinyfoo");
     if (temp_path) {
         data->data_path = tf::str(temp_path);
+        SDL_free((void*)temp_path);
         TF_INFO(<< "App data path: " << data->data_path);
     }
     else
@@ -163,4 +164,12 @@ void app::destroy() {
     tf::bump_dl(data);
     mem::bump_ptr = nullptr;
     SDL_free(temp_bump);
+}
+
+tf::str util::get_base_path() {
+    return app::data->base_path;
+}
+
+tf::str util::get_data_path() {
+    return app::data->data_path;
 }

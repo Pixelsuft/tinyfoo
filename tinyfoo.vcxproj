@@ -186,6 +186,7 @@
     <ClInclude Include="include\str_view.hpp" />
     <ClInclude Include="include\ui.hpp" />
     <ClInclude Include="include\unreachable.hpp" />
+    <ClInclude Include="include\util.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
