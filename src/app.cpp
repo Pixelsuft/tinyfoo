@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #endif
+#include <toml.hpp>
 
 namespace logger {
     extern int log_level;
@@ -24,6 +25,7 @@ namespace app {
     void process_event(const SDL_Event& ev);
 
     struct AppData {
+        toml::value conf;
         tf::str base_path;
         tf::str data_path;
         SDL_Window* win;
@@ -33,6 +35,8 @@ namespace app {
     };
 
     AppData* data;
+
+    void read_config();
 }
 
 bool app::init() {
@@ -73,6 +77,7 @@ bool app::init() {
     }
     else
         TF_WARN(<< "Failed to get app data path (" << SDL_GetError() << ")");
+    read_config();
     data->stage = 1;
     data->win = SDL_CreateWindow(
         "tinyfoo",
@@ -164,6 +169,29 @@ void app::destroy() {
     tf::bump_dl(data);
     mem::bump_ptr = nullptr;
     SDL_free(temp_bump);
+}
+
+void app::read_config() {
+    // TODO: search config in other paths
+    tf::str fp = data->data_path + "config.toml";
+    size_t sz;
+    const char* content = (const char*)SDL_LoadFile(fp.c_str(), &sz);
+    if (!content) {
+        TF_WARN(<< "Failed to read config file (" << SDL_GetError() << ")");
+        return;
+    }
+    auto result = toml::try_parse_str(content);
+    if (result.is_err()) {
+        auto errs = result.as_err();
+        TF_ERROR(<< "Failed to parse config");
+        for (auto it = errs.begin(); it != errs.end(); it++)
+            TF_INFO(<< "Details - " << (*it).title());
+    }
+    if (result.is_ok()) {
+        data->conf = result.as_ok();
+        TF_INFO(<< "Config parsed successfully");
+    }
+    SDL_free((void*)content);
 }
 
 tf::str util::get_base_path() {
