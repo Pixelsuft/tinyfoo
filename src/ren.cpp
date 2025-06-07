@@ -1,7 +1,8 @@
 #include <ren.hpp>
 #include <new.hpp>
 #include <log.hpp>
-#include <config.hpp>
+#include <lbs.hpp>
+#include <conf.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>

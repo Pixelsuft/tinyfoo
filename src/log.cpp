@@ -1,4 +1,4 @@
-#include <config.hpp>
+#include <lbs.hpp>
 #include <log.hpp>
 #include <unreachable.hpp>
 #include <SDL3/SDL_log.h>

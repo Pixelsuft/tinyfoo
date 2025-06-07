@@ -2,7 +2,7 @@
 #include <app.hpp>
 #include <new.hpp>
 #include <log.hpp>
-#include <config.hpp>
+#include <lbs.hpp>
 #include <imgui.h>
 #include <SDL3/SDL.h>
 

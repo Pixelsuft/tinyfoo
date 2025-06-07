@@ -1,5 +1,5 @@
 #pragma once
-#include <config.hpp>
+#include <lbs.hpp>
 #include <mem.hpp>
 #if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L)
 #include <new>

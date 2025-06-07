@@ -2,16 +2,15 @@
 #include <ren.hpp>
 #include <log.hpp>
 #include <new.hpp>
-#include <config.hpp>
+#include <lbs.hpp>
 #include <ui.hpp>
 #include <audio_base.hpp>
-#include <util.hpp>
+#include <conf.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #endif
-#include <toml.hpp>
 
 namespace logger {
     extern int log_level;
@@ -19,6 +18,10 @@ namespace logger {
 
 namespace mem {
     extern Uint8* bump_ptr;
+}
+
+namespace conf {
+    toml::value* c;
 }
 
 namespace app {
@@ -192,12 +195,5 @@ void app::read_config() {
         TF_INFO(<< "Config parsed successfully");
     }
     SDL_free((void*)content);
-}
-
-tf::str util::get_base_path() {
-    return app::data->base_path;
-}
-
-tf::str util::get_data_path() {
-    return app::data->data_path;
+    conf::c = &data->conf;
 }

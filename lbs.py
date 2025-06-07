@@ -48,18 +48,6 @@ if app.stage == 'fetch':
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.cpp',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.h'
     ))
-    open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(
-'''#pragma once
-#include <config.hpp>
-
-#define IMGUI_DISABLE_DEFAULT_ALLOCATORS
-#if IS_RELEASE
-#define IM_ASSERT(_EXPR)  ((void)(_EXPR))
-#define IMGUI_DISABLE_DEMO_WINDOWS
-#define IMGUI_DISABLE_DEBUG_TOOLS
-#endif
-'''
-    )
     if not os.path.isdir(os.path.join(app.b_path, 'bpstd')):
         os.mkdir(os.path.join(app.b_path, 'bpstd'))
     if not os.path.isdir(os.path.join(app.b_path, 'bpstd', 'bpstd')):
@@ -75,7 +63,7 @@ if app.stage == 'conf':
     if not app.load_conf():
         sys.exit(1)
     app.conf['extra_libs'] = []
-    conf_header = open(os.path.join(app.b_path, 'lbs', 'config.hpp'), 'w', encoding='utf-8')
+    conf_header = open(os.path.join(app.b_path, 'lbs', 'lbs.hpp'), 'w', encoding='utf-8')
     # TODO: write configuration info like time, os info, etc
     is_win = int(sys.platform == 'win32')
     is_release = int('--release' in app.args)
@@ -86,6 +74,18 @@ if app.stage == 'conf':
     conf_header.write(f'#define IS_IMGUI 1\n')
     conf_header.write('#define BUMP_SIZE 4096\n')
     conf_header.close()
+    open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(
+'''#pragma once
+#include <lbs.hpp>
+
+#define IMGUI_DISABLE_DEFAULT_ALLOCATORS
+#if IS_RELEASE
+#define IM_ASSERT(_EXPR)  ((void)(_EXPR))
+#define IMGUI_DISABLE_DEMO_WINDOWS
+#define IMGUI_DISABLE_DEBUG_TOOLS
+#endif
+'''
+    )
     app.save_conf()
     app.info('Configured!')
     sys.exit(0)

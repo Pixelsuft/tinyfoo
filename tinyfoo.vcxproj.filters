@@ -109,7 +109,7 @@
     <ClInclude Include="include\audio_base.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\util.hpp">
+    <ClInclude Include="include\conf.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

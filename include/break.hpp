@@ -7,7 +7,7 @@
  *   details, see the Creative Commons Zero 1.0 Universal license at
  *   https://creativecommons.org/publicdomain/zero/1.0/
  */
-#include <config.hpp>
+#include <lbs.hpp>
 #if DEBUG_BUILD
 #if defined(__has_builtin) && !defined(__ibmxl__)
 #if __has_builtin(__builtin_debugtrap)
