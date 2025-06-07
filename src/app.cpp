@@ -103,14 +103,18 @@ bool app::init() {
     // This one actually never fails
     ui::init();
     data->stage = 4;
-    // TODO
-    audio::au = audio::create_sdl2_mixer(true);
-    if (!audio::au->inited) {
-        audio::free_audio(audio::au);
-        audio::au = audio::create_sdl2_mixer(false);
+    audio::au = nullptr;
+    if (data->conf.contains("audio") && data->conf.at("audio").is_table()) {
+        toml::value au_tab = data->conf.at("audio");
+        auto backend_s = toml::find_or<tf::str>(au_tab, "backend", "");
+        if (backend_s == "sdl2_mixer_ext")
+            audio::au = audio::create_sdl2_mixer(true);
+        else if (backend_s == "sdl2_mixer")
+            audio::au = audio::create_sdl2_mixer(false);
     }
-    if (!audio::au->inited) {
-        audio::free_audio(audio::au);
+    if (!audio::au || !audio::au->inited) {
+        if (audio::au)
+            audio::free_audio(audio::au);
         audio::au = audio::create_base();
         TF_WARN(<< "Using dummy audio library");
     }
