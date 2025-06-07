@@ -3,5 +3,5 @@
 #include <str.hpp>
 
 namespace conf {
-    extern toml::value* c;
+    toml::value& get();
 }

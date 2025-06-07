@@ -20,10 +20,6 @@ namespace mem {
     extern Uint8* bump_ptr;
 }
 
-namespace conf {
-    toml::value* c;
-}
-
 namespace app {
     void process_event(const SDL_Event& ev);
 
@@ -195,5 +191,8 @@ void app::read_config() {
         TF_INFO(<< "Config parsed successfully");
     }
     SDL_free((void*)content);
-    conf::c = &data->conf;
+}
+
+toml::value& conf::get() {
+    return app::data->conf;
 }
