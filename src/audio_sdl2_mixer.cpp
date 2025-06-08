@@ -65,6 +65,7 @@ namespace audio {
         int (SDLCALL *Mix_OpenAudioDevice)(int, uint16_t, int, int, const char*, int);
         int (SDLCALL *Mix_QuerySpec)(int*, uint16_t*, int*);
         int (SDLCALL *Mix_AllocateChannels)(int);
+        Mix_Music* (SDLCALL *Mix_LoadMUS)(const char*);
         void (SDLCALL *Mix_FreeMusic)(Mix_Music*);
         void (SDLCALL *Mix_HookMusic)(void (SDLCALL *)(void*, uint8_t*, int), void*);
         void (SDLCALL *Mix_HookMusicFinished)(void (SDLCALL *)(void));
@@ -84,6 +85,10 @@ namespace audio {
         void (SDLCALL *Mix_CloseAudio)(void);
     };
 
+    struct MusicSDL2 : public MusicBase {
+        Mix_Music* handle;
+    };
+
     class AudioSDL2Mixer : public AudioBase {
         protected:
         SDL2MixerApi mix;
@@ -101,6 +106,7 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_OpenAudioDevice);
             MIX_LOAD_FUNC(Mix_QuerySpec);
             MIX_LOAD_FUNC(Mix_AllocateChannels);
+            MIX_LOAD_FUNC(Mix_LoadMUS);
             MIX_LOAD_FUNC(Mix_FreeMusic);
             MIX_LOAD_FUNC(Mix_HookMusic);
             MIX_LOAD_FUNC(Mix_HookMusicFinished);
@@ -118,6 +124,7 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_MusicDuration);
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
+            // TODO: set hint for backend
             if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
                 TF_ERROR(<< "Failed to init SDL3 audio (" << SDL_GetError() << ")");
                 SDL_UnloadObject(mix.handle);
@@ -163,6 +170,36 @@ namespace audio {
         void dev_close() {
             mix.Mix_CloseAudio();
             dev_opened = false;
+        }
+
+        MusicBase* mus_from_fp(const char* fp) {
+            Mix_Music* h = mix.Mix_LoadMUS(fp);
+            if (!h) {
+                TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << SDL_GetError() << ")");
+                return nullptr;
+            }
+            auto ret = tf::nw<MusicSDL2>();
+            ret->duration = -1.f;
+            ret->handle = h;
+            return ret;
+        }
+
+        bool mus_fill_info(MusicBase* mus) {
+            auto sm = (MusicSDL2*)mus;
+            double dur = mix.Mix_MusicDuration(sm->handle);
+            if (dur < 0.0) {
+                sm->duration = 0.f;
+                TF_ERROR(<< "Failed to get music duration (" << SDL_GetError() << ")");
+                return false;
+            }
+            sm->duration = (float)dur;
+            return true;
+        }
+
+        void mus_free(MusicBase* mus) {
+            auto sm = (MusicSDL2*)mus;
+            mix.Mix_FreeMusic(sm->handle);
+            tf::dl(sm);
         }
 
         ~AudioSDL2Mixer() {

@@ -2,6 +2,7 @@
 #include <new.hpp>
 
 using audio::AudioBase;
+using audio::MusicBase;
 
 AudioBase* audio::au;
 
@@ -22,6 +23,24 @@ bool AudioBase::dev_open() {
 
 void AudioBase::dev_close() {
     dev_opened = false;
+}
+
+MusicBase* AudioBase::mus_from_fp(const char* fp) {
+#if 1
+    (void)fp;
+    auto ret = tf::nw<MusicBase>();
+    ret->duration = -1.f;
+    return ret;
+#endif
+    return nullptr;
+}
+
+bool AudioBase::mus_fill_info(MusicBase* mus) {
+    return false;
+}
+
+void AudioBase::mus_free(MusicBase* mus) {
+    tf::bump_dl(mus);
 }
 
 AudioBase* audio::create_base() {

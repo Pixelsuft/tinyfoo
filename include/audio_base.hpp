@@ -1,6 +1,10 @@
 #pragma once
 
 namespace audio {
+    struct MusicBase {
+        float duration;
+    };
+
     class AudioBase {
         public:
         bool inited;
@@ -9,6 +13,9 @@ namespace audio {
         virtual ~AudioBase();
         virtual bool dev_open();
         virtual void dev_close();
+        virtual MusicBase* mus_from_fp(const char* fp);
+        virtual void mus_free(MusicBase* mus);
+        virtual bool mus_fill_info(MusicBase* mus);
     };
 
     extern AudioBase* au;
