@@ -112,7 +112,7 @@ bool app::init() {
         else if (backend_s == "sdl2_mixer")
             audio::au = audio::create_sdl2_mixer(false);
     }
-    if (!audio::au || !audio::au->inited) {
+    if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)
             audio::free_audio(audio::au);
         audio::au = audio::create_base();

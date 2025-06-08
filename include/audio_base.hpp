@@ -4,8 +4,11 @@ namespace audio {
     class AudioBase {
         public:
         bool inited;
+        bool dev_opened;
         AudioBase();
         virtual ~AudioBase();
+        virtual bool dev_open();
+        virtual void dev_close();
     };
 
     extern AudioBase* au;

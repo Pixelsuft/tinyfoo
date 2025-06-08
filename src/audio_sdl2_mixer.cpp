@@ -40,6 +40,12 @@ typedef struct _Mix_Music Mix_Music;
 #define MIX_DEFAULT_CHANNELS    2
 #define MIX_MAX_VOLUME          SDL_MIX_MAXVOLUME
 
+#define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
+#define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002
+#define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
+#define SDL_AUDIO_ALLOW_SAMPLES_CHANGE      0x00000008
+#define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE|SDL_AUDIO_ALLOW_SAMPLES_CHANGE)
+
 #define MIX_LOAD_FUNC(func_name) do { \
     *(void**)&mix.func_name = (void*)SDL_LoadFunction(mix.handle, #func_name); \
     if (!mix.func_name) { \
@@ -88,6 +94,7 @@ namespace audio {
                 TF_WARN(<< "Failed to load SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " library (" << SDL_GetError() << ")");
                 return;
             }
+            // TODO: error if old version
             MIX_LOAD_FUNC(Mix_Init);
             MIX_LOAD_FUNC(Mix_Quit);
             MIX_LOAD_FUNC(Mix_OpenAudioDevice);
@@ -123,9 +130,27 @@ namespace audio {
             inited = true;
         }
 
+        bool dev_open() {
+            // TODO: configure
+            if (mix.Mix_OpenAudioDevice(48000, SDL_AUDIO_F32, 2, 2048, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
+                TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
+                return false;
+            }
+            TF_INFO(<< "Audio device opened");
+            dev_opened = true;
+            return true;
+        }
+
+        void dev_close() {
+            mix.Mix_CloseAudio();
+            dev_opened = false;
+        }
+
         ~AudioSDL2Mixer() {
             if (!inited)
                 return;
+            if (dev_opened)
+                dev_close();
             inited = false;
             mix.Mix_Quit();
             SDL_UnloadObject(mix.handle);
