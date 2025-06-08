@@ -136,7 +136,11 @@ namespace audio {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
             }
-            TF_INFO(<< "Audio device opened");
+            int num_fr = 0;
+            Uint16 num_fmt = 0;
+            int num_ch = 0;
+            mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
+            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels)");
             dev_opened = true;
             return true;
         }
