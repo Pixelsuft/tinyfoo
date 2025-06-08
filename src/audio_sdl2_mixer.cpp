@@ -1,6 +1,7 @@
 #include <audio_base.hpp>
 #include <new.hpp>
 #include <log.hpp>
+#include <break.hpp>
 #include <SDL3/SDL.h>
 #if 1
 typedef enum {
@@ -117,10 +118,16 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_MusicDuration);
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
+            if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+                TF_ERROR(<< "Failed to init SDL3 audio (" << SDL_GetError() << ")");
+                SDL_UnloadObject(mix.handle);
+                return;
+            }
             int init_flags = MIX_INIT_MP3; // TODO
             int ret_flags = mix.Mix_Init(init_flags);
             if (ret_flags == 0) {
                 TF_ERROR(<< "Failed to init SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " (" << SDL_GetError() << ")");
+                SDL_QuitSubSystem(SDL_INIT_AUDIO);
                 SDL_UnloadObject(mix.handle);
                 return;
             }
@@ -132,7 +139,12 @@ namespace audio {
 
         bool dev_open() {
             // TODO: configure
-            if (mix.Mix_OpenAudioDevice(48000, SDL_AUDIO_F32, 2, 2048, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
+            SDL_AudioSpec spec;
+            int sample_frames;
+            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &sample_frames))
+                TF_DEBUG_BREAK();
+            // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
+            if (mix.Mix_OpenAudioDevice(spec.freq, spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
             }
@@ -140,7 +152,10 @@ namespace audio {
             Uint16 num_fmt = 0;
             int num_ch = 0;
             mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
-            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels)");
+            const char* drv_name = SDL_GetCurrentAudioDriver();
+            if (!drv_name)
+                drv_name = "unknown";
+            TF_INFO(<< "Audio device opened (" << drv_name << ", " << num_fr << "Hz freq, " << num_ch << " channels)");
             dev_opened = true;
             return true;
         }
@@ -157,6 +172,7 @@ namespace audio {
                 dev_close();
             inited = false;
             mix.Mix_Quit();
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
             SDL_UnloadObject(mix.handle);
         }
     };

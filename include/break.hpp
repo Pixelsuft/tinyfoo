@@ -8,7 +8,7 @@
  *   https://creativecommons.org/publicdomain/zero/1.0/
  */
 #include <lbs.hpp>
-#if DEBUG_BUILD
+#if !IS_RELEASE
 #if defined(__has_builtin) && !defined(__ibmxl__)
 #if __has_builtin(__builtin_debugtrap)
 #define TF_DEBUG_BREAK() __builtin_debugtrap()
