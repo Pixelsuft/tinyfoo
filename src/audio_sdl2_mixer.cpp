@@ -125,9 +125,13 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
             // TODO: set hint for backend
+            // TODO: read conf here
+            if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "wasapi"))
+                TF_WARN(<< "Failed to set SDL3 audio hint (" << SDL_GetError() << ")");
             if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
                 TF_ERROR(<< "Failed to init SDL3 audio (" << SDL_GetError() << ")");
                 SDL_UnloadObject(mix.handle);
+                display_available_drivers();
                 return;
             }
             int init_flags = MIX_INIT_MP3; // TODO
@@ -200,6 +204,14 @@ namespace audio {
             auto sm = (MusicSDL2*)mus;
             mix.Mix_FreeMusic(sm->handle);
             tf::dl(sm);
+        }
+
+        void display_available_drivers() {
+            int num = SDL_GetNumAudioDrivers();
+            TF_INFO(<< "Available audio drivers: ");
+            for (int i = 0; i < num; i++) {
+                TF_INFO(<< SDL_GetAudioDriver(i));
+            }
         }
 
         ~AudioSDL2Mixer() {

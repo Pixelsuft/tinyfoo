@@ -17,14 +17,14 @@ namespace ren {
     };
 
     RenData* data;
-    void display_available_backends();
+    void display_available_drivers();
 }
 
-void ren::display_available_backends() {
+void ren::display_available_drivers() {
     int num = SDL_GetNumRenderDrivers();
     if (num <= 0)
         return;
-    TF_INFO(<< "Available renderer backends: ");
+    TF_INFO(<< "Available renderer drivers: ");
     for (int i = 0; i < num; i++) {
         TF_INFO(<< SDL_GetRenderDriver(i));
     }
@@ -38,9 +38,9 @@ bool ren::init(void* win) {
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
     if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
         toml::value tab = conf::get().at("renderer");
-        auto ren_str = toml::find_or<tf::str>(tab, "backend", "");
+        auto ren_str = toml::find_or<tf::str>(tab, "driver", "");
         if (ren_str.size() == 0) {
-            display_available_backends();
+            display_available_drivers();
         }
         else if (ren_str != "auto") {
             SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, ren_str.c_str());
@@ -55,7 +55,7 @@ bool ren::init(void* win) {
     if (!data->ren) {
         TF_FATAL(<< "Failed to create SDL renderer (" << SDL_GetError() << ")");
         SDL_DestroyProperties(props);
-        display_available_backends();
+        display_available_drivers();
         tf::bump_dl(data);
         return false;
     }
