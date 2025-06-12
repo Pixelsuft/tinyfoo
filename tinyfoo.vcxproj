@@ -71,19 +71,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\nlohmann;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\nlohmann;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\nlohmann;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)msvc\lbs;$(SolutionDir)msvc\SDL\include;$(SolutionDir)msvc\toml11;$(SolutionDir)msvc\nlohmann;$(SolutionDir)msvc\bspstd;$(SolutionDir)msvc\imgui;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(SolutionDir)msvc\SDL\lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -168,6 +168,7 @@
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
+    <ClCompile Include="src\playlist.cpp" />
     <ClCompile Include="src\ren.cpp" />
     <ClCompile Include="src\ui_imgui.cpp" />
   </ItemGroup>
@@ -176,9 +177,11 @@
     <ClInclude Include="include\app.hpp" />
     <ClInclude Include="include\audio_base.hpp" />
     <ClInclude Include="include\break.hpp" />
+    <ClInclude Include="include\json_util.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
     <ClInclude Include="include\new.hpp" />
+    <ClInclude Include="include\playlist.hpp" />
     <ClInclude Include="include\rect.hpp" />
     <ClInclude Include="include\ren.hpp" />
     <ClInclude Include="include\stl.hpp" />
@@ -187,6 +190,7 @@
     <ClInclude Include="include\ui.hpp" />
     <ClInclude Include="include\unreachable.hpp" />
     <ClInclude Include="include\conf.hpp" />
+    <ClInclude Include="include\vec.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,6 +3,7 @@
 #include <new.hpp>
 #include <log.hpp>
 #include <lbs.hpp>
+#include <playlist.hpp>
 #include <imgui.h>
 #include <SDL3/SDL.h>
 
@@ -99,9 +100,11 @@ void ui::draw_position() {
 void ui::draw_playlist_tabs() {
     if (ImGui::BeginTabBar("PlaylistTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton |
         ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
-        if (ImGui::BeginTabItem("TestTab", nullptr, 0)) {
-            draw_tab();
-            ImGui::EndTabItem();
+        for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
+            if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
+                draw_tab();
+                ImGui::EndTabItem();
+            }
         }
         ImGui::EndTabBar();
     }

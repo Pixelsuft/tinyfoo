@@ -6,6 +6,7 @@
 #include <ui.hpp>
 #include <audio_base.hpp>
 #include <conf.hpp>
+#include <playlist.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
@@ -25,6 +26,7 @@ namespace app {
 
     struct AppData {
         toml::value conf;
+        tf::vec<pl::Playlist*> playlists_vec;
         tf::str base_path;
         tf::str data_path;
         SDL_Window* win;
@@ -36,6 +38,10 @@ namespace app {
     AppData* data;
 
     void read_config();
+
+    tf::str get_data_path() {
+        return data->data_path;
+    }
 }
 
 bool app::init() {
@@ -49,6 +55,7 @@ bool app::init() {
     data->orig_bump = temp_bump;
     data->stage = 0;
     data->running = false;
+    pl::pls = &data->playlists_vec;
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "tinyfoo the music player");
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, "1.0.0");
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "com.pixelsuft.tinyfoo");
@@ -118,6 +125,7 @@ bool app::init() {
         audio::au = audio::create_base();
         TF_WARN(<< "Using dummy audio library");
     }
+    pl::load_playlists();
     return true;
 }
 
@@ -158,6 +166,7 @@ void app::stop() {
 void app::destroy() {
     data->running = false;
     if (data->stage > 3) {
+        pl::unload_playlists();
         audio::free_audio(audio::au);
         ui::destroy();
     }
