@@ -36,6 +36,7 @@ namespace app {
     };
 
     AppData* data;
+    void* win_handle;
 
     void read_config();
 
@@ -90,6 +91,7 @@ bool app::init() {
         1024, 768,
         SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE
     );
+    win_handle = (void*)data->win;
     if (!data->win) {
         TF_FATAL(<< "Failed to create SDL Window (" << SDL_GetError() << ")");
         destroy();

@@ -25,17 +25,17 @@ void AudioBase::dev_close() {
     dev_opened = false;
 }
 
-bool AudioBase::mus_open_fp(Music& mus, const char* fp) {
-    mus.h1 = mus.h2 = nullptr;
-    mus.dur = -1.f;
+bool AudioBase::mus_open_fp(Music* mus, const char* fp) {
+    mus->h1 = mus->h2 = nullptr;
+    mus->dur = -1.f;
     return false;
 }
 
-void AudioBase::mus_close(Music& mus) {
+void AudioBase::mus_close(Music* mus) {
     
 }
 
-bool AudioBase::mus_fill_info(Music& mus) {
+bool AudioBase::mus_fill_info(Music* mus) {
     return false;
 }
 

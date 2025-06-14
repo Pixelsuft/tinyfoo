@@ -9,8 +9,13 @@
 
 namespace ui {
     struct UiData {
+        char pl_name_buf[64];
         ImFont* font1;
+        pl::Playlist* last_pl;
+        pl::Playlist* need_conf_pl;
         Point size;
+        bool show_about;
+        bool show_playlist_conf;
     };
 
     UiData* data;
@@ -23,18 +28,17 @@ namespace ui {
     void draw_tab();
     void draw_meta();
     void draw_playlist_view();
+    void draw_about();
+    void draw_playlist_conf();
 }
 
 bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
-    // TODO: customize, handle errors
-#if IS_WIN
-#define TEMP_FONTS_DIR "C:\\Users\\Lexa\\AppData\\Local\\Microsoft\\Windows\\Fonts\\"
-#else
-#define TEMP_FONTS_DIR "/home/lexa/Documents/st/"
-#endif
-    data->font1 = io.Fonts->AddFontFromFileTTF(TEMP_FONTS_DIR "Roboto-Regular.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+    data->last_pl = nullptr;
+    data->show_about = false;
+    data->show_playlist_conf = false;
+    data->font1 = io.Fonts->AddFontFromFileTTF("assets/Roboto-Regular.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
     if (!data->font1) {
         TF_ERROR(<< "Failed to load ImGui Font 1");
     }
@@ -50,6 +54,28 @@ void ui::draw_menubar() {
     // Menu
     // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp#L641
     if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Add files...", nullptr, nullptr)) {
+            if (data->last_pl)
+                pl::add_files_dialog(data->last_pl);
+        }
+        if (ImGui::MenuItem("Add folder...", nullptr, nullptr)) {
+            if (data->last_pl)
+                pl::add_folder_dialog(data->last_pl);            
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("New playlist...", nullptr, nullptr)) {
+
+        }
+        if (ImGui::MenuItem("Configure playlist", nullptr, nullptr)) {
+            data->need_conf_pl = data->last_pl;
+            data->show_playlist_conf = true;
+            SDL_memcpy(data->pl_name_buf, data->need_conf_pl->name.c_str(), data->need_conf_pl->name.size() + 1);
+        }
+        if (ImGui::MenuItem("Save playlist", nullptr, nullptr)) {
+            if (data->last_pl)
+                pl::save(data->last_pl);
+        }
+        ImGui::Separator();
         if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
             app::stop();
         }
@@ -63,7 +89,7 @@ void ui::draw_menubar() {
     }
     if (ImGui::BeginMenu("Help")) {
         if (ImGui::MenuItem("About", nullptr, nullptr)) {
-            TF_INFO(<< "TODO: show about dialog");
+            data->show_about = true;
         }
         ImGui::EndMenu();
     }
@@ -100,8 +126,10 @@ void ui::draw_position() {
 void ui::draw_playlist_tabs() {
     if (ImGui::BeginTabBar("PlaylistTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton |
         ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
+        data->last_pl = nullptr;
         for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
             if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
+                data->last_pl = *it;
                 draw_tab();
                 ImGui::EndTabItem();
             }
@@ -121,6 +149,8 @@ void ui::draw_meta() {
 }
 
 void ui::draw_playlist_view() {
+    if (!data->last_pl)
+        return;
     if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("File Name");
         ImGui::TableSetupColumn("Duration");
@@ -129,20 +159,27 @@ void ui::draw_playlist_view() {
         ImGui::TableSetupColumn("Last Modified");
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
-        static bool test[10000] = { 0 };
         ImGuiListClipper clipper;
-        clipper.Begin(10000);
+        clipper.Begin((int)data->last_pl->mus.size());
         while (clipper.Step()) {
             for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
             {
                 ImGui::TableNextRow();
-                for (int column = 0; column < 5; column++)
-                {
-                    char buf[60];
-                    SDL_snprintf(buf, 60, "Test %i %i!!!!!!!!!!!!", column, row);
-                    ImGui::TableSetColumnIndex(column);
-                    ImGui::Selectable(buf, &test[row], ImGuiSelectableFlags_SpanAllColumns);
-                }
+                audio::Music* mus = data->last_pl->mus[row];
+                // fn, dur, codec, bitrate, last mod
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::TableSetColumnIndex(1);
+                char dur_buf[11];
+                int need_secs = (int)SDL_fmodf(mus->dur, 60.f);
+                SDL_snprintf(dur_buf, 11, (need_secs < 10) ? "%i:0%i" : "%i:%i", (int)SDL_floorf(mus->dur / 60.f), need_secs);
+                ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::TableSetColumnIndex(2);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::TableSetColumnIndex(3);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::TableSetColumnIndex(4);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
             }
         }
         ImGui::EndTable();
@@ -188,6 +225,38 @@ void ui::draw() {
     }
     ImGui::End();
     ImGui::PopStyleVar();
+    if (data->show_playlist_conf) {
+        ImGui::SetNextWindowFocus();
+        ImGui::SetNextWindowSize({ 500.f, 100.f }, ImGuiCond_Appearing);
+        if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse)) {
+            draw_playlist_conf();
+        }
+        ImGui::End();
+    }
+    if (data->show_about) {
+        ImGui::SetNextWindowFocus();
+        if (ImGui::Begin("About tinyfoo", &data->show_about, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+            draw_about();
+        }
+        ImGui::End();
+    }
+}
+
+void ui::draw_playlist_conf() {
+    ImGui::InputText("Playlist name", data->pl_name_buf, 256);
+    if (ImGui::Button("Save")) {
+        // TODO: check for correct name, path
+        data->need_conf_pl->name = data->pl_name_buf;
+        data->show_playlist_conf = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel")) {
+        data->show_playlist_conf = false;
+    }
+}
+
+void ui::draw_about() {
+    ImGui::Text("tinyfoo by Pixelsuft");
 }
 
 void ui::destroy() {

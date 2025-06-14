@@ -172,10 +172,9 @@ namespace audio {
             dev_opened = false;
         }
 
-        bool mus_open_fp(Music& mus, const char* fp) {
+        bool mus_open_fp(Music* mus, const char* fp) {
             Mix_Music* h = mix.Mix_LoadMUS(fp);
-            mus.dur = -1.f;
-            mus.h1 = h;
+            mus->h1 = h;
             if (!h) {
                 TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << SDL_GetError() << ")");
                 return false;
@@ -183,18 +182,18 @@ namespace audio {
             return true;
         }
 
-        void mus_close(Music& mus) {
-            mix.Mix_FreeMusic((Mix_Music*)mus.h1);
+        void mus_close(Music* mus) {
+            mix.Mix_FreeMusic((Mix_Music*)mus->h1);
         }
     
-        bool mus_fill_info(Music& mus) {
-            double dur = mix.Mix_MusicDuration((Mix_Music*)mus.h1);
+        bool mus_fill_info(Music* mus) {
+            double dur = mix.Mix_MusicDuration((Mix_Music*)mus->h1);
             if (dur < 0.0) {
-                mus.dur = 0.f;
+                mus->dur = -1.f;
                 TF_ERROR(<< "Failed to get music duration (" << SDL_GetError() << ")");
                 return false;
             }
-            mus.dur = (float)dur;
+            mus->dur = (float)dur;
             return true;
         }
 
