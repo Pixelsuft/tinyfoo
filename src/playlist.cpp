@@ -45,7 +45,12 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
     pl::Playlist* p = tf::nw<pl::Playlist>();
     // p->path = fp;
     p->name = util::json_unpack_str(d["name"]);
+    if (d["sort"].is_string())
+        p->sorting = util::json_unpack_str(d["sort"]);
+    else
+        p->sorting = "none";
     p->changed = false;
+    sort_by(p, p->sorting.c_str());
     pl::pls->push_back(p);
     return true;
 }
@@ -113,13 +118,13 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
         m->fn = m->fn.substr(0, t1_find);
     for (auto it = p->mus.begin(); it != p->mus.end(); it++) {
         if (compare_paths((*it)->full_path, m->full_path)) {
-            TF_INFO(<< "File already in playlist (" << fp << ")");
+            TF_WARN(<< "File already in playlist (" << fp << ")");
             tf::dl(m);
             return;
         }
     }
     if (!audio::au->mus_open_fp(m, fp)) {
-        TF_INFO(<< "Failed to add file " << fp);
+        TF_WARN(<< "Failed to add file " << fp);
         tf::dl(m);
         return;
     }
@@ -189,10 +194,20 @@ int SDLCALL mus_compare_by_name(const audio::Music** a, const audio::Music** b) 
     return 0;
 }
 
+void pl::sort_by(Playlist* p, const char* what) {
+    if (SDL_strlen(what) == 0 || !SDL_strcmp(what, "none"))
+        return;
+    if (!SDL_strcmp(what, "fn"))
+        SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_name);
+    else
+        TF_ERROR(<< "Unkown playlist sort by (" << what << ")");
+}
+
 void pl::save(Playlist* p) {
-    SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_name);
+    sort_by(p, "fn");
     json out;
     out["name"] = util::json_pack_str(p->name);
+    out["sort"] = util::json_pack_str(p->sorting);
     auto content = json::array();
     content.get_ptr<json::array_t*>()->reserve(p->mus.size());
     for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++) {
@@ -207,7 +222,7 @@ void pl::save(Playlist* p) {
     p->changed = false;
     // TF_INFO(<< out);
     std::string test(out.dump());
-    TF_INFO(<< test.size());
+    TF_INFO(<< test);
 }
 
 void pl::unload_playlists() {

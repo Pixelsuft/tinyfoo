@@ -8,6 +8,7 @@ namespace pl {
         tf::vec<audio::Music*> mus;
         tf::str path;
         tf::str name;
+        tf::str sorting;
         bool changed;
     };
 
@@ -18,4 +19,5 @@ namespace pl {
     void add_files_dialog(Playlist* p);
     void add_folder_dialog(Playlist* p);
     void save(Playlist* p);
+    void sort_by(Playlist* p, const char* what);
 }
