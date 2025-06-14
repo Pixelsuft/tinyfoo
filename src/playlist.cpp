@@ -183,9 +183,9 @@ void pl::add_folder_dialog(Playlist* p) {
 
 int SDLCALL mus_compare_by_name(const audio::Music** a, const audio::Music** b) {
     if ((*a)->fn < (*b)->fn)
-        return 1;
-    if ((*a)->fn > (*b)->fn)
         return -1;
+    if ((*a)->fn > (*b)->fn)
+        return 1;
     return 0;
 }
 
@@ -194,7 +194,7 @@ void pl::save(Playlist* p) {
     json out;
     out["name"] = util::json_pack_str(p->name);
     auto content = json::array();
-    // TODO: reserve
+    content.get_ptr<json::array_t*>()->reserve(p->mus.size());
     for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++) {
         audio::Music* m = *mit;
         content.push_back({
@@ -204,6 +204,7 @@ void pl::save(Playlist* p) {
             });
     }
     out["content"] = content;
+    p->changed = false;
     // TF_INFO(<< out);
     std::string test(out.dump());
     TF_INFO(<< test.size());
