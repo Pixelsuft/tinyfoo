@@ -2,7 +2,7 @@
 #include <new.hpp>
 
 using audio::AudioBase;
-using audio::MusicBase;
+using audio::Music;
 
 AudioBase* audio::au;
 
@@ -25,22 +25,18 @@ void AudioBase::dev_close() {
     dev_opened = false;
 }
 
-MusicBase* AudioBase::mus_from_fp(const char* fp) {
-#if 1
-    (void)fp;
-    auto ret = tf::nw<MusicBase>();
-    ret->duration = -1.f;
-    return ret;
-#endif
-    return nullptr;
-}
-
-bool AudioBase::mus_fill_info(MusicBase* mus) {
+bool AudioBase::mus_open_fp(Music& mus, const char* fp) {
+    mus.h1 = mus.h2 = nullptr;
+    mus.dur = -1.f;
     return false;
 }
 
-void AudioBase::mus_free(MusicBase* mus) {
-    tf::bump_dl(mus);
+void AudioBase::mus_close(Music& mus) {
+    
+}
+
+bool AudioBase::mus_fill_info(Music& mus) {
+    return false;
 }
 
 AudioBase* audio::create_base() {

@@ -180,6 +180,7 @@
     <ClInclude Include="include\json_util.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
+    <ClInclude Include="include\music.hpp" />
     <ClInclude Include="include\new.hpp" />
     <ClInclude Include="include\playlist.hpp" />
     <ClInclude Include="include\rect.hpp" />

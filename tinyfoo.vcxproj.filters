@@ -124,5 +124,8 @@
     <ClInclude Include="include\json_util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\music.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

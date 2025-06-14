@@ -1,6 +1,7 @@
 #pragma once
 #include <str.hpp>
 #include <vec.hpp>
+#include <music.hpp>
 
 namespace pl {
     struct Playlist {
