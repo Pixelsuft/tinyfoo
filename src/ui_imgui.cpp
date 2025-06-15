@@ -194,6 +194,13 @@ void ui::draw_playlist_view() {
                 bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
+                else if (data->last_pl->selected.size() == 0) {
+                    ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
+                    if (ImGui::IsPopupOpen("MusSelPopup")) {
+                        data->last_pl->selected.push_back(row);
+                        mus->selected = true;
+                    }
+                }
                 ImGui::TableSetColumnIndex(1);
                 char dur_buf[11];
                 int rounded_dur = (int)SDL_floorf(mus->dur);
@@ -212,15 +219,26 @@ void ui::draw_playlist_view() {
                         // ...
                     }
                     else if (app::shift_state) {
-                        int min_id = std::min(data->last_pl->last_sel, row);
-                        int max_id = std::max(data->last_pl->last_sel, row);
+                        int min_id = data->last_pl->last_shift_sel;
+                        int max_id = data->last_pl->last_shift_sel2;
+                        for (int i = min_id; i <= max_id; i++) {
+                            auto it = std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i);
+                            if (it != data->last_pl->selected.end()) {
+                                data->last_pl->selected.erase(it);
+                                data->last_pl->mus[i]->selected = false;
+                            }
+                        }
+                        min_id = std::min(data->last_pl->last_sel, row);
+                        max_id = std::max(data->last_pl->last_sel, row);
                         for (int i = min_id; i <= max_id; i++) {
                             if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i) == data->last_pl->selected.end()) {
                                 data->last_pl->mus[i]->selected = true;
                                 data->last_pl->selected.push_back(i);
-                                data->last_pl->last_sel = i;
+                                // data->last_pl->last_sel = i;
                             }
                         }
+                        data->last_pl->last_shift_sel = min_id;
+                        data->last_pl->last_shift_sel2 = max_id;
                         pushed = true;
                     }
                     else {
@@ -232,7 +250,10 @@ void ui::draw_playlist_view() {
                     if (mus->selected) {
                         if (!pushed) {
                             data->last_pl->selected.push_back(row);
-                            data->last_pl->last_sel = row;
+                            if (app::shift_state)
+                                data->last_pl->last_shift_sel = row;
+                            else
+                                data->last_pl->last_sel = row;
                         }
                     }
                     else if (!pushed) {
@@ -242,7 +263,10 @@ void ui::draw_playlist_view() {
                                 break;
                             }
                         }
-                        data->last_pl->last_sel = row;
+                        if (app::shift_state)
+                            data->last_pl->last_shift_sel = row;
+                        else
+                            data->last_pl->last_sel = row;
                     }
                 }
             }
@@ -250,10 +274,12 @@ void ui::draw_playlist_view() {
         if (ImGui::BeginPopupContextItem("MusSelPopup")) {
             if (ImGui::Button("Play")) {
                 pl::play_selected(data->last_pl);
+                ImGui::CloseCurrentPopup();
             }
             ImGui::Separator();
             if (ImGui::Button("Remove")) {
                 pl::remove_selected(data->last_pl);
+                ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
         }

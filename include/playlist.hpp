@@ -10,6 +10,8 @@ namespace pl {
         tf::str path;
         tf::str name;
         tf::str sorting;
+        int last_shift_sel;
+        int last_shift_sel2;
         int last_sel;
         bool changed;
     };
