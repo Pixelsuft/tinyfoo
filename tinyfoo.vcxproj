@@ -177,7 +177,7 @@
     <ClInclude Include="include\app.hpp" />
     <ClInclude Include="include\audio_base.hpp" />
     <ClInclude Include="include\break.hpp" />
-    <ClInclude Include="include\json_util.hpp" />
+    <ClInclude Include="include\util.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />
     <ClInclude Include="include\music.hpp" />

@@ -121,7 +121,7 @@
     <ClInclude Include="include\vec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\json_util.hpp">
+    <ClInclude Include="include\util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\music.hpp">

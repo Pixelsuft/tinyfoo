@@ -5,7 +5,7 @@
 #include <audio_base.hpp>
 #include <conf.hpp>
 #include <json.hpp>
-#include <json_util.hpp>
+#include <util.hpp>
 #include <SDL3/SDL.h>
 #if IS_WIN
 #define PATH_SEP '\\'
@@ -55,28 +55,6 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
     return true;
 }
 
-static inline bool compare_paths(const tf::str& p1, const tf::str& p2) {
-#if IS_WIN && IS_RELEASE
-    if (p1.size() != p2.size())
-        return false;
-    auto it2 = p2.begin();
-    for (auto it = p1.begin(); it != p1.end(); it++) {
-        if (((*it) == '\\' || (*it) == '//') && ((*it2) == '\\' || (*it2) == '//')) {
-            it2++;
-            continue;
-        }
-        if (SDL_tolower(*it) == SDL_tolower(*it2)) {
-            it2++;
-            continue;
-        }
-        return false;
-    }
-    return true;
-#else
-    return p1 == p2;
-#endif
-}
-
 void pl::load_playlists() {
     if (!conf::get().contains("playlists") || !conf::get().at("playlists").is_table())
         return;
@@ -88,7 +66,6 @@ void pl::load_playlists() {
         if (arr.at(i).is_string()) {
             tf::str file_name = tf::str(arr.at(i).as_string().c_str());
             // TODO: has it / or \\?
-            TF_INFO(<< file_name);
             bool ret;
             if ((file_name.find('/') < 0 || file_name.find('/') >= file_name.size()) && (file_name.find('\\') < 0 || file_name.find('\\') >= file_name.size()))
                 ret = load_pl_from_fp(app::get_data_path() + file_name);
@@ -117,7 +94,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
     if (t1_find >= 0 && t1_find < m->full_path.size())
         m->fn = m->fn.substr(0, t1_find);
     for (auto it = p->mus.begin(); it != p->mus.end(); it++) {
-        if (compare_paths((*it)->full_path, m->full_path)) {
+        if (util::compare_paths((*it)->full_path, m->full_path)) {
             TF_WARN(<< "File already in playlist (" << fp << ")");
             tf::dl(m);
             return;
@@ -203,7 +180,7 @@ void pl::sort_by(Playlist* p, const char* what) {
         TF_ERROR(<< "Unkown playlist sort by (" << what << ")");
 }
 
-void pl::save(Playlist* p) {
+bool pl::save(Playlist* p) {
     sort_by(p, "fn");
     json out;
     out["name"] = util::json_pack_str(p->name);
@@ -223,6 +200,7 @@ void pl::save(Playlist* p) {
     // TF_INFO(<< out);
     std::string test(out.dump());
     TF_INFO(<< test);
+    return true;
 }
 
 void pl::unload_playlists() {

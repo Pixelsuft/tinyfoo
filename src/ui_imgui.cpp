@@ -4,12 +4,14 @@
 #include <log.hpp>
 #include <lbs.hpp>
 #include <playlist.hpp>
+#include <util.hpp>
 #include <imgui.h>
 #include <SDL3/SDL.h>
 
 namespace ui {
     struct UiData {
         char pl_name_buf[64];
+        char pl_path_buf[65536];
         ImFont* font1;
         pl::Playlist* last_pl;
         pl::Playlist* need_conf_pl;
@@ -69,7 +71,10 @@ void ui::draw_menubar() {
         if (ImGui::MenuItem("Configure playlist", nullptr, nullptr)) {
             data->need_conf_pl = data->last_pl;
             data->show_playlist_conf = true;
-            SDL_memcpy(data->pl_name_buf, data->need_conf_pl->name.c_str(), data->need_conf_pl->name.size() + 1);
+            SDL_memcpy(data->pl_name_buf, data->need_conf_pl->name.c_str(), std::min(data->need_conf_pl->name.size() + 1, (size_t)63));
+            SDL_memcpy(data->pl_path_buf, data->need_conf_pl->path.c_str(), std::min(data->need_conf_pl->path.size() + 1, (size_t)65535));
+            data->pl_name_buf[63] = '\0';
+            data->pl_path_buf[65535] = '\0';
         }
         if (ImGui::MenuItem("Save playlist", nullptr, nullptr)) {
             if (data->last_pl)
@@ -164,23 +169,34 @@ void ui::draw_playlist_view() {
         while (clipper.Step()) {
             for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
             {
+                bool ret = false;
                 ImGui::TableNextRow();
                 audio::Music* mus = data->last_pl->mus[row];
                 // fn, dur, codec, bitrate, last mod
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(1);
                 char dur_buf[11];
                 int rounded_dur = (int)SDL_floorf(mus->dur);
                 int need_secs = rounded_dur % 60;
                 SDL_snprintf(dur_buf, 11, (need_secs < 10) ? "%i:0%i" : "%i:%i", rounded_dur / 60, need_secs);
-                ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
-                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
-                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(4);
-                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                if (ret) {
+                    if (mus->selected) {
+                        // TODO: optimize that
+                        for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
+                            if (*it == mus)
+                                continue;
+                            (*it)->selected = false;
+                        }
+                    }
+                }
             }
         }
         ImGui::EndTable();
@@ -228,7 +244,7 @@ void ui::draw() {
     ImGui::PopStyleVar();
     if (data->show_playlist_conf) {
         ImGui::SetNextWindowFocus();
-        ImGui::SetNextWindowSize({ 500.f, 100.f }, ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
         if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse)) {
             draw_playlist_conf();
         }
@@ -245,9 +261,24 @@ void ui::draw() {
 
 void ui::draw_playlist_conf() {
     ImGui::InputText("Playlist name", data->pl_name_buf, 256);
-    if (ImGui::Button("Save")) {
-        // TODO: check for correct name, path
+    ImGui::InputText("Playlist path", data->pl_path_buf, 65536);
+    // TODO: sort type
+    if (ImGui::Button("Apply & Save")) {
+        tf::str old_name(data->need_conf_pl->name);
+        tf::str old_path(data->need_conf_pl->path);
         data->need_conf_pl->name = data->pl_name_buf;
+        data->need_conf_pl->path = data->pl_path_buf;
+        if (pl::save(data->need_conf_pl)) {
+            if (!util::compare_paths(old_path, data->need_conf_pl->path)) {
+                // TODO: remove old path
+                TF_INFO(<< "TODO: remove old path " << old_path);
+            }
+        }
+        else {
+            data->need_conf_pl->name = old_name;
+            data->need_conf_pl->path = old_path;
+            TF_WARN(<< "Failed to save");
+        }
         data->show_playlist_conf = false;
     }
     ImGui::SameLine();
