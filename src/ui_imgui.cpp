@@ -195,6 +195,7 @@ void ui::draw_playlist_view() {
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                 else if (data->last_pl->selected.size() == 0) {
+                    // TODO: support switching select
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                     if (ImGui::IsPopupOpen("MusSelPopup")) {
                         data->last_pl->selected.push_back(row);
