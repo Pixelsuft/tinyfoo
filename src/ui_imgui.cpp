@@ -28,6 +28,10 @@ namespace ui {
 
     UiData* data;
 
+    pl::Playlist* get_last_pl() {
+        return data->last_pl;
+    }
+
     void draw_menubar();
     void draw_playback_buttons();
     void draw_volume_control();
@@ -173,9 +177,6 @@ void ui::draw_playlist_view() {
         return;
     if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("File Name");
-        if (ImGui::IsItemClicked()) {
-            TF_INFO(<< "fn sort!");
-        }
         ImGui::TableSetupColumn("Duration");
         ImGui::TableSetupColumn("Codec");
         ImGui::TableSetupColumn("Bitrate");
@@ -185,26 +186,26 @@ void ui::draw_playlist_view() {
         ImGuiListClipper clipper;
         clipper.Begin((int)data->last_pl->mus.size());
         while (clipper.Step()) {
-            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-            {
-                bool ret = false;
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
                 ImGui::TableNextRow();
                 audio::Music* mus = data->last_pl->mus[row];
                 // fn, dur, codec, bitrate, last mod
                 ImGui::TableSetColumnIndex(0);
-                ret |= ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                if (mus->selected)
+                    ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                 ImGui::TableSetColumnIndex(1);
                 char dur_buf[11];
                 int rounded_dur = (int)SDL_floorf(mus->dur);
                 int need_secs = rounded_dur % 60;
                 SDL_snprintf(dur_buf, 11, (need_secs < 10) ? "%i:0%i" : "%i:%i", rounded_dur / 60, need_secs);
-                ret |= ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
-                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
-                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(4);
-                ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
                     bool pushed = false;
                     if (app::ctrl_state) {
@@ -234,7 +235,7 @@ void ui::draw_playlist_view() {
                             data->last_pl->last_sel = row;
                         }
                     }
-                    else {
+                    else if (!pushed) {
                         for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
                             if ((*it) == row) {
                                 data->last_pl->selected.erase(it);
@@ -245,6 +246,16 @@ void ui::draw_playlist_view() {
                     }
                 }
             }
+        }
+        if (ImGui::BeginPopupContextItem("MusSelPopup")) {
+            if (ImGui::Button("Play")) {
+                pl::play_selected(data->last_pl);
+            }
+            ImGui::Separator();
+            if (ImGui::Button("Remove")) {
+                pl::remove_selected(data->last_pl);
+            }
+            ImGui::EndPopup();
         }
         ImGui::EndTable();
     }

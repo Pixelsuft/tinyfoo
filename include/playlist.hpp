@@ -21,6 +21,8 @@ namespace pl {
     void unload_playlists();
     void add_files_dialog(Playlist* p);
     void add_folder_dialog(Playlist* p);
+    void remove_selected(Playlist* p);
+    void play_selected(Playlist* p);
     bool save(Playlist* p);
     void sort_by(Playlist* p, const char* what);
 }

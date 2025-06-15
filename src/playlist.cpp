@@ -168,10 +168,10 @@ void pl::add_folder_dialog(Playlist* p) {
 }
 
 int SDLCALL mus_compare_by_name(const audio::Music** a, const audio::Music** b) {
-    if ((*a)->fn < (*b)->fn)
-        return -1;
     if ((*a)->fn > (*b)->fn)
         return 1;
+    if ((*a)->fn < (*b)->fn)
+        return -1;
     return 0;
 }
 
@@ -216,4 +216,24 @@ void pl::unload_playlists() {
             save(p);
         tf::dl(p);
     }
+}
+
+void pl::play_selected(Playlist* p) {
+
+}
+
+int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {
+    if (*a > *b)
+        return -1;
+    return 1;
+}
+
+void pl::remove_selected(Playlist* p) {
+    // TODO: handle currently played music properly
+    SDL_qsort(p->selected.data(), p->selected.size(), sizeof(int), (SDL_CompareCallback)id_compare_by_val_for_del);
+    for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+        p->mus.erase(p->mus.begin() + (size_t)(*it));
+    }
+    p->changed = true;
+    p->selected.clear();
 }
