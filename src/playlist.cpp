@@ -57,9 +57,15 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         p->sorting = util::json_unpack_str(d["sort"]);
     else
         p->sorting = "none";
+    if (d["sort_rev"].is_boolean())
+        p->reserve_sorting = d["sort_rev"];
+    else
+        p->reserve_sorting = false;
     p->last_sel = p->last_shift_sel = p->last_shift_sel2 = 0;
     p->changed = false;
     sort_by(p, p->sorting.c_str());
+    if (p->reserve_sorting)
+        sort_by(p, "reverse");
     pl::pls->push_back(p);
     return true;
 }
@@ -175,11 +181,21 @@ int SDLCALL mus_compare_by_name(const audio::Music** a, const audio::Music** b) 
     return 0;
 }
 
+int SDLCALL mus_compare_by_dur(const audio::Music** a, const audio::Music** b) {
+    if ((*a)->dur > (*b)->dur)
+        return 1;
+    if ((*a)->dur < (*b)->dur)
+        return -1;
+    return 0;
+}
+
 void pl::sort_by(Playlist* p, const char* what) {
     if (SDL_strlen(what) == 0 || !SDL_strcmp(what, "none"))
         return;
     if (!SDL_strcmp(what, "fn"))
         SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_name);
+    else if (!SDL_strcmp(what, "dur"))
+        SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_dur);
     else if (!SDL_strcmp(what, "reverse"))
         std::reverse(p->mus.begin(), p->mus.end());
     else
@@ -191,6 +207,7 @@ bool pl::save(Playlist* p) {
     json out;
     out["name"] = util::json_pack_str(p->name);
     out["sort"] = util::json_pack_str(p->sorting);
+    out["sort_rev"] = p->reserve_sorting;
     auto content = json::array();
     content.get_ptr<json::array_t*>()->reserve(p->mus.size());
     for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++) {

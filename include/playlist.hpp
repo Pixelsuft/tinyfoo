@@ -14,6 +14,7 @@ namespace pl {
         int last_shift_sel2;
         int last_sel;
         bool changed;
+        bool reserve_sorting;
     };
 
     extern tf::vec<Playlist*>* pls;
