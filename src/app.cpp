@@ -153,8 +153,14 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_KEY_UP: {
             ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
-            if (ev.key.scancode == SDL_SCANCODE_DELETE && ev.key.down && ui::get_last_pl())
-                pl::remove_selected(ui::get_last_pl());
+            if (ev.key.down && ev.key.repeat == 0) {
+                if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())
+                    pl::play_selected(ui::get_last_pl());
+                else if (ev.key.scancode == SDL_SCANCODE_DELETE && ui::get_last_pl())
+                    pl::remove_selected(ui::get_last_pl());
+                else if (ev.key.scancode == SDL_SCANCODE_A && ui::get_last_pl())
+                    pl::select_all(ui::get_last_pl());
+            }
         }
     }
 }

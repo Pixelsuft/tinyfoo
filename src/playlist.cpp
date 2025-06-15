@@ -219,7 +219,7 @@ void pl::unload_playlists() {
 }
 
 void pl::play_selected(Playlist* p) {
-
+    // TODO
 }
 
 int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {
@@ -236,4 +236,13 @@ void pl::remove_selected(Playlist* p) {
     }
     p->changed = true;
     p->selected.clear();
+}
+
+void pl::select_all(Playlist* p) {
+    p->selected.clear();
+    p->selected.reserve(p->mus.size());
+    for (int i = 0; i < p->mus.size(); i++) {
+        p->selected.push_back(i);
+        p->mus[i]->selected = true;
+    }
 }
