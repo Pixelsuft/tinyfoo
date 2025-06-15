@@ -173,6 +173,9 @@ void ui::draw_playlist_view() {
         return;
     if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("File Name");
+        if (ImGui::IsItemClicked()) {
+            TF_INFO(<< "fn sort!");
+        }
         ImGui::TableSetupColumn("Duration");
         ImGui::TableSetupColumn("Codec");
         ImGui::TableSetupColumn("Bitrate");
@@ -314,8 +317,8 @@ void ui::draw_playlist_conf() {
         data->need_conf_pl->path = data->pl_path_buf;
         if (pl::save(data->need_conf_pl)) {
             if (!util::compare_paths(old_path, data->need_conf_pl->path)) {
-                // TODO: remove old path
-                TF_INFO(<< "TODO: remove old path " << old_path);
+                if (!SDL_RemovePath(pl::full_path_for_playlist(old_path).c_str()))
+                    TF_ERROR(<< "Failed to remove old playlist data path (" << SDL_GetError() << ")");
             }
         }
         else {

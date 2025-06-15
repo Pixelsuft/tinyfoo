@@ -6,6 +6,7 @@
 #include <conf.hpp>
 #include <json.hpp>
 #include <util.hpp>
+#include <algorithm>
 #include <SDL3/SDL.h>
 #if IS_WIN
 #define PATH_SEP '\\'
@@ -26,6 +27,13 @@ namespace pl {
 
     bool load_pl_from_fp(const tf::str& fp);
     void add_file_by_fp(Playlist*, const char* fp);
+}
+
+tf::str pl::full_path_for_playlist(const tf::str& path) {
+    if ((path.find('/') < 0 || path.find('/') >= path.size()) && (path.find('\\') < 0 || path.find('\\') >= path.size()))
+        return app::get_data_path() + path;
+    else
+        return path;
 }
 
 bool pl::load_pl_from_fp(const tf::str& fp) {
@@ -67,12 +75,7 @@ void pl::load_playlists() {
         if (arr.at(i).is_string()) {
             tf::str file_name = tf::str(arr.at(i).as_string().c_str());
             // TODO: has it / or \\?
-            bool ret;
-            if ((file_name.find('/') < 0 || file_name.find('/') >= file_name.size()) && (file_name.find('\\') < 0 || file_name.find('\\') >= file_name.size()))
-                ret = load_pl_from_fp(app::get_data_path() + file_name);
-            else
-                ret = load_pl_from_fp(file_name);
-            if (ret) {
+            if (load_pl_from_fp(full_path_for_playlist(file_name))) {
                 pl::pls->at(pl::pls->size() - 1)->path = file_name;
             }
         }
@@ -177,6 +180,8 @@ void pl::sort_by(Playlist* p, const char* what) {
         return;
     if (!SDL_strcmp(what, "fn"))
         SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_name);
+    else if (!SDL_strcmp(what, "reverse"))
+        std::reverse(p->mus.begin(), p->mus.end());
     else
         TF_ERROR(<< "Unkown playlist sort by (" << what << ")");
 }

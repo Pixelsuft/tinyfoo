@@ -16,6 +16,7 @@ namespace pl {
 
     extern tf::vec<Playlist*>* pls;
 
+    tf::str full_path_for_playlist(const tf::str& path);
     void load_playlists();
     void unload_playlists();
     void add_files_dialog(Playlist* p);
