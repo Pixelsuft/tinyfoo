@@ -1,7 +1,7 @@
 #pragma once
 #include <json.hpp>
 #include <str.hpp>
-#include <conf.hpp>
+#include <lbs.hpp>
 
 namespace util {
     static inline tf::str json_unpack_str(const nlohmann::json& val) {

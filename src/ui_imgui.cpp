@@ -11,7 +11,7 @@
 namespace ui {
     struct UiData {
         char pl_name_buf[64];
-        char pl_path_buf[65536];
+        char* pl_path_buf;
         ImFont* font1;
         pl::Playlist* last_pl;
         pl::Playlist* need_conf_pl;
@@ -40,9 +40,18 @@ bool ui::init() {
     data->last_pl = nullptr;
     data->show_about = false;
     data->show_playlist_conf = false;
+    data->pl_path_buf = (char*)mem::alloc(65536);
+    if (!data->pl_path_buf) {
+        TF_ERROR(<< "WTF failed to alloc pl_path_buf");
+        tf::dl(data);
+        return false;
+    }
     data->font1 = io.Fonts->AddFontFromFileTTF("assets/Roboto-Regular.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
     if (!data->font1) {
         TF_ERROR(<< "Failed to load ImGui Font 1");
+        mem::free((void*)data->pl_path_buf);
+        tf::dl(data);
+        return false;
     }
     ImGui::StyleColorsDark();
     return true;
@@ -292,5 +301,6 @@ void ui::draw_about() {
 }
 
 void ui::destroy() {
+    mem::free((void*)data->pl_path_buf);
     tf::bump_dl(data);
 }
