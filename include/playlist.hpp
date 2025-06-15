@@ -6,9 +6,11 @@
 namespace pl {
     struct Playlist {
         tf::vec<audio::Music*> mus;
+        tf::vec<int> selected;
         tf::str path;
         tf::str name;
         tf::str sorting;
+        int last_sel;
         bool changed;
     };
 

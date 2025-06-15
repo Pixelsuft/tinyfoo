@@ -37,6 +37,8 @@ namespace app {
 
     AppData* data;
     void* win_handle;
+    bool shift_state;
+    bool ctrl_state;
 
     void read_config();
 
@@ -46,6 +48,7 @@ namespace app {
 }
 
 bool app::init() {
+    shift_state = ctrl_state = false;
     logger::log_level = 0;
     Uint8* temp_bump = mem::bump_ptr = (Uint8*)SDL_malloc(BUMP_SIZE);
     if (!mem::bump_ptr) {
@@ -141,6 +144,11 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_WINDOW_RESIZED: {
             ui::update_size(ren::get_size());
             break;
+        }
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP: {
+            ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
+            shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
         }
     }
 }

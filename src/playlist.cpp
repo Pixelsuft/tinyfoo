@@ -49,6 +49,7 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         p->sorting = util::json_unpack_str(d["sort"]);
     else
         p->sorting = "none";
+    p->last_sel = 0;
     p->changed = false;
     sort_by(p, p->sorting.c_str());
     pl::pls->push_back(p);

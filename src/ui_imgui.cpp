@@ -6,7 +6,13 @@
 #include <playlist.hpp>
 #include <util.hpp>
 #include <imgui.h>
+#include <algorithm>
 #include <SDL3/SDL.h>
+
+namespace app {
+    extern bool ctrl_state;
+    extern bool shift_state;
+}
 
 namespace ui {
     struct UiData {
@@ -197,13 +203,42 @@ void ui::draw_playlist_view() {
                 ImGui::TableSetColumnIndex(4);
                 ret |= ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
-                    if (mus->selected) {
-                        // TODO: optimize that
-                        for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
-                            if (*it == mus)
-                                continue;
-                            (*it)->selected = false;
+                    bool pushed = false;
+                    if (app::ctrl_state) {
+                        // ...
+                    }
+                    else if (app::shift_state) {
+                        int min_id = std::min(data->last_pl->last_sel, row);
+                        int max_id = std::max(data->last_pl->last_sel, row);
+                        for (int i = min_id; i <= max_id; i++) {
+                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i) == data->last_pl->selected.end()) {
+                                data->last_pl->mus[i]->selected = true;
+                                data->last_pl->selected.push_back(i);
+                                data->last_pl->last_sel = i;
+                            }
                         }
+                        pushed = true;
+                    }
+                    else {
+                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                            data->last_pl->mus[*it]->selected = false;
+                        }
+                        data->last_pl->selected.clear();
+                    }
+                    if (mus->selected) {
+                        if (!pushed) {
+                            data->last_pl->selected.push_back(row);
+                            data->last_pl->last_sel = row;
+                        }
+                    }
+                    else {
+                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                            if ((*it) == row) {
+                                data->last_pl->selected.erase(it);
+                                break;
+                            }
+                        }
+                        data->last_pl->last_sel = row;
                     }
                 }
             }
