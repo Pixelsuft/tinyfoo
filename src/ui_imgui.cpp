@@ -262,15 +262,19 @@ void ui::draw_playlist_view() {
                         }
                     }
                     else if (!pushed) {
-                        /*
-                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
-                            if ((*it) == row) {
-                                data->last_pl->selected.erase(it);
-                                break;
+                        if (app::ctrl_state) {
+                            for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                                if ((*it) == row) {
+                                    data->last_pl->selected.erase(it);
+                                    break;
+                                }
                             }
                         }
-                        */
-                        mus->selected = true;
+                        else {
+                            mus->selected = true;
+                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
+                                data->last_pl->selected.push_back(row);
+                        }
                         if (app::shift_state)
                             data->last_pl->last_shift_sel = row;
                         else
