@@ -194,10 +194,14 @@ void ui::draw_playlist_view() {
                 bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
-                else if (data->last_pl->selected.size() == 0) {
+                else if (!ImGui::IsPopupOpen("MusSelPopup")) {
                     // TODO: support switching select
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                     if (ImGui::IsPopupOpen("MusSelPopup")) {
+                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                            data->last_pl->mus[*it]->selected = false;
+                        }
+                        data->last_pl->selected.clear();
                         data->last_pl->selected.push_back(row);
                         mus->selected = true;
                     }
@@ -258,12 +262,15 @@ void ui::draw_playlist_view() {
                         }
                     }
                     else if (!pushed) {
+                        /*
                         for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
                             if ((*it) == row) {
                                 data->last_pl->selected.erase(it);
                                 break;
                             }
                         }
+                        */
+                        mus->selected = true;
                         if (app::shift_state)
                             data->last_pl->last_shift_sel = row;
                         else
