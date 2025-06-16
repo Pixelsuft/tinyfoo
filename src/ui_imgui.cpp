@@ -10,8 +10,11 @@
 #include <SDL3/SDL.h>
 
 namespace app {
+    extern Point drop_pos;
     extern bool ctrl_state;
     extern bool shift_state;
+    extern bool drop_state;
+    extern bool can_i_drop;
 }
 
 namespace ui {
@@ -296,6 +299,18 @@ void ui::draw_playlist_view() {
             ImGui::EndPopup();
         }
         ImGui::EndTable();
+    }
+    if (app::drop_state) {
+        ImVec2 ds = ImGui::GetItemRectSize();
+        ImVec2 dp = ImGui::GetItemRectMin();
+        app::can_i_drop = (app::drop_pos.x >= dp.x && app::drop_pos.x < (dp.x + ds.x)) && (app::drop_pos.y >= dp.y && app::drop_pos.y < (dp.y + ds.y));
+        if (app::can_i_drop && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern)) {
+            ImGui::SetDragDropPayload("DROP_FILES", nullptr, 0);
+            ImGui::BeginTooltip();
+            ImGui::Text("Upload files to the current playlist");
+            ImGui::EndTooltip();
+            ImGui::EndDragDropSource();
+        }
     }
 }
 

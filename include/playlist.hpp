@@ -22,6 +22,7 @@ namespace pl {
     tf::str full_path_for_playlist(const tf::str& path);
     void load_playlists();
     void unload_playlists();
+    void add_file_by_fp(Playlist*, const char* fp);
     void add_files_dialog(Playlist* p);
     void add_folder_dialog(Playlist* p);
     void remove_selected(Playlist* p);

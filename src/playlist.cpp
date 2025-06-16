@@ -26,7 +26,6 @@ namespace pl {
     tf::vec<Playlist*>* pls;
 
     bool load_pl_from_fp(const tf::str& fp);
-    void add_file_by_fp(Playlist*, const char* fp);
 }
 
 tf::str pl::full_path_for_playlist(const tf::str& path) {

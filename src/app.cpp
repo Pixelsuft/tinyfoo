@@ -41,8 +41,11 @@ namespace app {
 
     AppData* data;
     void* win_handle;
+    Point drop_pos;
     bool shift_state;
     bool ctrl_state;
+    bool drop_state;
+    bool can_i_drop;
 
     void read_config();
 
@@ -52,7 +55,7 @@ namespace app {
 }
 
 bool app::init() {
-    shift_state = ctrl_state = false;
+    shift_state = ctrl_state = drop_state = can_i_drop = false;
     logger::log_level = 0;
     Uint8* temp_bump = mem::bump_ptr = (Uint8*)SDL_malloc(BUMP_SIZE);
     if (!mem::bump_ptr) {
@@ -139,7 +142,9 @@ bool app::init() {
 }
 
 void app::process_event(const SDL_Event& ev) {
+#ifdef IS_IMGUI
     ImGui_ImplSDL3_ProcessEvent(&ev);
+#endif
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
             data->running = false;
@@ -153,14 +158,56 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_KEY_UP: {
             ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
+#ifdef IS_IMGUI
+            if (0 && ImGui::GetIO().WantCaptureKeyboard)
+                break;
+#endif
             if (ev.key.down && ev.key.repeat == 0) {
                 if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())
                     pl::play_selected(ui::get_last_pl());
                 else if (ev.key.scancode == SDL_SCANCODE_DELETE && ui::get_last_pl())
                     pl::remove_selected(ui::get_last_pl());
-                else if (ev.key.scancode == SDL_SCANCODE_A && ui::get_last_pl())
+                else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl())
                     pl::select_all(ui::get_last_pl());
+                else if (ev.key.scancode == SDL_SCANCODE_V && ctrl_state && ui::get_last_pl()) {
+                    // TODO: WAIT UNTIL SDL3 FINALLY MAKES A PROPER CLIPBOARD API!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                }
             }
+        }
+        case SDL_EVENT_CLIPBOARD_UPDATE: {
+            break;
+        }
+        case SDL_EVENT_DROP_BEGIN: {
+            // TODO: WAIT UNTIL SDL3 FINALLY MAKES A PROPER D&D API!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            drop_state = true;
+            can_i_drop = false;
+            drop_pos = { 0.f, 0.f };
+            break;
+        }
+        case SDL_EVENT_DROP_POSITION: {
+            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            break;
+        }
+        case SDL_EVENT_DROP_COMPLETE: {
+            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            drop_state = false;
+            can_i_drop = false;
+            break;
+        }
+        case SDL_EVENT_DROP_FILE: {
+            if (!can_i_drop)
+                break;
+            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            if (ui::get_last_pl())
+                pl::add_file_by_fp(ui::get_last_pl(), ev.drop.data);
+            break;
+        }
+        case SDL_EVENT_DROP_TEXT: {
+            if (!can_i_drop)
+                break;
+            const char* src = ev.drop.source ? ev.drop.source : "nullptr";
+            TF_INFO(<< "TODO: drop text " << ev.drop.data << " from " << src);
+            break;
         }
     }
 }

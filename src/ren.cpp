@@ -108,6 +108,15 @@ Point ren::get_size() {
     return res;
 }
 
+Point ren::point_win_to_ren(const Point& pos) {
+    Point ret;
+    if (!SDL_RenderCoordinatesFromWindow(data->ren, pos.x, pos.y, &ret.x, &ret.y)) {
+        TF_WARN(<< "Failed to get renderer coordinates from window (" << SDL_GetError() << ")");
+        ret = pos;
+    }
+    return ret;
+}
+
 void ren::destroy() {
 #if IS_IMGUI
     ImGui_ImplSDLRenderer3_Shutdown();

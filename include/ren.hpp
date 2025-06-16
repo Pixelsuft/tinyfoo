@@ -7,4 +7,5 @@ namespace ren {
     void end_frame();
     void destroy();
     Point get_size();
+    Point point_win_to_ren(const Point& pos);
 }
