@@ -6,6 +6,7 @@
 #include <playlist.hpp>
 #include <util.hpp>
 #include <vec.hpp>
+#include <res.hpp>
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
@@ -66,12 +67,19 @@ bool ui::init() {
         tf::dl(data);
         return false;
     }
-    data->font1 = io.Fonts->AddFontFromFileTTF("assets/Roboto-Regular.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+    data->font1 = nullptr;
+    // TODO: read font from config
     if (!data->font1) {
-        TF_ERROR(<< "Failed to load ImGui Font 1");
-        mem::free((void*)data->pl_path_buf);
-        tf::dl(data);
-        return false;
+        ImFontConfig font_cfg;
+        font_cfg.FontDataOwnedByAtlas = false;
+        size_t sz_buf;
+        void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
+        data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, 16.f, &font_cfg);
+        if (!data->font1) {
+            TF_ERROR(<< "WTF failed to load default font");
+            data->font1 = io.Fonts->AddFontDefault();
+        }
+        res::free_asset_data(font_data);
     }
     ImGui::StyleColorsDark();
     data->log_cache.reserve(LOG_CACHE_COUNT);
