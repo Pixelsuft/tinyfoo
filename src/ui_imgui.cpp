@@ -5,11 +5,13 @@
 #include <lbs.hpp>
 #include <playlist.hpp>
 #include <util.hpp>
+#include <vec.hpp>
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
 
 namespace app {
+    extern void* win_handle;
     extern Point drop_pos;
     extern bool ctrl_state;
     extern bool shift_state;
@@ -19,6 +21,7 @@ namespace app {
 
 namespace ui {
     struct UiData {
+        tf::vec<tf::str> log_cache;
         char pl_name_buf[64];
         char* pl_path_buf;
         ImFont* font1;
@@ -26,6 +29,7 @@ namespace ui {
         pl::Playlist* need_conf_pl;
         Point size;
         bool show_about;
+        bool show_logs;
         bool show_playlist_conf;
     };
 
@@ -44,7 +48,9 @@ namespace ui {
     void draw_meta();
     void draw_playlist_view();
     void draw_about();
+    void draw_logs();
     void draw_playlist_conf();
+    void push_log(const char* data, const char* file, const char* func, int line, int category);
 }
 
 bool ui::init() {
@@ -52,6 +58,7 @@ bool ui::init() {
     data = tf::bump_nw<UiData>();
     data->last_pl = nullptr;
     data->show_about = false;
+    data->show_logs = false;
     data->show_playlist_conf = false;
     data->pl_path_buf = (char*)mem::alloc(65536);
     if (!data->pl_path_buf) {
@@ -67,6 +74,7 @@ bool ui::init() {
         return false;
     }
     ImGui::StyleColorsDark();
+    data->log_cache.reserve(LOG_CACHE_COUNT);
     return true;
 }
 
@@ -79,14 +87,10 @@ void ui::draw_menubar() {
     // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp
     // static void DemoWindowMenuBar
     if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Add files...", nullptr, nullptr)) {
-            if (data->last_pl)
-                pl::add_files_dialog(data->last_pl);
-        }
-        if (ImGui::MenuItem("Add folder...", nullptr, nullptr)) {
-            if (data->last_pl)
-                pl::add_folder_dialog(data->last_pl);            
-        }
+        if (ImGui::MenuItem("Add files...", nullptr, nullptr, data->last_pl != nullptr))
+            pl::add_files_dialog(data->last_pl);
+        if (ImGui::MenuItem("Add folder...", nullptr, nullptr, data->last_pl != nullptr))
+            pl::add_folder_dialog(data->last_pl);
         ImGui::Separator();
         if (ImGui::MenuItem("New playlist...", nullptr, nullptr)) {
 
@@ -99,14 +103,11 @@ void ui::draw_menubar() {
             data->pl_name_buf[63] = '\0';
             data->pl_path_buf[65535] = '\0';
         }
-        if (ImGui::MenuItem("Save playlist", nullptr, nullptr)) {
-            if (data->last_pl)
-                pl::save(data->last_pl);
-        }
+        if (ImGui::MenuItem("Save playlist", nullptr, nullptr, data->last_pl != nullptr))
+            pl::save(data->last_pl);
         ImGui::Separator();
-        if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
+        if (ImGui::MenuItem("Exit", nullptr, nullptr))
             app::stop();
-        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Edit")) {
@@ -143,9 +144,10 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Help")) {
-        if (ImGui::MenuItem("About", nullptr, nullptr)) {
+        if (ImGui::MenuItem("Show Logs", nullptr, nullptr))
+            data->show_logs = true;
+        if (ImGui::MenuItem("About", nullptr, nullptr))
             data->show_about = true;
-        }
         ImGui::EndMenu();
     }
 }
@@ -384,16 +386,20 @@ void ui::draw() {
     if (data->show_playlist_conf) {
         ImGui::SetNextWindowFocus();
         ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
-        if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
             draw_playlist_conf();
-        }
+        ImGui::End();
+    }
+    if (data->show_logs) {
+        ImGui::SetNextWindowFocus();
+        if (ImGui::Begin("Logs", &data->show_logs, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
+            draw_logs();
         ImGui::End();
     }
     if (data->show_about) {
         ImGui::SetNextWindowFocus();
-        if (ImGui::Begin("About tinyfoo", &data->show_about, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin("About tinyfoo", &data->show_about, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
             draw_about();
-        }
         ImGui::End();
     }
 }
@@ -420,9 +426,8 @@ void ui::draw_playlist_conf() {
         data->show_playlist_conf = false;
     }
     ImGui::SameLine();
-    if (ImGui::Button("Cancel")) {
+    if (ImGui::Button("Cancel"))
         data->show_playlist_conf = false;
-    }
 }
 
 void ui::draw_about() {
@@ -432,4 +437,25 @@ void ui::draw_about() {
 void ui::destroy() {
     mem::free((void*)data->pl_path_buf);
     tf::bump_dl(data);
+    data = nullptr;
+}
+
+void ui::push_log(const char* msg, const char* file, const char* func, int line, int category) {
+    (void)file;
+    (void)func;
+    (void)line;
+    (void)category;
+    if (!app::win_handle || !data)
+        return;
+    if (data->log_cache.size() >= LOG_CACHE_COUNT)
+        data->log_cache.erase(data->log_cache.begin());
+    data->log_cache.push_back(tf::str(msg));
+}
+
+void ui::draw_logs() {
+    // TODO: color, disable autoscrolling
+    for (auto it = data->log_cache.begin(); it != data->log_cache.end(); it++) {
+        ImGui::Text("%s", (*it).c_str());
+    }
+    ImGui::SetScrollHereY(1.0f);
 }

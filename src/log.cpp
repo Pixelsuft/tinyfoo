@@ -3,6 +3,10 @@
 #include <unreachable.hpp>
 #include <SDL3/SDL_log.h>
 
+namespace ui {
+	void push_log(const char* data, const char* file, const char* func, int line, int category);
+}
+
 namespace logger {
 	int log_level;
 }
@@ -37,4 +41,5 @@ void logger::log_by_category(const char* data, const char* file, const char* fun
 #else
 	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "[%s:%i] at %s: %s", file, line, func, data);
 #endif
+	ui::push_log(data, file, func, line, category);
 }

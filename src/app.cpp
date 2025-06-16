@@ -253,6 +253,7 @@ void app::destroy() {
     }
     if (data->stage > 2)
         ren::destroy();
+    win_handle = nullptr;
     if (data->stage > 1)
         SDL_DestroyWindow(data->win);
     if (data->stage > 0)
