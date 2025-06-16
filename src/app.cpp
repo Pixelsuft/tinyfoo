@@ -158,10 +158,11 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_KEY_UP: {
             ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
-#ifdef IS_IMGUI
-            if (0 && ImGui::GetIO().WantCaptureKeyboard)
+#if IS_IMGUI && 0
+            if (ImGui::GetIO().WantCaptureKeyboard)
                 break;
 #endif
+            // TODO: break if other windows are visible (ex. playlist config)
             if (ev.key.down && ev.key.repeat == 0) {
                 if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())
                     pl::play_selected(ui::get_last_pl());
@@ -169,6 +170,17 @@ void app::process_event(const SDL_Event& ev) {
                     pl::remove_selected(ui::get_last_pl());
                 else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl())
                     pl::select_all(ui::get_last_pl());
+                else if (ev.key.scancode == SDL_SCANCODE_C && ctrl_state && ui::get_last_pl()) {
+                    pl::Playlist* p = ui::get_last_pl();
+                    if (p->selected.size() == 0)
+                        break;
+                    tf::str copy_str = tf::str("\"") + p->mus[p->selected[0]]->full_path + "\"";
+                    for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
+                        copy_str += tf::str(" \"") + p->mus[*it]->full_path + "\"";
+                    }
+                    if (!SDL_SetClipboardText(copy_str.c_str()))
+                        TF_WARN(<< "Failed to update clipboard (" << SDL_GetError() << ")");
+                }
                 else if (ev.key.scancode == SDL_SCANCODE_V && ctrl_state && ui::get_last_pl()) {
                     // TODO: WAIT UNTIL SDL3 FINALLY MAKES A PROPER CLIPBOARD API!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 }

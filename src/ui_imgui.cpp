@@ -112,7 +112,7 @@ void ui::draw_menubar() {
     if (ImGui::BeginMenu("Edit")) {
         if (ImGui::BeginMenu("Sort", data->last_pl != nullptr)) {
             if (ImGui::MenuItem("None", nullptr, nullptr)) {
-                data->last_pl->reserve_sorting = false;
+                // data->last_pl->reserve_sorting = false;
                 data->last_pl->sorting = "none";
             }
             if (ImGui::MenuItem("Sort by file name", nullptr, nullptr)) {
@@ -401,7 +401,6 @@ void ui::draw() {
 void ui::draw_playlist_conf() {
     ImGui::InputText("Playlist name", data->pl_name_buf, 256);
     ImGui::InputText("Playlist path", data->pl_path_buf, 65536);
-    // TODO: sort type
     if (ImGui::Button("Apply & Save")) {
         tf::str old_name(data->need_conf_pl->name);
         tf::str old_path(data->need_conf_pl->path);
