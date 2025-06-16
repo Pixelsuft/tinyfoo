@@ -93,3 +93,19 @@ if app.stage == 'conf':
     app.save_conf()
     app.info('Configured!')
     sys.exit(0)
+
+if app.stage == 'gen_res':
+    def write_res(name, data):
+        f.write('const unsigned char ')
+        f.write(name)
+        f.write('[] = { ')
+        f.write(', '.join(map(hex, list(data))))
+        f.write(' };\n')
+
+    f = open(os.path.join(app.b_path, 'lbs', 'res_data.hpp'), 'w', encoding='utf-8')
+    f.write('#pragma once\n\n')
+    write_res('asset_icon', open(os.path.join(app.cwd, 'assets', 'icon.png'), 'rb').read())
+    write_res('asset_font1', open(os.path.join(app.cwd, 'assets', 'Roboto-Regular.ttf'), 'rb').read())
+    f.close()
+    app.info('Generated resources for release!')
+    sys.exit(0)
