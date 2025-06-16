@@ -246,8 +246,7 @@ void ui::draw_playlist_view() {
                 ImGui::TableSetColumnIndex(1);
                 char dur_buf[11];
                 int rounded_dur = (int)SDL_floorf(mus->dur);
-                int need_secs = rounded_dur % 60;
-                SDL_snprintf(dur_buf, 11, (need_secs < 10) ? "%i:0%i" : "%i:%i", rounded_dur / 60, need_secs);
+                SDL_snprintf(dur_buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
                 ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
