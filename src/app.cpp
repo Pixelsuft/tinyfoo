@@ -233,6 +233,7 @@ void app::run() {
         while (SDL_PollEvent(&ev)) {
             app::process_event(ev);
         }
+        audio::au->update();
         ren::begin_frame();
         ui::draw();
         ren::end_frame();

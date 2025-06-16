@@ -92,6 +92,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
     // TF_INFO(<< "Adding file " << fp);
     audio::Music* m = tf::nw<audio::Music>();
     m->full_path = fp;
+    m->last_click = 0;
     auto t1_find = m->full_path.rfind('\\') + 1;
     auto t2_find = m->full_path.rfind('/') + 1;
     if (t1_find >= 0 && t1_find < m->full_path.size())
@@ -238,6 +239,7 @@ void pl::unload_playlists() {
 
 void pl::play_selected(Playlist* p) {
     // TODO
+    TF_INFO(<< "TODO: play selected");
 }
 
 int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {

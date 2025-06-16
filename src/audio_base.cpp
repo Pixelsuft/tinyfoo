@@ -31,6 +31,10 @@ bool AudioBase::mus_open_fp(Music* mus, const char* fp) {
     return false;
 }
 
+void AudioBase::update() {
+
+}
+
 void AudioBase::mus_close(Music* mus) {
     
 }

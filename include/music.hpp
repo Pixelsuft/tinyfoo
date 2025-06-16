@@ -5,6 +5,7 @@ namespace audio {
     struct Music {
         tf::str full_path;
         tf::str fn;
+        uint64_t last_click;
         void* h1;
         void* h2;
         float dur;

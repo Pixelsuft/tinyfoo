@@ -71,8 +71,9 @@ namespace audio {
         void (SDLCALL *Mix_HookMusicFinished)(void (SDLCALL *)(void));
         void* (SDLCALL *Mix_GetMusicHookData)(void);
         void (SDLCALL *Mix_ChannelFinished)(void (SDLCALL *)(int));
-        int (SDLCALL *Mix_PlayMusic)(Mix_Music*, int);
+        int (SDLCALL *Mix_FadeInMusicPos)(Mix_Music*, int, int, double);
         int (SDLCALL *Mix_VolumeMusic)(int);
+        int (SDLCALL *Mix_FadeOutMusic)(int);
         int (SDLCALL *Mix_HaltMusic)(void);
         void (SDLCALL *Mix_PauseMusic)(void);
         void (SDLCALL *Mix_ResumeMusic)(void);
@@ -108,8 +109,9 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_HookMusicFinished);
             MIX_LOAD_FUNC(Mix_GetMusicHookData);
             MIX_LOAD_FUNC(Mix_ChannelFinished);
-            MIX_LOAD_FUNC(Mix_PlayMusic);
+            MIX_LOAD_FUNC(Mix_FadeInMusicPos);
             MIX_LOAD_FUNC(Mix_VolumeMusic);
+            MIX_LOAD_FUNC(Mix_FadeOutMusic);
             MIX_LOAD_FUNC(Mix_HaltMusic);
             MIX_LOAD_FUNC(Mix_PauseMusic);
             MIX_LOAD_FUNC(Mix_ResumeMusic);
@@ -195,6 +197,10 @@ namespace audio {
             }
             mus->dur = (float)dur;
             return true;
+        }
+
+        void update() {
+            
         }
 
         void display_available_drivers() {

@@ -214,8 +214,6 @@ void ui::draw_meta() {
 }
 
 void ui::draw_playlist_view() {
-    if (!data->last_pl)
-        return;
     if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("File Name");
         ImGui::TableSetupColumn("Duration");
@@ -230,13 +228,11 @@ void ui::draw_playlist_view() {
             for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
                 ImGui::TableNextRow();
                 audio::Music* mus = data->last_pl->mus[row];
-                // fn, dur, codec, bitrate, last mod
                 ImGui::TableSetColumnIndex(0);
                 bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                 else if (!ImGui::IsPopupOpen("MusSelPopup")) {
-                    // TODO: support switching select
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                     if (ImGui::IsPopupOpen("MusSelPopup")) {
                         for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
@@ -260,6 +256,7 @@ void ui::draw_playlist_view() {
                 ImGui::TableSetColumnIndex(4);
                 ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
+                    Uint64 now = SDL_GetTicks();
                     bool pushed = false;
                     if (app::ctrl_state) {
                         // ...
@@ -293,6 +290,10 @@ void ui::draw_playlist_view() {
                         }
                         data->last_pl->selected.clear();
                     }
+                    if ((now - mus->last_click) <= 250) {
+                        pl::play_selected(data->last_pl);
+                    }
+                    mus->last_click = now;
                     if (mus->selected) {
                         if (!pushed) {
                             data->last_pl->selected.push_back(row);
@@ -367,6 +368,7 @@ void ui::draw_tab() {
 }
 
 void ui::draw() {
+    ImGui::PushFont(data->font1);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::SetNextWindowPos({ 0.f, 0.f }, 1);
     ImGui::SetNextWindowSize({ data->size.x, data->size.y }, 1);
@@ -375,7 +377,6 @@ void ui::draw() {
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground |
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_MenuBar)) {
-        ImGui::PushFont(data->font1);
         if (ImGui::BeginMenuBar()) {
             draw_menubar();
             ImGui::Separator();
@@ -386,7 +387,6 @@ void ui::draw() {
             draw_position();
             ImGui::EndMenuBar();
         }
-        ImGui::PopFont();
         draw_playlist_tabs();
     }
     ImGui::End();
@@ -410,6 +410,7 @@ void ui::draw() {
             draw_about();
         ImGui::End();
     }
+    ImGui::PopFont();
 }
 
 void ui::draw_playlist_conf() {
