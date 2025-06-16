@@ -202,6 +202,7 @@ void pl::sort_by(Playlist* p, const char* what) {
 }
 
 bool pl::save(Playlist* p) {
+    clear_selected(p);
     sort_by(p, "fn");
     json out;
     out["name"] = util::json_pack_str(p->name);
@@ -251,6 +252,13 @@ void pl::remove_selected(Playlist* p) {
         p->mus.erase(p->mus.begin() + (size_t)(*it));
     }
     p->changed = true;
+    p->selected.clear();
+}
+
+void pl::clear_selected(Playlist* p) {
+    for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+        p->mus[*it]->selected = false;
+    }
     p->selected.clear();
 }
 

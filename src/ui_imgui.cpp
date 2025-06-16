@@ -76,7 +76,8 @@ void ui::update_size(const Point& size) {
 
 void ui::draw_menubar() {
     // Menu
-    // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp#L641
+    // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp
+    // static void DemoWindowMenuBar
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Add files...", nullptr, nullptr)) {
             if (data->last_pl)
@@ -109,6 +110,21 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::BeginMenu("Sort", data->last_pl != nullptr)) {
+            if (ImGui::MenuItem("Sort by file name", nullptr, nullptr)) {
+                pl::clear_selected(data->last_pl);
+                pl::sort_by(data->last_pl, "fn");
+            }
+            if (ImGui::MenuItem("Sort by duration", nullptr, nullptr)) {
+                pl::clear_selected(data->last_pl);
+                pl::sort_by(data->last_pl, "dur");
+            }
+            if (ImGui::MenuItem("Reverse", nullptr, nullptr)) {
+                pl::clear_selected(data->last_pl);
+                pl::sort_by(data->last_pl, "reverse");
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Playback")) {
