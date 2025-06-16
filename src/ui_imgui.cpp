@@ -112,25 +112,27 @@ void ui::draw_menubar() {
     if (ImGui::BeginMenu("Edit")) {
         if (ImGui::BeginMenu("Sort", data->last_pl != nullptr)) {
             if (ImGui::MenuItem("None", nullptr, nullptr)) {
-                pl::sort_by(data->last_pl, "fn");
                 data->last_pl->reserve_sorting = false;
                 data->last_pl->sorting = "none";
             }
             if (ImGui::MenuItem("Sort by file name", nullptr, nullptr)) {
-                pl::clear_selected(data->last_pl);
+                pl::remember_selected(data->last_pl);
                 pl::sort_by(data->last_pl, "fn");
+                pl::unremember_selected(data->last_pl);
                 data->last_pl->sorting = "fn";
                 data->last_pl->reserve_sorting = false;
             }
             if (ImGui::MenuItem("Sort by duration", nullptr, nullptr)) {
-                pl::clear_selected(data->last_pl);
+                pl::remember_selected(data->last_pl);
                 pl::sort_by(data->last_pl, "dur");
+                pl::unremember_selected(data->last_pl);
                 data->last_pl->sorting = "dur";
                 data->last_pl->reserve_sorting = false;
             }
             if (ImGui::MenuItem("Reverse", nullptr, nullptr)) {
-                pl::clear_selected(data->last_pl);
+                pl::remember_selected(data->last_pl);
                 pl::sort_by(data->last_pl, "reverse");
+                pl::unremember_selected(data->last_pl);
                 data->last_pl->reserve_sorting = !data->last_pl->reserve_sorting;
             }
             ImGui::EndMenu();

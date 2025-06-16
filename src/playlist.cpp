@@ -1,5 +1,6 @@
 #include <playlist.hpp>
 #include <log.hpp>
+#include <unreachable.hpp>
 #include <new.hpp>
 #include <lbs.hpp>
 #include <audio_base.hpp>
@@ -260,6 +261,28 @@ void pl::clear_selected(Playlist* p) {
         p->mus[*it]->selected = false;
     }
     p->selected.clear();
+}
+
+void pl::remember_selected(Playlist* p) {
+    p->remembering.reserve(p->selected.size());
+    for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+        p->remembering.push_back(p->mus[*it]);
+    }
+}
+
+void pl::unremember_selected(Playlist* p) {
+    if (p->selected.size() != p->remembering.size())
+        TF_UNREACHABLE();
+    auto it2 = p->selected.begin();
+    for (auto it = p->remembering.begin(); it != p->remembering.end(); it++) {
+        auto need_it = std::find(p->mus.begin(), p->mus.end(), *it);
+        if (need_it == p->mus.end())
+            TF_UNREACHABLE();
+        auto index = std::distance(p->mus.begin(), need_it);
+        *it2 = (int)index;
+        it2++;
+    }
+    p->remembering.clear();
 }
 
 void pl::select_all(Playlist* p) {

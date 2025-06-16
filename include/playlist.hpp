@@ -6,6 +6,7 @@
 namespace pl {
     struct Playlist {
         tf::vec<audio::Music*> mus;
+        tf::vec<audio::Music*> remembering;
         tf::vec<int> selected;
         tf::str path;
         tf::str name;
@@ -28,6 +29,8 @@ namespace pl {
     void clear_selected(Playlist* p);
     void remove_selected(Playlist* p);
     void play_selected(Playlist* p);
+    void remember_selected(Playlist* p);
+    void unremember_selected(Playlist* p);
     void select_all(Playlist* p);
     bool save(Playlist* p);
     void sort_by(Playlist* p, const char* what);
