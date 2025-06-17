@@ -175,6 +175,10 @@ namespace audio {
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {
+#if !IS_RELEASE
+            if (mus->h1)
+                TF_DEBUG_BREAK();
+#endif
             Mix_Music* h = mix.Mix_LoadMUS(fp);
             mus->h1 = h;
             if (!h) {
@@ -185,7 +189,10 @@ namespace audio {
         }
 
         void mus_close(Music* mus) {
+            if (!mus->h1)
+                return;
             mix.Mix_FreeMusic((Mix_Music*)mus->h1);
+            mus->h1 = nullptr;
         }
     
         bool mus_fill_info(Music* mus) {

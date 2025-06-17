@@ -13,7 +13,7 @@ namespace audio {
         virtual void update();
         virtual bool mus_open_fp(Music* mus, const char* fp);
         virtual void mus_close(Music* mus);
-        virtual bool mus_fill_info(Music*mus);
+        virtual bool mus_fill_info(Music* mus);
     };
 
     extern AudioBase* au;

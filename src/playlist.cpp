@@ -88,22 +88,27 @@ void pl::load_playlists() {
     }
 }
 
+static inline tf::str fn_from_fp(const tf::str& fp) {
+    tf::str ret = fp;
+    auto t1_find = fp.rfind('\\') + 1;
+    auto t2_find = fp.rfind('/') + 1;
+    if (t1_find >= 0 && t1_find < fp.size())
+        ret = fp.substr(t1_find);
+    else if (t2_find >= 0 && t2_find < fp.size())
+        ret = fp.substr(t2_find);
+    else
+        ret = fp;
+    t1_find = ret.rfind('.');
+    if (t1_find >= 0 && t1_find < ret.size())
+        ret = ret.substr(0, t1_find);
+    return ret;
+}
+
 void pl::add_file_by_fp(Playlist* p, const char* fp) {
     // TF_INFO(<< "Adding file " << fp);
     audio::Music* m = tf::nw<audio::Music>();
     m->full_path = fp;
-    m->last_click = 0;
-    auto t1_find = m->full_path.rfind('\\') + 1;
-    auto t2_find = m->full_path.rfind('/') + 1;
-    if (t1_find >= 0 && t1_find < m->full_path.size())
-        m->fn = m->full_path.substr(t1_find);
-    else if (t2_find >= 0 && t2_find < m->full_path.size())
-        m->fn = m->full_path.substr(t2_find);
-    else
-        m->fn = m->full_path;
-    t1_find = m->fn.rfind('.');
-    if (t1_find >= 0 && t1_find < m->full_path.size())
-        m->fn = m->fn.substr(0, t1_find);
+    m->h1 = m->h2 = nullptr;
     for (auto it = p->mus.begin(); it != p->mus.end(); it++) {
         if (util::compare_paths((*it)->full_path, m->full_path)) {
             TF_WARN(<< "File already in playlist (" << fp << ")");
@@ -116,6 +121,8 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
         tf::dl(m);
         return;
     }
+    m->fn = fn_from_fp(m->full_path);
+    m->last_click = 0;
     audio::au->mus_fill_info(m);
     audio::au->mus_close(m);
     p->mus.push_back(m);
@@ -231,6 +238,8 @@ bool pl::save(Playlist* p) {
 void pl::unload_playlists() {
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
+        for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++)
+            audio::au->mus_close(*mit);
         if (p->changed)
             save(p);
         tf::dl(p);
@@ -249,7 +258,7 @@ int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {
 }
 
 void pl::remove_selected(Playlist* p) {
-    // TODO: handle currently played music properly
+    // TODO: handle currently opened music properly
     SDL_qsort(p->selected.data(), p->selected.size(), sizeof(int), (SDL_CompareCallback)id_compare_by_val_for_del);
     for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
         p->mus.erase(p->mus.begin() + (size_t)(*it));
