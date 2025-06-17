@@ -248,6 +248,8 @@ void pl::unload_playlists() {
 }
 
 void pl::play_selected(Playlist* p) {
+    if (p->selected.size() == 0)
+        return;
     // TODO
     TF_INFO(<< "TODO: play selected");
 }

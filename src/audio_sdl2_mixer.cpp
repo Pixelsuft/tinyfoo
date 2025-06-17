@@ -90,7 +90,7 @@ namespace audio {
         protected:
         SDL2MixerApi mix;
         public:
-        AudioSDL2Mixer(bool use_mixer_x) {
+        AudioSDL2Mixer(bool use_mixer_x) : AudioBase() {
             const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
@@ -176,8 +176,10 @@ namespace audio {
 
         bool mus_open_fp(Music* mus, const char* fp) {
 #if !IS_RELEASE
-            if (mus->h1)
-                TF_DEBUG_BREAK();
+            if (mus->h1) {
+                TF_WARN(<< "Music already opened");
+                return true;
+            }
 #endif
             Mix_Music* h = mix.Mix_LoadMUS(fp);
             mus->h1 = h;
@@ -207,6 +209,10 @@ namespace audio {
         }
 
         void update() {
+            
+        }
+
+        void update_volume() {
             
         }
 

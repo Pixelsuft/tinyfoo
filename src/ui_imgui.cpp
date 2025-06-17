@@ -7,6 +7,7 @@
 #include <util.hpp>
 #include <vec.hpp>
 #include <res.hpp>
+#include <audio_base.hpp>
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
@@ -170,10 +171,14 @@ void ui::draw_playback_buttons() {
 }
 
 void ui::draw_volume_control() {
-    static float vol = 1.f;
     ImGui::PushID("VolumeSlider");
     ImGui::PushItemWidth(100.f);
-    ImGui::SliderFloat("", &vol, 0.f, 1.f, "", ImGuiSliderFlags_NoRoundToFormat);
+    if (ImGui::SliderFloat("", &audio::au->volume, 0.f, audio::au->max_volume, "", ImGuiSliderFlags_NoRoundToFormat))
+        audio::au->update_volume();
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+        audio::au->volume = 1.f;
+        audio::au->update_volume();
+    }
     ImGui::PopItemWidth();
     ImGui::PopID();
 }

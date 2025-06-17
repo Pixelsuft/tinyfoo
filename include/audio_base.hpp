@@ -4,6 +4,11 @@
 namespace audio {
     class AudioBase {
         public:
+        float fade_stop_time;
+        float fade_pause_time;
+        float fade_resume_time;
+        float volume;
+        float max_volume;
         bool inited;
         bool dev_opened;
         bool keep_mus_opened_when_adding;
@@ -12,6 +17,7 @@ namespace audio {
         virtual ~AudioBase();
         virtual bool dev_open();
         virtual void dev_close();
+        virtual void update_volume();
         virtual void update();
         virtual bool mus_open_fp(Music* mus, const char* fp);
         virtual void mus_close(Music* mus);
