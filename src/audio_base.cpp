@@ -9,6 +9,8 @@ AudioBase* audio::au;
 AudioBase::AudioBase() {
     inited = false;
     dev_opened = false;
+    keep_mus_opened_when_adding = false;
+    keep_mus_opened_when_played = false;
 }
 
 AudioBase::~AudioBase() {
@@ -41,6 +43,10 @@ void AudioBase::mus_close(Music* mus) {
 
 bool AudioBase::mus_fill_info(Music* mus) {
     return false;
+}
+
+bool AudioBase::mus_opened(Music* mus) {
+    return mus->h1 != nullptr;
 }
 
 AudioBase* audio::create_base() {

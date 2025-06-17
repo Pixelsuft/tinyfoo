@@ -124,7 +124,8 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
     m->fn = fn_from_fp(m->full_path);
     m->last_click = 0;
     audio::au->mus_fill_info(m);
-    audio::au->mus_close(m);
+    if (!audio::au->keep_mus_opened_when_adding)
+        audio::au->mus_close(m);
     p->mus.push_back(m);
     p->changed = true;
 }
