@@ -1,5 +1,6 @@
 #include <audio_base.hpp>
 #include <new.hpp>
+#include <algorithm>
 
 using audio::AudioBase;
 using audio::Music;
@@ -74,6 +75,12 @@ bool AudioBase::mus_fill_info(Music* mus) {
 
 bool AudioBase::mus_opened(Music* mus) {
     return mus->h1 != nullptr;
+}
+
+bool AudioBase::mus_beging_used(Music* mus) {
+    if (cur_mus == mus)
+        return true;
+    return std::find(cache.begin(), cache.end(), mus) != cache.end();
 }
 
 AudioBase* audio::create_base() {

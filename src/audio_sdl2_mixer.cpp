@@ -2,6 +2,7 @@
 #include <new.hpp>
 #include <log.hpp>
 #include <break.hpp>
+#include <playlist.hpp>
 #include <SDL3/SDL.h>
 #if 1
 typedef enum {
@@ -58,6 +59,13 @@ typedef struct _Mix_Music Mix_Music;
 #define mus_h ((Mix_Music*)mus->h1)
 #define cur_h ((Mix_Music*)cur_mus->h1)
 
+void SDLCALL sdl2_music_finish_cb(void);
+
+/*
+TODO:
+ - Rework, make everything dependent on finished hook
+*/
+
 namespace audio {
     struct SDL2MixerApi {
         SDL_SharedObject* handle;
@@ -91,7 +99,10 @@ namespace audio {
         protected:
         SDL2MixerApi mix;
         public:
+        bool was_finished;
+
         AudioSDL2Mixer(bool use_mixer_x) : AudioBase() {
+            was_finished = false;
             const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
@@ -125,7 +136,7 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_CloseAudio);
             // TODO: set hint for backend
             // TODO: read conf here
-            if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "wasapi"))
+            if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "directsound"))
                 TF_WARN(<< "Failed to set SDL3 audio hint (" << SDL_GetError() << ")");
             if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
                 TF_ERROR(<< "Failed to init SDL3 audio (" << SDL_GetError() << ")");
@@ -201,10 +212,15 @@ namespace audio {
 
         void force_play(Music* mus, float pos) {
             // TODO: improve
+            Music* prev = cur_mus;
             cur_mus = mus;
+            pl::mus_open_file(mus);
             if (mix.Mix_FadeInMusicPos(mus_h, 0, 0, (double)pos) < 0)
                 TF_WARN(<< "Failed to play music (" << SDL_GetError() << ")");
             mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
+            mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
+            if (prev)
+                mus_close(prev);
         }
     
         bool mus_fill_info(Music* mus) {
@@ -218,8 +234,23 @@ namespace audio {
             return true;
         }
 
+        void next_cache() {
+            cur_mus = nullptr;
+            if (cache.size() == 0)
+                return;
+            Music* need = cache[0];
+            cache.erase(cache.begin());
+            force_play(need, 0.f);
+        }
+
         void update() {
-            
+            if (was_finished) {
+                was_finished = false;
+                Music* c = cur_mus;
+                next_cache();
+                TF_INFO(<< "mus close");
+                mus_close(c);
+            }
         }
 
         float cur_mus_get_pos() {
@@ -264,6 +295,12 @@ namespace audio {
             SDL_UnloadObject(mix.handle);
         }
     };
+}
+
+void SDLCALL sdl2_music_finish_cb(void) {
+    audio::AudioSDL2Mixer* a = (audio::AudioSDL2Mixer*)audio::au;
+    a->was_finished = true;
+    TF_INFO(<< "Finished!");
 }
 
 audio::AudioBase* audio::create_sdl2_mixer(bool use_mixer_x) {

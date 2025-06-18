@@ -27,7 +27,6 @@ namespace pl {
     tf::vec<Playlist*>* pls;
 
     bool load_pl_from_fp(const tf::str& fp);
-    bool mus_open_file(audio::Music* mus);
     void audio_clear_cache();
 }
 
@@ -261,7 +260,6 @@ void pl::audio_clear_cache() {
 }
 
 void pl::play_selected(Playlist* p) {
-    TF_INFO(<< "Play " << p->selected.size());
     if (p->selected.size() == 0)
         return;
     audio_clear_cache();

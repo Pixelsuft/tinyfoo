@@ -34,4 +34,5 @@ namespace pl {
     void select_all(Playlist* p);
     bool save(Playlist* p);
     void sort_by(Playlist* p, const char* what);
+    bool mus_open_file(audio::Music* mus);
 }

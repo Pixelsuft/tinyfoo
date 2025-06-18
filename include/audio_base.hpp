@@ -25,6 +25,7 @@ namespace audio {
         virtual void mus_close(Music* mus);
         virtual bool mus_opened(Music* mus);
         virtual bool mus_fill_info(Music* mus);
+        virtual bool mus_beging_used(Music* mus);
         virtual float cur_mus_get_dur();
         virtual float cur_mus_get_pos();
         virtual void cur_mus_set_pos(float pos);
