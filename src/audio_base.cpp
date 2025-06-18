@@ -9,8 +9,6 @@ AudioBase* audio::au;
 AudioBase::AudioBase() {
     inited = false;
     dev_opened = false;
-    keep_mus_opened_when_adding = false;
-    keep_mus_opened_when_played = false;
     fade_stop_time = fade_pause_time = fade_resume_time = 0.f;
     volume = 0.1f; // TODO: change it
     max_volume = 1.f;

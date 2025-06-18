@@ -165,6 +165,7 @@ namespace audio {
             if (!drv_name)
                 drv_name = "unknown";
             TF_INFO(<< "Audio device opened (" << drv_name << ", " << num_fr << "Hz freq, " << num_ch << " channels)");
+            mix.Mix_AllocateChannels(0);
             dev_opened = true;
             return true;
         }

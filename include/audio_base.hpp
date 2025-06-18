@@ -11,8 +11,6 @@ namespace audio {
         float max_volume;
         bool inited;
         bool dev_opened;
-        bool keep_mus_opened_when_adding;
-        bool keep_mus_opened_when_played;
         AudioBase();
         virtual ~AudioBase();
         virtual bool dev_open();
