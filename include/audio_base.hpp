@@ -1,9 +1,12 @@
 #pragma once
 #include <music.hpp>
+#include <vec.hpp>
 
 namespace audio {
     class AudioBase {
         public:
+        tf::vec<Music*> cache;
+        Music* cur_mus;
         float fade_stop_time;
         float fade_pause_time;
         float fade_resume_time;
@@ -17,10 +20,14 @@ namespace audio {
         virtual void dev_close();
         virtual void update_volume();
         virtual void update();
+        virtual void force_play(Music* mus, float pos);
         virtual bool mus_open_fp(Music* mus, const char* fp);
         virtual void mus_close(Music* mus);
         virtual bool mus_opened(Music* mus);
         virtual bool mus_fill_info(Music* mus);
+        virtual float cur_mus_get_dur();
+        virtual float cur_mus_get_pos();
+        virtual void cur_mus_set_pos(float pos);
     };
 
     extern AudioBase* au;

@@ -27,6 +27,8 @@ namespace pl {
     tf::vec<Playlist*>* pls;
 
     bool load_pl_from_fp(const tf::str& fp);
+    bool mus_open_file(audio::Music* mus);
+    void audio_clear_cache();
 }
 
 tf::str pl::full_path_for_playlist(const tf::str& path) {
@@ -104,6 +106,10 @@ static inline tf::str fn_from_fp(const tf::str& fp) {
     return ret;
 }
 
+bool pl::mus_open_file(audio::Music* mus) {
+    return audio::au->mus_open_fp(mus, mus->full_path.c_str());
+}
+
 void pl::add_file_by_fp(Playlist* p, const char* fp) {
     // TF_INFO(<< "Adding file " << fp);
     audio::Music* m = tf::nw<audio::Music>();
@@ -116,7 +122,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
             return;
         }
     }
-    if (!audio::au->mus_open_fp(m, fp)) {
+    if (!mus_open_file(m)) {
         TF_WARN(<< "Failed to add file " << fp);
         tf::dl(m);
         return;
@@ -236,6 +242,7 @@ bool pl::save(Playlist* p) {
 }
 
 void pl::unload_playlists() {
+    audio_clear_cache();
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
         for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++)
@@ -246,11 +253,26 @@ void pl::unload_playlists() {
     }
 }
 
+void pl::audio_clear_cache() {
+    for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
+        audio::au->mus_close(*it);
+    }
+    audio::au->cache.clear();
+}
+
 void pl::play_selected(Playlist* p) {
+    TF_INFO(<< "Play " << p->selected.size());
     if (p->selected.size() == 0)
         return;
-    // TODO
-    TF_INFO(<< "TODO: play selected");
+    audio_clear_cache();
+    audio::Music* mus = p->mus[p->selected[0]];
+    mus_open_file(mus);
+    audio::au->force_play(mus, 0.f);
+    for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
+        mus = p->mus[*it];
+        mus_open_file(mus);
+        audio::au->cache.push_back(mus);
+    }
 }
 
 int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {

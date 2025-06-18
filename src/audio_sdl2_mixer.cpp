@@ -37,16 +37,16 @@ typedef struct _Mix_Music Mix_Music;
 #endif
 
 #define MIX_DEFAULT_FREQUENCY   44100
-#define MIX_DEFAULT_FORMAT      AUDIO_S16SYS
+#define MIX_DEFAULT_FORMAT      SDL_AUDIO_S16
 #define MIX_DEFAULT_CHANNELS    2
-#define MIX_MAX_VOLUME          SDL_MIX_MAXVOLUME
+#define MIX_MAX_VOLUME          128
 
 #define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
 #define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002
 #define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
 #define SDL_AUDIO_ALLOW_SAMPLES_CHANGE      0x00000008
 #define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE|SDL_AUDIO_ALLOW_SAMPLES_CHANGE)
-
+#endif
 #define MIX_LOAD_FUNC(func_name) do { \
     *(void**)&mix.func_name = (void*)SDL_LoadFunction(mix.handle, #func_name); \
     if (!mix.func_name) { \
@@ -55,7 +55,8 @@ typedef struct _Mix_Music Mix_Music;
         return; \
     } \
 } while (0)
-#endif
+#define mus_h ((Mix_Music*)mus->h1)
+#define cur_h ((Mix_Music*)cur_mus->h1)
 
 namespace audio {
     struct SDL2MixerApi {
@@ -194,12 +195,20 @@ namespace audio {
         void mus_close(Music* mus) {
             if (!mus->h1)
                 return;
-            mix.Mix_FreeMusic((Mix_Music*)mus->h1);
+            mix.Mix_FreeMusic(mus_h);
             mus->h1 = nullptr;
+        }
+
+        void force_play(Music* mus, float pos) {
+            // TODO: improve
+            cur_mus = mus;
+            if (mix.Mix_FadeInMusicPos(mus_h, 0, 0, (double)pos) < 0)
+                TF_WARN(<< "Failed to play music (" << SDL_GetError() << ")");
+            mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
         }
     
         bool mus_fill_info(Music* mus) {
-            double dur = mix.Mix_MusicDuration((Mix_Music*)mus->h1);
+            double dur = mix.Mix_MusicDuration(mus_h);
             if (dur < 0.0) {
                 mus->dur = -1.f;
                 TF_ERROR(<< "Failed to get music duration (" << SDL_GetError() << ")");
@@ -213,8 +222,27 @@ namespace audio {
             
         }
 
+        float cur_mus_get_pos() {
+            if (!cur_mus)
+                return 0.f;
+            double ret = mix.Mix_GetMusicPosition(cur_h);
+            if (ret < 0.0) {
+                TF_WARN(<< "Failed to get current music pos (" << SDL_GetError() << ")");
+                return 0.f;
+            }
+            return (float)ret;
+        }
+
+        void cur_mus_set_pos(float pos) {
+            if (!cur_mus)
+                return;
+            if (mix.Mix_SetMusicPosition((double)pos) < 0)
+                TF_WARN(<< "Failed to set current music pos (" << SDL_GetError() << ")");
+        }
+
         void update_volume() {
-            
+            // TODO: check if music playing
+            mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));            
         }
 
         void display_available_drivers() {

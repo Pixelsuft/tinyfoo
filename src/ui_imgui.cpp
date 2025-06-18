@@ -184,11 +184,12 @@ void ui::draw_volume_control() {
 }
 
 void ui::draw_position() {
-    static float pos = 0.f;
     ImVec2 hacky_rect = ImGui::GetItemRectMax();
     ImGui::PushID("PositionSlider");
     ImGui::PushItemWidth(data->size.x - (hacky_rect.x + 16.f));
-    ImGui::SliderFloat("", &pos, 0.f, 1.f, "", ImGuiSliderFlags_NoRoundToFormat);
+    float pos = audio::au->cur_mus_get_pos();
+    if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_mus_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat))
+        audio::au->cur_mus_set_pos(pos);
     ImGui::PopItemWidth();
     ImGui::PopID();
 }
@@ -216,6 +217,8 @@ void ui::draw_meta() {
     ImGui::Button("Test 2 btn!!!!!");
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
+    if (data->last_pl)
+        ImGui::Text("Selected: %i", (int)data->last_pl->selected.size());
 }
 
 void ui::draw_playlist_view() {
@@ -294,10 +297,6 @@ void ui::draw_playlist_view() {
                         }
                         data->last_pl->selected.clear();
                     }
-                    if ((now - mus->last_click) <= 250) {
-                        pl::play_selected(data->last_pl);
-                    }
-                    mus->last_click = now;
                     if (mus->selected) {
                         if (!pushed) {
                             data->last_pl->selected.push_back(row);
@@ -326,6 +325,10 @@ void ui::draw_playlist_view() {
                         else
                             data->last_pl->last_sel = row;
                     }
+                    if ((now - mus->last_click) <= 250) {
+                        pl::play_selected(data->last_pl);
+                    }
+                    mus->last_click = now;
                 }
             }
         }

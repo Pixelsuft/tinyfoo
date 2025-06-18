@@ -10,8 +10,12 @@ AudioBase::AudioBase() {
     inited = false;
     dev_opened = false;
     fade_stop_time = fade_pause_time = fade_resume_time = 0.f;
-    volume = 0.1f; // TODO: change it
+    volume = 1.f;
     max_volume = 1.f;
+    cur_mus = nullptr;
+    // TODO: change it
+    volume = 0.05f;
+    fade_resume_time = 0.2f;
 }
 
 AudioBase::~AudioBase() {
@@ -43,6 +47,24 @@ void AudioBase::mus_close(Music* mus) {
 }
 
 void AudioBase::update_volume() {
+
+}
+
+void AudioBase::force_play(Music* mus, float pos) {
+
+}
+
+float AudioBase::cur_mus_get_dur() {
+    if (!cur_mus)
+        return 1.f;
+    return cur_mus->dur;
+}
+
+float AudioBase::cur_mus_get_pos() {
+    return 0.f;
+}
+
+void AudioBase::cur_mus_set_pos(float pos) {
 
 }
 
