@@ -32,6 +32,22 @@ namespace pl {
     void check_music_mod(audio::Music* mus);
 }
 
+static inline tf::str fn_from_fp(const tf::str& fp) {
+    tf::str ret = fp;
+    auto t1_find = fp.rfind('\\') + 1;
+    auto t2_find = fp.rfind('/') + 1;
+    if (t1_find >= 0 && t1_find < fp.size())
+        ret = fp.substr(t1_find);
+    else if (t2_find >= 0 && t2_find < fp.size())
+        ret = fp.substr(t2_find);
+    else
+        ret = fp;
+    t1_find = ret.rfind('.');
+    if (t1_find >= 0 && t1_find < ret.size())
+        ret = ret.substr(0, t1_find);
+    return ret;
+}
+
 void pl::file_mod_time(const char* path, uint64_t& mod_t_buf) {
     mod_t_buf = 0;
     SDL_PathInfo info;
@@ -77,6 +93,22 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         p->reserve_sorting = false;
     p->last_sel = p->last_shift_sel = p->last_shift_sel2 = 0;
     p->changed = false;
+    if (d["content"].is_array()) {
+        auto arr = d["content"].items();
+        p->mus.reserve(d["content"].size());
+        for (auto it = arr.begin(); it != arr.end(); it++) {
+            auto val = (*it).value();
+            if (!val.is_object() || !val["fp"].is_string())
+                continue;
+            audio::Music* m = tf::nw<audio::Music>();
+            m->full_path = util::json_unpack_str(val["fp"]);
+            m->fn = fn_from_fp(m->full_path);
+            m->last_mod = (val["fp"].is_number_integer() && val["fp"].is_number_unsigned()) ? (uint64_t)val["fp"] : 0;
+            m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
+            check_music_mod(m);
+            p->mus.push_back(m);
+        }
+    }
     sort_by(p, p->sorting.c_str());
     if (p->reserve_sorting)
         sort_by(p, "reverse");
@@ -100,22 +132,6 @@ void pl::load_playlists() {
             }
         }
     }
-}
-
-static inline tf::str fn_from_fp(const tf::str& fp) {
-    tf::str ret = fp;
-    auto t1_find = fp.rfind('\\') + 1;
-    auto t2_find = fp.rfind('/') + 1;
-    if (t1_find >= 0 && t1_find < fp.size())
-        ret = fp.substr(t1_find);
-    else if (t2_find >= 0 && t2_find < fp.size())
-        ret = fp.substr(t2_find);
-    else
-        ret = fp;
-    t1_find = ret.rfind('.');
-    if (t1_find >= 0 && t1_find < ret.size())
-        ret = ret.substr(0, t1_find);
-    return ret;
 }
 
 bool pl::mus_open_file(audio::Music* mus) {
@@ -238,6 +254,14 @@ void pl::sort_by(Playlist* p, const char* what) {
         TF_ERROR(<< "Unkown playlist sort by (" << what << ")");
 }
 
+static inline bool write_file(const char* fp, const char* data, size_t size) {
+    if (!SDL_SaveFile(fp, (const void*)data, size)) {
+        TF_ERROR(<< "Failed to save file (" << SDL_GetError() << ")");
+        return false;
+    }
+    return true;
+}
+
 bool pl::save(Playlist* p) {
     clear_selected(p);
     sort_by(p, "fn");
@@ -251,16 +275,15 @@ bool pl::save(Playlist* p) {
         audio::Music* m = *mit;
         content.push_back({
             { "fp", util::json_pack_str(m->full_path) },
-            { "fn", util::json_pack_str(m->fn) },
             { "dur", m->dur },
+            { "mod", m->last_mod },
             });
     }
     out["content"] = content;
     p->changed = false;
     // TF_INFO(<< out);
-    std::string test(out.dump());
-    TF_INFO(<< test);
-    return true;
+    std::string out_str(out.dump());
+    return write_file(full_path_for_playlist(p->path).c_str(), out_str.data(), out_str.size());
 }
 
 void pl::unload_playlists() {
@@ -305,9 +328,12 @@ void pl::check_music_mod(audio::Music* mus) {
     file_mod_time(mus->full_path.c_str(), mod_time);
     if (mod_time == 0 || mod_time == mus->last_mod)
         return;
-    if (audio::au->mus_fill_info(mus)) {
+    bool opened = audio::au->mus_opened(mus);
+    if ((opened || mus_open_file(mus)) && audio::au->mus_fill_info(mus)) {
         mus->last_mod = mod_time;
     }
+    if (!opened)
+        audio::au->mus_close(mus);
 }
 
 int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {
