@@ -347,9 +347,22 @@ int SDLCALL id_compare_by_val_for_del(const int* a, const int* b) {
 }
 
 void pl::remove_selected(Playlist* p) {
-    // TODO: handle currently opened music properly
     SDL_qsort(p->selected.data(), p->selected.size(), sizeof(int), (SDL_CompareCallback)id_compare_by_val_for_del);
     for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+        audio::Music* m = p->mus[*it];
+        // TODO: actually support zombies
+        if (audio::au->cur_mus == m) {
+            audio::au->cur_stop();
+            audio::au->cur_mus = nullptr;
+            audio::au->mus_close(m);
+        }
+        else {
+            auto mit = std::find(audio::au->cache.begin(), audio::au->cache.end(), m);
+            if (mit != audio::au->cache.end()) {
+                audio::au->cache.erase(mit);
+                audio::au->mus_close(m);
+            }
+        }
         p->mus.erase(p->mus.begin() + (size_t)(*it));
     }
     p->changed = true;

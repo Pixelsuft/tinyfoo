@@ -116,7 +116,7 @@ void ui::draw_menubar() {
             pl::save(data->last_pl);
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
-            app::stop(false);
+            app::stop(true);
         if (ImGui::MenuItem("Exit", nullptr, nullptr))
             app::stop(false);
         ImGui::EndMenu();
