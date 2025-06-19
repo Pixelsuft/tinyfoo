@@ -318,10 +318,13 @@ void pl::play_selected(Playlist* p) {
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();
     check_music_mod(mus);
+    int cnt = 0;
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
-        // TODO: actually open less for cache
-        mus_open_file(mus);
+        if (cnt < audio::au->cache_opened_cnt) {
+            cnt++;
+            mus_open_file(mus);
+        }
         check_music_mod(mus);
         audio::au->cache.push_back(mus);
     }

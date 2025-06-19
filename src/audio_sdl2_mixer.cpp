@@ -197,12 +197,12 @@ namespace audio {
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {
-#if !IS_RELEASE
             if (mus->h1) {
-                TF_WARN(<< "Music \"" << mus->fn << "\" already opened");
+#if !IS_RELEASE
+                // TF_WARN(<< "Music \"" << mus->fn << "\" already opened");
+#endif
                 return true;
             }
-#endif
             Mix_Music* h = mix.Mix_LoadMUS(fp);
             mus->h1 = h;
             if (!h) {
@@ -327,6 +327,9 @@ namespace audio {
                 hooked = false;
                 if (!stopped)
                     force_play_cache();
+                int cnt = std::min((int)cache.size(), cache_opened_cnt);
+                for (int i = 0; i < cnt; i++)
+                    pl::mus_open_file(cache[i]);
             }
         }
 

@@ -14,6 +14,7 @@ namespace audio {
         float fade_resume_time;
         float volume;
         float max_volume;
+        int cache_opened_cnt;
         bool inited;
         bool dev_opened;
         AudioBase();
