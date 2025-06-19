@@ -76,6 +76,7 @@ namespace audio {
         int (SDLCALL *Mix_QuerySpec)(int*, uint16_t*, int*);
         int (SDLCALL *Mix_AllocateChannels)(int);
         Mix_Music* (SDLCALL *Mix_LoadMUS)(const char*);
+        Mix_MusicType(SDLCALL *Mix_GetMusicType)(const Mix_Music*);
         void (SDLCALL *Mix_FreeMusic)(Mix_Music*);
         void (SDLCALL *Mix_HookMusic)(void (SDLCALL *)(void*, uint8_t*, int), void*);
         void (SDLCALL *Mix_HookMusicFinished)(void (SDLCALL *)(void));
@@ -121,6 +122,7 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_QuerySpec);
             MIX_LOAD_FUNC(Mix_AllocateChannels);
             MIX_LOAD_FUNC(Mix_LoadMUS);
+            MIX_LOAD_FUNC(Mix_GetMusicType);
             MIX_LOAD_FUNC(Mix_FreeMusic);
             MIX_LOAD_FUNC(Mix_HookMusic);
             MIX_LOAD_FUNC(Mix_HookMusicFinished);
@@ -272,6 +274,48 @@ namespace audio {
                 return false;
             }
             mus->dur = (float)dur;
+            switch (mix.Mix_GetMusicType(mus_h)) {
+            case MUS_WAV: {
+                mus->type = Type::WAV;
+                break;
+            }
+            case MUS_MOD: {
+                mus->type = Type::MOD;
+                break;
+            }
+            case MUS_MID: {
+                mus->type = Type::MID;
+                break;
+            }
+            case MUS_OGG: {
+                mus->type = Type::OGG;
+                break;
+            }
+            case MUS_MP3: {
+                mus->type = Type::MP3;
+                break;
+            }
+            case MUS_FLAC: {
+                mus->type = Type::FLAC;
+                break;
+            }
+            case MUS_OPUS: {
+                mus->type = Type::OPUS;
+                break;
+            }
+            case MUS_WAVPACK: {
+                mus->type = Type::WAVPACK;
+                break;
+            }
+            case MUS_GME: {
+                mus->type = Type::GME;
+                break;
+            }
+            default: {
+                mus->type = Type::NONE;
+                break;
+            }
+            }
             return true;
         }
 

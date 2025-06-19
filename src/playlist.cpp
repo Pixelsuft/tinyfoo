@@ -127,7 +127,6 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
         return;
     }
     m->fn = fn_from_fp(m->full_path);
-    m->last_click = 0;
     audio::au->mus_fill_info(m);
     audio::au->mus_close(m);
     p->mus.push_back(m);
@@ -262,19 +261,16 @@ void pl::audio_clear_cache() {
 void pl::play_selected(Playlist* p) {
     if (p->selected.size() == 0)
         return;
-    TF_INFO(<< "playin");
     // Maybe clear cache after started playing???
     audio_clear_cache();
     audio::Music* mus = p->mus[p->selected[0]];
     mus_open_file(mus);
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();
-    TF_INFO(<< mus->fn);
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
         mus_open_file(mus);
         audio::au->cache.push_back(mus);
-        TF_INFO(<< mus->fn);
     }
 }
 
