@@ -189,9 +189,26 @@ void ui::draw_position() {
     ImVec2 hacky_rect = ImGui::GetItemRectMax();
     ImGui::PushID("PositionSlider");
     ImGui::PushItemWidth(data->size.x - (hacky_rect.x + 16.f));
+    static bool hack_editing = false;
     float pos = audio::au->cur_get_pos();
-    if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat))
-        audio::au->cur_set_pos(pos);
+    static float hack_pos = pos;
+    static float hack_last_pos = pos;
+    if (hack_editing)
+        pos = hack_pos;
+    if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat)) {
+        // audio::au->cur_set_pos(pos);
+        // hack_editing = true;
+        hack_last_pos = pos;
+    }
+    if (ImGui::IsItemClicked()) {
+        hack_pos = pos;
+        hack_editing = true;
+    }
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        hack_editing = false;
+        hack_pos = pos;
+        audio::au->cur_set_pos(hack_last_pos);
+    }
     ImGui::PopItemWidth();
     ImGui::PopID();
 }

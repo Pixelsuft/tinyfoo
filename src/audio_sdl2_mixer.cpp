@@ -239,12 +239,12 @@ namespace audio {
             pl::mus_open_file(cur_mus);
             if (mix.Mix_FadeInMusicPos(cur_h, 0, 0, 0.0) < 0) {
                 hooked = false;
-                was_finished = false;
+                was_finished = true;
                 TF_WARN(<< "Failed to play music (" << SDL_GetError() << ")");
             }
             else {
                 hooked = true;
-                was_finished = true;
+                was_finished = false;
                 mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
                 mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
             }
@@ -277,7 +277,7 @@ namespace audio {
         }
 
         float cur_get_pos() {
-            if (!cur_mus)
+            if (!cur_mus || was_finished)
                 return 0.f;
             double ret = mix.Mix_GetMusicPosition(cur_h);
             if (ret < 0.0) {
