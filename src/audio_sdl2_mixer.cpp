@@ -3,6 +3,7 @@
 #include <log.hpp>
 #include <break.hpp>
 #include <playlist.hpp>
+#include <algorithm>
 #include <SDL3/SDL.h>
 #if 1
 typedef enum {
@@ -262,7 +263,7 @@ namespace audio {
                 mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
                 mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
             }
-            if (prev && prev != cur_mus)
+            if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
         }
     

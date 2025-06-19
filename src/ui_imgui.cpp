@@ -249,11 +249,10 @@ void ui::draw_meta() {
 }
 
 void ui::draw_playlist_view() {
-    if (ImGui::BeginTable("PlaylistTable", 5, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+    if (ImGui::BeginTable("PlaylistTable", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("File Name");
         ImGui::TableSetupColumn("Duration");
         ImGui::TableSetupColumn("Codec");
-        ImGui::TableSetupColumn("Bitrate");
         ImGui::TableSetupColumn("Last Modified");
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
@@ -286,8 +285,6 @@ void ui::draw_playlist_view() {
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
-                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                ImGui::TableSetColumnIndex(4);
                 ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
                     Uint64 now = SDL_GetTicks();
