@@ -68,9 +68,12 @@ if app.stage == 'conf':
     app.conf['extra_libs'] = []
     conf_header = open(os.path.join(app.b_path, 'lbs', 'lbs.hpp'), 'w', encoding='utf-8')
     # TODO: write configuration info like time, os info, etc
+    # TODO: MIN_LOG_LEVEL, ENABLE_STDOUT_LOGGING
     is_win = int(sys.platform == 'win32')
     is_release = int('--release' in app.args)
     conf_header.write('#pragma once\n\n')
+    conf_header.write(f'#define IS_MSVC {int(app.conf["msvc"])}\n')
+    conf_header.write(f'#define IS_MINGW {int(app.conf["mingw"])}\n')
     conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')

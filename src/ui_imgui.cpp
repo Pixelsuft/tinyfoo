@@ -247,8 +247,6 @@ void ui::draw_meta() {
         return;
     ImGui::Text("Selected: %i", (int)data->last_pl->selected.size());
     ImGui::Text("Opened:");
-    if (data->last_pl->mus.size() > 100)
-        return;
     for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
         if (audio::au->mus_opened(*it))
             ImGui::Text("%s", (*it)->fn.c_str());

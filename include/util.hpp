@@ -41,7 +41,7 @@ namespace util {
     static inline struct tm* tm_from_sdl_time(uint64_t sdl_time) {
         static struct tm tm_buf = { 0 };
         time_t mod_time = (time_t)(sdl_time / 1000000000);
-#if defined(_MSC_VER)
+#if IS_MSVC
         struct tm* time_s = &tm_buf;
         if (localtime_s(time_s, &mod_time) != 0)
             tm_buf = { 0 };
