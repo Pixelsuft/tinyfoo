@@ -195,7 +195,7 @@ namespace audio {
         bool mus_open_fp(Music* mus, const char* fp) {
 #if !IS_RELEASE
             if (mus->h1) {
-                TF_WARN(<< "Music already opened");
+                TF_WARN(<< "Music \"" << mus->fn << "\" already opened");
                 return true;
             }
 #endif
