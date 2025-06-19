@@ -28,6 +28,19 @@ namespace pl {
 
     bool load_pl_from_fp(const tf::str& fp);
     void audio_clear_cache();
+    void file_mod_time(const char* path, uint64_t& mod_t_buf);
+    void check_music_mod(audio::Music* mus);
+}
+
+void pl::file_mod_time(const char* path, uint64_t& mod_t_buf) {
+    mod_t_buf = 0;
+    SDL_PathInfo info;
+    if (!SDL_GetPathInfo(path, &info)) {
+        TF_WARN(<< "Failed to get file info (" << SDL_GetError() << ")");
+        return;
+    }
+    if (info.type == SDL_PATHTYPE_FILE)
+        mod_t_buf = info.modify_time;
 }
 
 tf::str pl::full_path_for_playlist(const tf::str& path) {
@@ -121,6 +134,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
             return;
         }
     }
+    file_mod_time(fp, m->last_mod);
     if (!mus_open_file(m)) {
         TF_WARN(<< "Failed to add file " << fp);
         tf::dl(m);
@@ -201,6 +215,14 @@ int SDLCALL mus_compare_by_dur(const audio::Music** a, const audio::Music** b) {
     return 0;
 }
 
+int SDLCALL mus_compare_by_mod_time(const audio::Music** a, const audio::Music** b) {
+    if ((*a)->last_mod > (*b)->last_mod)
+        return 1;
+    if ((*a)->last_mod < (*b)->last_mod)
+        return -1;
+    return 0;
+}
+
 void pl::sort_by(Playlist* p, const char* what) {
     if (SDL_strlen(what) == 0 || !SDL_strcmp(what, "none"))
         return;
@@ -208,6 +230,8 @@ void pl::sort_by(Playlist* p, const char* what) {
         SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_name);
     else if (!SDL_strcmp(what, "dur"))
         SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_dur);
+    else if (!SDL_strcmp(what, "mod_time"))
+        SDL_qsort(p->mus.data(), p->mus.size(), sizeof(audio::Music*), (SDL_CompareCallback)mus_compare_by_mod_time);
     else if (!SDL_strcmp(what, "reverse"))
         std::reverse(p->mus.begin(), p->mus.end());
     else
@@ -267,10 +291,22 @@ void pl::play_selected(Playlist* p) {
     mus_open_file(mus);
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();
+    check_music_mod(mus);
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
         mus_open_file(mus);
+        check_music_mod(mus);
         audio::au->cache.push_back(mus);
+    }
+}
+
+void pl::check_music_mod(audio::Music* mus) {
+    uint64_t mod_time;
+    file_mod_time(mus->full_path.c_str(), mod_time);
+    if (mod_time == 0 || mod_time == mus->last_mod)
+        return;
+    if (audio::au->mus_fill_info(mus)) {
+        mus->last_mod = mod_time;
     }
 }
 

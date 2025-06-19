@@ -2,6 +2,7 @@
 #include <json.hpp>
 #include <str.hpp>
 #include <lbs.hpp>
+#include <ctime>
 
 namespace util {
     static inline tf::str json_unpack_str(const nlohmann::json& val) {
@@ -35,5 +36,20 @@ namespace util {
 #else
         return p1 == p2;
 #endif
+    }
+
+    static inline struct tm* tm_from_sdl_time(uint64_t sdl_time) {
+        static struct tm tm_buf = { 0 };
+        time_t mod_time = (time_t)(sdl_time / 1000000000);
+#if defined(_MSC_VER)
+        struct tm* time_s = &tm_buf;
+        if (localtime_s(time_s, &mod_time) != 0)
+            tm_buf = { 0 };
+#else
+        struct tm* time_s = std::localtime(&mod_time);
+        if (!time_s)
+            time_s = &tm_buf;
+#endif
+        return time_s;
     }
 }

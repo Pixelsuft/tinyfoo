@@ -139,6 +139,13 @@ void ui::draw_menubar() {
                 data->last_pl->sorting = "dur";
                 data->last_pl->reserve_sorting = false;
             }
+            if (ImGui::MenuItem("Sort by last modified", nullptr, nullptr)) {
+                pl::remember_selected(data->last_pl);
+                pl::sort_by(data->last_pl, "mod_time");
+                pl::unremember_selected(data->last_pl);
+                data->last_pl->sorting = "mod_time";
+                data->last_pl->reserve_sorting = false;
+            }
             if (ImGui::MenuItem("Reverse", nullptr, nullptr)) {
                 pl::remember_selected(data->last_pl);
                 pl::sort_by(data->last_pl, "reverse");
@@ -278,14 +285,24 @@ void ui::draw_playlist_view() {
                     }
                 }
                 ImGui::TableSetColumnIndex(1);
-                char dur_buf[11];
+                char buf[64];
                 int rounded_dur = (int)SDL_floorf(mus->dur);
-                SDL_snprintf(dur_buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
-                ImGui::Selectable(dur_buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+                ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
-                ImGui::Selectable("TODO", &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                if (mus->last_mod == 0)
+                    SDL_memcpy(buf, "Unknown", 8);
+                else {
+                    struct tm* time_s = util::tm_from_sdl_time(mus->last_mod);
+                    SDL_snprintf(
+                        buf, 64, "%i-%02i-%02i %02i:%02i:%02i",
+                        time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
+                        time_s->tm_hour, time_s->tm_min, time_s->tm_sec
+                    );
+                }
+                ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
                     Uint64 now = SDL_GetTicks();
                     bool pushed = false;

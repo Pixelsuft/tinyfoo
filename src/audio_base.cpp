@@ -8,6 +8,7 @@ using audio::Music;
 AudioBase* audio::au;
 
 AudioBase::AudioBase() {
+    cache.reserve(256); // Why not lul
     inited = false;
     dev_opened = false;
     fade_stop_time = fade_pause_time = fade_resume_time = 0.f;
