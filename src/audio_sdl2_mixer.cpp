@@ -219,6 +219,7 @@ namespace audio {
             if (cache.size() == 0)
                 return;
             if (cache[0] == cur_mus) {
+                cache.erase(cache.begin());
                 if (stopped || was_finished) {
                     // Hack
                     cur_mus = nullptr;
@@ -228,11 +229,11 @@ namespace audio {
                 cur_set_pos(0.f);
                 return;
             }
+            stopped = false;
             if (hooked) {
                 mix.Mix_HaltMusic();
                 return;
             }
-            stopped = false;
             // TODO: improve
             Music* prev = cur_mus;
             cur_mus = cache[0];
@@ -331,7 +332,7 @@ namespace audio {
 void SDLCALL sdl2_music_finish_cb(void) {
     audio::AudioSDL2Mixer* a = (audio::AudioSDL2Mixer*)audio::au;
     a->was_finished = true;
-    TF_INFO(<< "Finished!");
+    // TF_INFO(<< "Finished!");
 }
 
 audio::AudioBase* audio::create_sdl2_mixer(bool use_mixer_x) {
