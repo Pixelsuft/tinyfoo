@@ -36,6 +36,7 @@ namespace app {
         SDL_Window* win;
         Uint8* orig_bump;
         int stage;
+        bool rage_quit;
         bool running;
     };
 
@@ -65,6 +66,7 @@ bool app::init() {
     data = tf::bump_nw<AppData>();
     data->orig_bump = temp_bump;
     data->stage = 0;
+    data->rage_quit = false;
     data->running = false;
     pl::pls = &data->playlists_vec;
     SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "tinyfoo the music player");
@@ -241,14 +243,15 @@ void app::run() {
     data->running = false;
 }
 
-void app::stop() {
+void app::stop(bool rage) {
+    data->rage_quit = rage;
     data->running = false;
 }
 
 void app::destroy() {
     data->running = false;
     if (data->stage > 3) {
-        pl::unload_playlists();
+        pl::unload_playlists(data->rage_quit);
         audio::free_audio(audio::au);
         ui::destroy();
     }

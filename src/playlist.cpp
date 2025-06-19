@@ -289,13 +289,13 @@ bool pl::save(Playlist* p) {
     return write_file(full_path_for_playlist(p->path).c_str(), out_str.data(), out_str.size());
 }
 
-void pl::unload_playlists() {
+void pl::unload_playlists(bool rage) {
     audio_clear_cache();
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
         for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++)
             audio::au->mus_close(*mit);
-        if (p->changed)
+        if (!rage && p->changed)
             save(p);
         tf::dl(p);
     }
@@ -320,6 +320,7 @@ void pl::play_selected(Playlist* p) {
     check_music_mod(mus);
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
+        // TODO: actually open less for cache
         mus_open_file(mus);
         check_music_mod(mus);
         audio::au->cache.push_back(mus);
