@@ -52,7 +52,7 @@ typedef struct _Mix_Music Mix_Music;
 #define MIX_LOAD_FUNC(func_name) do { \
     *(void**)&mix.func_name = (void*)SDL_LoadFunction(mix.handle, #func_name); \
     if (!mix.func_name) { \
-        TF_ERROR(<< "Failed to load SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
+        TF_ERROR(<< "Failed to load " << lib_name << " function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
         SDL_UnloadObject(mix.handle); \
         return; \
     } \
@@ -107,13 +107,14 @@ namespace audio {
         bool stopped;
 
         AudioSDL2Mixer(bool use_mixer_x) : AudioBase() {
+            lib_name = use_mixer_x ? "SDL2_mixer_ext" : "SDL2_mixer";
             was_finished = false;
             hooked = false;
             stopped = false;
             const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
-                TF_WARN(<< "Failed to load SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " library (" << SDL_GetError() << ")");
+                TF_WARN(<< "Failed to load " << lib_name << " library (" << SDL_GetError() << ")");
                 return;
             }
             // TODO: error if old version
@@ -155,14 +156,14 @@ namespace audio {
             int init_flags = MIX_INIT_MP3; // TODO
             int ret_flags = mix.Mix_Init(init_flags);
             if (ret_flags == 0) {
-                TF_ERROR(<< "Failed to init SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " (" << SDL_GetError() << ")");
+                TF_ERROR(<< "Failed to init " << lib_name << " (" << SDL_GetError() << ")");
                 SDL_QuitSubSystem(SDL_INIT_AUDIO);
                 SDL_UnloadObject(mix.handle);
                 return;
             }
             if (ret_flags < init_flags)
-                TF_WARN(<< "Failed to init some SDL2_mixer" << (use_mixer_x ? "_ext" : "") << "formats (" << SDL_GetError() << ")");
-            TF_INFO(<< "SDL2_mixer" << (use_mixer_x ? "_ext" : "") << " inited successfully");
+                TF_WARN(<< "Failed to init some " << lib_name << "formats (" << SDL_GetError() << ")");
+            TF_INFO(<< "" << lib_name << " inited successfully");
             inited = true;
         }
 

@@ -8,6 +8,7 @@ using audio::Music;
 AudioBase* audio::au;
 
 AudioBase::AudioBase() {
+    lib_name = "dummy";
     cache.reserve(256); // Why not lul
     inited = false;
     dev_opened = false;

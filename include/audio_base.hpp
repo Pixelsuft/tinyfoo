@@ -6,6 +6,7 @@ namespace audio {
     class AudioBase {
         public:
         tf::vec<Music*> cache;
+        const char* lib_name;
         Music* cur_mus;
         float fade_next_time;
         float fade_stop_time;
