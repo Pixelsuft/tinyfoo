@@ -3,16 +3,16 @@
 
 namespace audio {
     enum class Type {
-        NONE,
-        WAV,
-        MOD,
-        MID,
-        OGG,
-        MP3,
-        FLAC,
-        OPUS,
-        WAVPACK,
-        GME
+        NONE = 0,
+        WAV = 1,
+        MOD = 2,
+        MID = 3,
+        OGG = 4,
+        MP3 = 5,
+        FLAC = 6,
+        OPUS = 7,
+        WAVPACK = 8,
+        GME = 9
     };
 
     static const char* get_type_str(Type tp) {

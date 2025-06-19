@@ -103,8 +103,9 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
             audio::Music* m = tf::nw<audio::Music>();
             m->full_path = util::json_unpack_str(val["fp"]);
             m->fn = fn_from_fp(m->full_path);
-            m->last_mod = (val["fp"].is_number_integer() && val["fp"].is_number_unsigned()) ? (uint64_t)val["fp"] : 0;
+            m->last_mod = (val["mod"].is_number_integer() && val["mod"].is_number_unsigned()) ? (uint64_t)val["mod"] : 0;
             m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
+            m->type = val["tp"].is_number_integer() ? (audio::Type)((int)val["tp"]) : audio::Type::NONE;
             // TODO: config var to validate music changes on start
             // check_music_mod(m);
             p->mus.push_back(m);
@@ -278,6 +279,7 @@ bool pl::save(Playlist* p) {
             { "fp", util::json_pack_str(m->full_path) },
             { "dur", m->dur },
             { "mod", m->last_mod },
+            { "tp", (int)m->type },
             });
     }
     out["content"] = content;
