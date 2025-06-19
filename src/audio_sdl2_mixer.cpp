@@ -100,9 +100,13 @@ namespace audio {
         SDL2MixerApi mix;
         public:
         bool was_finished;
+        bool hooked;
+        bool stopped;
 
         AudioSDL2Mixer(bool use_mixer_x) : AudioBase() {
             was_finished = false;
+            hooked = false;
+            stopped = false;
             const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_name);
             if (!mix.handle) {
@@ -210,16 +214,41 @@ namespace audio {
             mus->h1 = nullptr;
         }
 
-        void force_play(Music* mus, float pos) {
+        void force_play_cache() {
+            if (cache.size() == 0)
+                return;
+            if (cache[0] == cur_mus) {
+                if (stopped || was_finished) {
+                    // Hack
+                    cur_mus = nullptr;
+                    force_play_cache();
+                    return;
+                }
+                cur_set_pos(0.f);
+                return;
+            }
+            if (hooked) {
+                mix.Mix_HaltMusic();
+                return;
+            }
+            stopped = false;
             // TODO: improve
             Music* prev = cur_mus;
-            cur_mus = mus;
-            pl::mus_open_file(mus);
-            if (mix.Mix_FadeInMusicPos(mus_h, 0, 0, (double)pos) < 0)
+            cur_mus = cache[0];
+            cache.erase(cache.begin());
+            pl::mus_open_file(cur_mus);
+            if (mix.Mix_FadeInMusicPos(cur_h, 0, 0, 0.0) < 0) {
+                hooked = false;
+                was_finished = false;
                 TF_WARN(<< "Failed to play music (" << SDL_GetError() << ")");
-            mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
-            mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
-            if (prev)
+            }
+            else {
+                hooked = true;
+                was_finished = true;
+                mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
+                mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
+            }
+            if (prev && prev != cur_mus)
                 mus_close(prev);
         }
     
@@ -234,26 +263,20 @@ namespace audio {
             return true;
         }
 
-        void next_cache() {
-            cur_mus = nullptr;
-            if (cache.size() == 0)
-                return;
-            Music* need = cache[0];
-            cache.erase(cache.begin());
-            force_play(need, 0.f);
-        }
-
         void update() {
             if (was_finished) {
                 was_finished = false;
-                Music* c = cur_mus;
-                next_cache();
-                TF_INFO(<< "mus close");
-                mus_close(c);
+                hooked = false;
+                if (!stopped)
+                    force_play_cache();
             }
         }
 
-        float cur_mus_get_pos() {
+        void cur_stop() {
+
+        }
+
+        float cur_get_pos() {
             if (!cur_mus)
                 return 0.f;
             double ret = mix.Mix_GetMusicPosition(cur_h);
@@ -264,9 +287,15 @@ namespace audio {
             return (float)ret;
         }
 
-        void cur_mus_set_pos(float pos) {
+        void cur_set_pos(float pos) {
             if (!cur_mus)
                 return;
+            if (pos < 0.f)
+                pos = 0.f;
+            else if (pos > cur_mus->dur) {
+                // TODO: next
+                return;
+            }
             if (mix.Mix_SetMusicPosition((double)pos) < 0)
                 TF_WARN(<< "Failed to set current music pos (" << SDL_GetError() << ")");
         }

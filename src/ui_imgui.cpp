@@ -162,8 +162,10 @@ void ui::draw_menubar() {
 }
 
 void ui::draw_playback_buttons() {
-    ImGui::Button("0");
-    ImGui::Button(">");
+    if (ImGui::Button("0"))
+        audio::au->cur_stop();
+    if (ImGui::Button(">"))
+        audio::au->force_play_cache();
     ImGui::Button("||");
     ImGui::Button("|<");
     ImGui::Button(">|");
@@ -187,9 +189,9 @@ void ui::draw_position() {
     ImVec2 hacky_rect = ImGui::GetItemRectMax();
     ImGui::PushID("PositionSlider");
     ImGui::PushItemWidth(data->size.x - (hacky_rect.x + 16.f));
-    float pos = audio::au->cur_mus_get_pos();
-    if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_mus_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat))
-        audio::au->cur_mus_set_pos(pos);
+    float pos = audio::au->cur_get_pos();
+    if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat))
+        audio::au->cur_set_pos(pos);
     ImGui::PopItemWidth();
     ImGui::PopID();
 }

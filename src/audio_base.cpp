@@ -51,21 +51,25 @@ void AudioBase::update_volume() {
 
 }
 
-void AudioBase::force_play(Music* mus, float pos) {
+void AudioBase::force_play_cache() {
 
 }
 
-float AudioBase::cur_mus_get_dur() {
+void AudioBase::cur_stop() {
+
+}
+
+float AudioBase::cur_get_dur() {
     if (!cur_mus)
         return 1.f;
     return cur_mus->dur;
 }
 
-float AudioBase::cur_mus_get_pos() {
+float AudioBase::cur_get_pos() {
     return 0.f;
 }
 
-void AudioBase::cur_mus_set_pos(float pos) {
+void AudioBase::cur_set_pos(float pos) {
 
 }
 

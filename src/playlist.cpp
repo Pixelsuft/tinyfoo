@@ -262,10 +262,12 @@ void pl::audio_clear_cache() {
 void pl::play_selected(Playlist* p) {
     if (p->selected.size() == 0)
         return;
+    // Maybe clear cache after started playing???
     audio_clear_cache();
     audio::Music* mus = p->mus[p->selected[0]];
     mus_open_file(mus);
-    audio::au->force_play(mus, 0.f);
+    audio::au->cache.push_back(mus);
+    audio::au->force_play_cache();
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
         mus_open_file(mus);
