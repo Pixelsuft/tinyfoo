@@ -367,6 +367,11 @@ void ui::draw_playlist_view() {
                             data->last_pl->last_sel = row;
                     }
                     if ((now - mus->last_click) <= 250) {
+                        if (app::ctrl_state) {
+                            mus->selected = true;
+                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
+                                data->last_pl->selected.push_back(row);
+                        }
                         pl::play_selected(data->last_pl);
                     }
                     mus->last_click = now;
