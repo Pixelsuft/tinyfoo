@@ -47,7 +47,7 @@ typedef struct _Mix_Music Mix_Music;
 #define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
 #define SDL_AUDIO_ALLOW_SAMPLES_CHANGE      0x00000008
 #define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE|SDL_AUDIO_ALLOW_SAMPLES_CHANGE)
-#endif
+
 #define MIX_LOAD_FUNC(func_name) do { \
     *(void**)&mix.func_name = (void*)SDL_LoadFunction(mix.handle, #func_name); \
     if (!mix.func_name) { \
@@ -56,6 +56,7 @@ typedef struct _Mix_Music Mix_Music;
         return; \
     } \
 } while (0)
+#endif
 #define mus_h ((Mix_Music*)mus->h1)
 #define cur_h ((Mix_Music*)cur_mus->h1)
 
@@ -273,11 +274,12 @@ namespace audio {
         }
 
         void cur_stop() {
-
+            stopped = true;
+            mix.Mix_HaltMusic();
         }
 
         float cur_get_pos() {
-            if (!cur_mus || was_finished)
+            if (!cur_mus || stopped || !mix.Mix_PlayingMusic())
                 return 0.f;
             double ret = mix.Mix_GetMusicPosition(cur_h);
             if (ret < 0.0) {

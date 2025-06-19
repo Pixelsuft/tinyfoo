@@ -164,11 +164,11 @@ void ui::draw_menubar() {
 void ui::draw_playback_buttons() {
     if (ImGui::Button("0"))
         audio::au->cur_stop();
-    if (ImGui::Button(">"))
-        audio::au->force_play_cache();
+    ImGui::Button(">");
     ImGui::Button("||");
     ImGui::Button("|<");
-    ImGui::Button(">|");
+    if (ImGui::Button(">|"))
+        audio::au->force_play_cache();
     ImGui::Button(">?");
 }
 
@@ -194,10 +194,10 @@ void ui::draw_position() {
     static float hack_pos = pos;
     static float hack_last_pos = pos;
     if (hack_editing)
-        pos = hack_pos;
+        pos = hack_last_pos;
     if (ImGui::SliderFloat("", &pos, 0.f, audio::au->cur_get_dur(), "", ImGuiSliderFlags_NoRoundToFormat)) {
         // audio::au->cur_set_pos(pos);
-        // hack_editing = true;
+        hack_editing = true;
         hack_last_pos = pos;
     }
     if (ImGui::IsItemClicked()) {
