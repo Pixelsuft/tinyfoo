@@ -17,6 +17,9 @@ AudioBase::AudioBase() {
     // TODO: change it
     volume = 0.05f;
     fade_resume_time = 0.2f;
+    fade_pause_time = 0.2f;
+    fade_stop_time = 0.2f;
+    fade_next_time = 0.2f;
 }
 
 AudioBase::~AudioBase() {

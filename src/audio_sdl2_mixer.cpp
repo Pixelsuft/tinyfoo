@@ -218,6 +218,7 @@ namespace audio {
         void force_play_cache() {
             if (cache.size() == 0)
                 return;
+            bool from_rep = false;
             if (cache[0] == cur_mus) {
                 cache.erase(cache.begin());
                 if (stopped || was_finished) {
@@ -226,18 +227,27 @@ namespace audio {
                     force_play_cache();
                     return;
                 }
-                cur_set_pos(0.f);
-                return;
+                if (mix.Mix_PlayingMusic()) {
+                    cur_set_pos(0.f);
+                    return;
+                }
+                from_rep = true;
             }
             stopped = false;
             if (hooked) {
-                mix.Mix_HaltMusic();
+                if (fade_next_time <= 0.f)
+                    mix.Mix_HaltMusic();
+                else
+                    mix.Mix_FadeOutMusic((int)(fade_next_time * 1000.f));
                 return;
             }
             // TODO: improve
-            Music* prev = cur_mus;
-            cur_mus = cache[0];
-            cache.erase(cache.begin());
+            Music* prev = nullptr;
+            if (!from_rep) {
+                prev = cur_mus;
+                cur_mus = cache[0];
+                cache.erase(cache.begin());
+            }
             pl::mus_open_file(cur_mus);
             if (mix.Mix_FadeInMusicPos(cur_h, 0, 0, 0.0) < 0) {
                 hooked = false;
@@ -276,7 +286,10 @@ namespace audio {
 
         void cur_stop() {
             stopped = true;
-            mix.Mix_HaltMusic();
+            if (fade_stop_time <= 0.f)
+                mix.Mix_HaltMusic();
+            else
+                mix.Mix_FadeOutMusic((int)(fade_stop_time * 1000.f));
         }
 
         float cur_get_pos() {

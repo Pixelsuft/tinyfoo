@@ -7,6 +7,7 @@ namespace audio {
         public:
         tf::vec<Music*> cache;
         Music* cur_mus;
+        float fade_next_time;
         float fade_stop_time;
         float fade_pause_time;
         float fade_resume_time;
