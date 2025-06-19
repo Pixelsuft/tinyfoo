@@ -105,7 +105,8 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
             m->fn = fn_from_fp(m->full_path);
             m->last_mod = (val["fp"].is_number_integer() && val["fp"].is_number_unsigned()) ? (uint64_t)val["fp"] : 0;
             m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
-            check_music_mod(m);
+            // TODO: config var to validate music changes on start
+            // check_music_mod(m);
             p->mus.push_back(m);
         }
     }
