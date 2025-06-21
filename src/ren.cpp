@@ -60,6 +60,11 @@ bool ren::init(void* win) {
         return false;
     }
     SDL_DestroyProperties(props);
+    const char* ren_name = SDL_GetRendererName(data->ren);
+    if (ren_name)
+        TF_INFO(<< "Renderer created with " << ren_name << " driver");
+    else
+        TF_WARN(<< "Failed to get renderer name (" << SDL_GetError() << ")");
 #if IS_IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

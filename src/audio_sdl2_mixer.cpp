@@ -111,8 +111,8 @@ namespace audio {
             was_finished = false;
             hooked = false;
             stopped = false;
-            const char* lib_name = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
-            mix.handle = SDL_LoadObject(lib_name);
+            const char* lib_path = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
+            mix.handle = SDL_LoadObject(lib_path);
             if (!mix.handle) {
                 TF_WARN(<< "Failed to load " << lib_name << " library (" << SDL_GetError() << ")");
                 return;
