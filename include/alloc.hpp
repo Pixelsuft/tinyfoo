@@ -1,5 +1,6 @@
 #pragma once
 #include <mem.hpp>
+#include <cstddef>
 
 namespace mem {
     template <class T>

@@ -1,5 +1,6 @@
 #pragma once
 #include <str.hpp>
+#include <cstdint>
 
 namespace audio {
     enum class Type {
