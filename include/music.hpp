@@ -55,6 +55,7 @@ namespace audio {
     struct Music {
         tf::str full_path;
         tf::str fn;
+        uint64_t file_size;
         uint64_t last_mod;
         uint64_t last_click;
         void* h1;
@@ -71,6 +72,7 @@ namespace audio {
             selected = false;
             last_click = 0;
             last_mod = 0;
+            file_size = 0;
         }
     };
 }

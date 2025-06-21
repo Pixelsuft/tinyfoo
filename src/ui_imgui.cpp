@@ -238,11 +238,6 @@ void ui::draw_playlist_tabs() {
 }
 
 void ui::draw_meta() {
-    ImGui::Button("Test1 btn?");
-    ImGui::Button("Test2 btn");
-    ImGui::Button("Test3 btn");
-    ImGui::Button("Test4 btn");
-    ImGui::Button("Test 2 btn!!!!!");
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
     if (!data->last_pl)

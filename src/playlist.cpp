@@ -28,7 +28,7 @@ namespace pl {
 
     bool load_pl_from_fp(const tf::str& fp);
     void audio_clear_cache();
-    void file_mod_time(const char* path, uint64_t& mod_t_buf);
+    void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(audio::Music* mus);
 }
 
@@ -48,15 +48,17 @@ static inline tf::str fn_from_fp(const tf::str& fp) {
     return ret;
 }
 
-void pl::file_mod_time(const char* path, uint64_t& mod_t_buf) {
-    mod_t_buf = 0;
+void pl::file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf) {
+    mod_t_buf = size_buf = 0;
     SDL_PathInfo info;
     if (!SDL_GetPathInfo(path, &info)) {
         TF_WARN(<< "Failed to get file info (" << SDL_GetError() << ")");
         return;
     }
-    if (info.type == SDL_PATHTYPE_FILE)
+    if (info.type == SDL_PATHTYPE_FILE) {
         mod_t_buf = info.modify_time;
+        size_buf = info.size;
+    }
 }
 
 tf::str pl::full_path_for_playlist(const tf::str& path) {
@@ -103,7 +105,8 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
             audio::Music* m = tf::nw<audio::Music>();
             m->full_path = util::json_unpack_str(val["fp"]);
             m->fn = fn_from_fp(m->full_path);
-            m->last_mod = (val["mod"].is_number_integer() && val["mod"].is_number_unsigned()) ? (uint64_t)val["mod"] : 0;
+            m->last_mod = val["mod"].is_number_unsigned() ? (uint64_t)val["mod"] : 0;
+            m->file_size = val["size"].is_number_unsigned() ? (uint64_t)val["size"] : 0;
             m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
             m->type = val["tp"].is_number_integer() ? (audio::Type)((int)val["tp"]) : audio::Type::NONE;
             // TODO: config var to validate music changes on start
@@ -152,7 +155,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
             return;
         }
     }
-    file_mod_time(fp, m->last_mod);
+    file_mod_time(fp, m->last_mod, m->file_size);
     if (!mus_open_file(m)) {
         TF_WARN(<< "Failed to add file " << fp);
         tf::dl(m);
@@ -276,9 +279,10 @@ bool pl::save(Playlist* p) {
     for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++) {
         audio::Music* m = *mit;
         content.push_back({
-            { "fp", util::json_pack_str(m->full_path) },
             { "dur", m->dur },
+            { "fp", util::json_pack_str(m->full_path) },
             { "mod", m->last_mod },
+            { "sz", m->file_size },
             { "tp", (int)m->type },
             });
     }
@@ -331,13 +335,14 @@ void pl::play_selected(Playlist* p) {
 }
 
 void pl::check_music_mod(audio::Music* mus) {
-    uint64_t mod_time;
-    file_mod_time(mus->full_path.c_str(), mod_time);
+    uint64_t mod_time, file_sz;
+    file_mod_time(mus->full_path.c_str(), mod_time, file_sz);
     if (mod_time == 0 || mod_time == mus->last_mod)
         return;
     bool opened = audio::au->mus_opened(mus);
     if ((opened || mus_open_file(mus)) && audio::au->mus_fill_info(mus)) {
         mus->last_mod = mod_time;
+        mus->file_size = file_sz;
     }
     if (!opened)
         audio::au->mus_close(mus);
