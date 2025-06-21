@@ -24,7 +24,9 @@ namespace app {
 namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
+        tf::str meta_fn;
         char pl_name_buf[64];
+        size_t meta_sz;
         char* pl_path_buf;
         ImFont* font1;
         ImFont* font2;
@@ -53,7 +55,27 @@ namespace ui {
     void draw_about();
     void draw_logs();
     void draw_playlist_conf();
+    void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
+
+    static inline void fmt_file_size(char* buf, size_t sz) {
+        if (sz < 1024u) {
+            SDL_itoa((int)sz, buf, 10);
+            SDL_strlcat(buf, " B", 32);
+        }
+        else if (sz < (size_t)1024u * 1024u) {
+            SDL_itoa((int)(sz >> 10), buf, 10);
+            SDL_strlcat(buf, " KB", 32);
+        }
+        else if (sz < (size_t)1024u * 1024u * 1024u) {
+            SDL_itoa((int)(sz >> 20), buf, 10);
+            SDL_strlcat(buf, " MB", 32);
+        }
+        else if (1) {
+            SDL_itoa((int)(sz >> 30), buf, 10);
+            SDL_strlcat(buf, " GB", 32);
+        }
+    }
 }
 
 bool ui::init() {
@@ -63,6 +85,7 @@ bool ui::init() {
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
     if (!data->pl_path_buf) {
         TF_ERROR(<< "WTF failed to alloc pl_path_buf");
@@ -239,6 +262,7 @@ void ui::draw_position() {
 void ui::draw_playlist_tabs() {
     if (ImGui::BeginTabBar("PlaylistTabs", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton |
         ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
+        pl::Playlist* prev = data->last_pl;
         data->last_pl = nullptr;
         for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
             if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
@@ -248,6 +272,8 @@ void ui::draw_playlist_tabs() {
             }
         }
         ImGui::EndTabBar();
+        if (data->last_pl != prev)
+            update_meta_info();
     }
 }
 
@@ -261,16 +287,23 @@ void ui::draw_meta() {
         if (audio::au->mus_opened(*it))
             ImGui::Text("%s", (*it)->fn.c_str());
     }
+    // TODO: improve
+    char temp_buf[32];
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Location");
     ImGui::PopFont();
+    ImGui::Text("File names: %s", data->meta_fn.c_str());
+    fmt_file_size(temp_buf, data->meta_sz);
+    ImGui::Text("Total size: %s", temp_buf);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "General");
     ImGui::PopFont();
+    ImGui::Text("Items selected: %i", (int)data->last_pl->selected.size());
 }
 
 void ui::draw_playlist_view() {
     if (ImGui::BeginTable("PlaylistTable", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+        bool something_changed = false;
         ImGui::TableSetupColumn("File Name");
         ImGui::TableSetupColumn("Duration");
         ImGui::TableSetupColumn("Codec");
@@ -285,6 +318,7 @@ void ui::draw_playlist_view() {
                 audio::Music* mus = data->last_pl->mus[row];
                 ImGui::TableSetColumnIndex(0);
                 bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                something_changed |= ret;
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                 else if (!ImGui::IsPopupOpen("MusSelPopup")) {
@@ -405,6 +439,8 @@ void ui::draw_playlist_view() {
             ImGui::EndPopup();
         }
         ImGui::EndTable();
+        if (something_changed)
+            update_meta_info();
     }
     if (app::drop_state) {
         ImVec2 ds = ImGui::GetItemRectSize();
@@ -514,6 +550,20 @@ void ui::destroy() {
     mem::free((void*)data->pl_path_buf);
     tf::bump_dl(data);
     data = nullptr;
+}
+
+void ui::update_meta_info() {
+    if (!data->last_pl)
+        return;
+    data->meta_fn.clear();
+    data->meta_sz = 0;
+    for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+        audio::Music* m = data->last_pl->mus[*it];
+        data->meta_fn += m->fn + ", ";
+        data->meta_sz += m->file_size;
+    }
+    if (data->meta_fn.size() >= 2)
+        data->meta_fn.resize(data->meta_fn.size() - 2);
 }
 
 void ui::push_log(const char* msg, const char* file, const char* func, int line, int category) {
