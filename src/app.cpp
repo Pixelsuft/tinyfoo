@@ -274,11 +274,9 @@ void app::read_config() {
     tf::str fp = data->data_path + "config.toml";
     size_t sz;
     const char* content = (const char*)SDL_LoadFile(fp.c_str(), &sz);
-    if (!content) {
+    if (!content)
         TF_WARN(<< "Failed to read config file (" << SDL_GetError() << ")");
-        return;
-    }
-    auto result = toml::try_parse_str(content);
+    auto result = toml::try_parse_str(content ? content : "");
     if (result.is_err()) {
         auto errs = result.as_err();
         TF_ERROR(<< "Failed to parse config");
