@@ -27,6 +27,7 @@ namespace ui {
         char pl_name_buf[64];
         char* pl_path_buf;
         ImFont* font1;
+        ImFont* font2;
         pl::Playlist* last_pl;
         pl::Playlist* need_conf_pl;
         Point size;
@@ -69,6 +70,7 @@ bool ui::init() {
         return false;
     }
     data->font1 = nullptr;
+    data->font2 = nullptr;
     // TODO: read font from config
     if (!data->font1) {
         ImFontConfig font_cfg;
@@ -79,6 +81,18 @@ bool ui::init() {
         if (!data->font1) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font1 = io.Fonts->AddFontDefault();
+        }
+        res::free_asset_data(font_data);
+    }
+    if (!data->font2) {
+        ImFontConfig font_cfg;
+        font_cfg.FontDataOwnedByAtlas = false;
+        size_t sz_buf;
+        void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
+        data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, 24.f, &font_cfg);
+        if (!data->font2) {
+            TF_ERROR(<< "WTF failed to load default font");
+            data->font2 = io.Fonts->AddFontDefault();
         }
         res::free_asset_data(font_data);
     }
@@ -242,12 +256,17 @@ void ui::draw_meta() {
     ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
     if (!data->last_pl)
         return;
-    ImGui::Text("Selected: %i", (int)data->last_pl->selected.size());
     ImGui::Text("Opened:");
     for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
         if (audio::au->mus_opened(*it))
             ImGui::Text("%s", (*it)->fn.c_str());
     }
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Location");
+    ImGui::PopFont();
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "General");
+    ImGui::PopFont();
 }
 
 void ui::draw_playlist_view() {

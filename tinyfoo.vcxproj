@@ -187,7 +187,6 @@
     <ClInclude Include="include\playlist.hpp" />
     <ClInclude Include="include\rect.hpp" />
     <ClInclude Include="include\ren.hpp" />
-    <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\str.hpp" />
     <ClInclude Include="include\str_view.hpp" />
     <ClInclude Include="include\ui.hpp" />

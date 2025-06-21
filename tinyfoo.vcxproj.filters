@@ -82,9 +82,6 @@
     <ClInclude Include="include\new.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\stl.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\str.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
