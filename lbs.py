@@ -74,7 +74,14 @@ if app.stage == 'conf':
     conf_header.write('#pragma once\n\n')
     conf_header.write(f'#define IS_MSVC {int(app.conf["msvc"])}\n')
     conf_header.write(f'#define IS_MINGW {int(app.conf["mingw"])}\n')
-    conf_header.write(f'#define IS_RELEASE {is_release}\n')
+    if app.conf['msvc']:
+        conf_header.write(f'#ifdef _DEBUG\n')
+        conf_header.write(f'#define IS_RELEASE 0\n')
+        conf_header.write(f'#else\n')
+        conf_header.write(f'#define IS_RELEASE 1\n')
+        conf_header.write(f'#endif\n')
+    else:
+        conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define IS_IMGUI 1\n')
     conf_header.write(f'#define ENABLE_UPNG 1\n')

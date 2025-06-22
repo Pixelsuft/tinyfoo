@@ -3,6 +3,7 @@
 #include <str.hpp>
 #include <lbs.hpp>
 #include <ctime>
+#include <SDL3/SDL_stdinc.h>
 
 namespace util {
     static inline tf::str json_unpack_str(const nlohmann::json& val) {
