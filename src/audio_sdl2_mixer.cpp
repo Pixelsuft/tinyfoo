@@ -65,10 +65,6 @@ typedef struct _Mix_Music Mix_Music;
 
 void SDLCALL sdl2_music_finish_cb(void);
 
-namespace pl {
-    void fill_cache();
-}
-
 namespace audio {
     struct SDL2MixerApi {
         SDL_SharedObject* handle;

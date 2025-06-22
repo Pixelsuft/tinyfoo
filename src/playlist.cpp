@@ -36,7 +36,6 @@ namespace pl {
     void audio_clear_cache();
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(audio::Music* mus);
-    void fill_cache();
 }
 
 static inline tf::str fn_from_fp(const tf::str& fp) {

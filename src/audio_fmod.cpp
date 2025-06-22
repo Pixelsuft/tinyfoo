@@ -8,10 +8,6 @@
 #include <algorithm>
 #include <SDL3/SDL.h>
 
-namespace pl {
-    void fill_cache();
-}
-
 namespace audio {
     class AudioFMOD : public AudioBase {
         protected:
