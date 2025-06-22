@@ -32,6 +32,9 @@ namespace audio {
         virtual float cur_get_dur();
         virtual float cur_get_pos();
         virtual void cur_set_pos(float pos);
+        virtual void cur_pause();
+        virtual void cur_resume();
+        virtual bool cur_paused();
         virtual void cur_stop();
     };
 

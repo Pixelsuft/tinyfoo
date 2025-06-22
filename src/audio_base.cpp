@@ -76,7 +76,19 @@ float AudioBase::cur_get_pos() {
 }
 
 void AudioBase::cur_set_pos(float pos) {
+    (void)pos;
+}
 
+void AudioBase::cur_pause() {
+    
+}
+
+void AudioBase::cur_resume() {
+    
+}
+
+bool AudioBase::cur_paused() {
+    return false;
 }
 
 bool AudioBase::mus_fill_info(Music* mus) {

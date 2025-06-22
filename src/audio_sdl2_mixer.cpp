@@ -101,16 +101,20 @@ namespace audio {
     class AudioSDL2Mixer : public AudioBase {
         protected:
         SDL2MixerApi mix;
+        float pause_pos;
         public:
         bool was_finished;
         bool hooked;
         bool stopped;
+        bool paused;
 
         AudioSDL2Mixer(bool use_mixer_x) : AudioBase() {
             lib_name = use_mixer_x ? "SDL2_mixer_ext" : "SDL2_mixer";
             was_finished = false;
             hooked = false;
             stopped = false;
+            paused = false;
+            pause_pos = 0.f;
             const char* lib_path = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_path);
             if (!mix.handle) {
@@ -239,7 +243,7 @@ namespace audio {
             }
             stopped = false;
             if (hooked) {
-                if (fade_next_time <= 0.f)
+                if (fade_next_time <= 0.f || cur_paused())
                     mix.Mix_HaltMusic();
                 else
                     mix.Mix_FadeOutMusic((int)(fade_next_time * 1000.f));
@@ -253,6 +257,7 @@ namespace audio {
                 cache.erase(cache.begin());
             }
             pl::mus_open_file(cur_mus);
+            paused = false;
             if (mix.Mix_FadeInMusicPos(cur_h, 0, 0, 0.0) < 0) {
                 hooked = false;
                 was_finished = true;
@@ -325,6 +330,9 @@ namespace audio {
             if (was_finished) {
                 was_finished = false;
                 hooked = false;
+                if (paused) {
+                    return;
+                }
                 if (!stopped)
                     force_play_cache();
                 int cnt = std::min((int)cache.size(), cache_opened_cnt);
@@ -334,14 +342,18 @@ namespace audio {
         }
 
         void cur_stop() {
+            bool was_paused = cur_paused();
+            paused = false;
             stopped = true;
-            if (fade_stop_time <= 0.f)
+            if (fade_stop_time <= 0.f || was_paused)
                 mix.Mix_HaltMusic();
             else
                 mix.Mix_FadeOutMusic((int)(fade_stop_time * 1000.f));
         }
 
         float cur_get_pos() {
+            if (cur_paused())
+                return pause_pos;
             if (!cur_mus || stopped || !mix.Mix_PlayingMusic())
                 return 0.f;
             double ret = mix.Mix_GetMusicPosition(cur_h);
@@ -355,6 +367,10 @@ namespace audio {
         void cur_set_pos(float pos) {
             if (!cur_mus)
                 return;
+            if (paused) {
+                pause_pos = pos;
+                return;
+            }
             if (pos < 0.f)
                 pos = 0.f;
             else if (pos > cur_mus->dur) {
@@ -363,6 +379,41 @@ namespace audio {
             }
             if (mix.Mix_SetMusicPosition((double)pos) < 0)
                 TF_WARN(<< "Failed to set current music pos (" << SDL_GetError() << ")");
+        }
+
+        void cur_pause() {
+            if (paused || !cur_mus)
+                return;
+            pause_pos = cur_get_pos();
+            // Should I do that???
+            // pause_pos += fade_pause_time;
+            paused = true;
+            if (fade_pause_time <= 0.f)
+                mix.Mix_HaltMusic();
+            else
+                mix.Mix_FadeOutMusic((int)(fade_pause_time * 1000.f));
+        }
+
+        void cur_resume() {
+            if (!paused || !cur_mus)
+                return;
+            paused = false;
+            stopped = false;
+            if (mix.Mix_FadeInMusicPos(cur_h, 0, (int)(fade_resume_time * 1000.f), (double)pause_pos) < 0) {
+                hooked = false;
+                was_finished = true;
+                TF_WARN(<< "Failed to resume music (" << SDL_GetError() << ")");
+            }
+            else {
+                hooked = true;
+                was_finished = false;
+                mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));
+                mix.Mix_HookMusicFinished(sdl2_music_finish_cb);
+            }
+        }
+
+        bool cur_paused() {
+            return paused;
         }
 
         void update_volume() {

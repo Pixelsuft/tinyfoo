@@ -238,8 +238,19 @@ void ui::draw_menubar() {
 void ui::draw_playback_buttons() {
     if (ImGui::Button("0"))
         audio::au->cur_stop();
-    ImGui::Button(">");
-    ImGui::Button("||");
+    if (ImGui::Button(">")) { 
+        if (audio::au->cur_paused())
+            audio::au->cur_resume();
+        else {
+            // ?
+        }
+    }
+    if (ImGui::Button("||")) {
+        if (audio::au->cur_paused())
+            audio::au->cur_resume();
+        else
+            audio::au->cur_pause();
+    }
     ImGui::Button("|<");
     if (ImGui::Button(">|"))
         audio::au->force_play_cache();
