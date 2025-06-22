@@ -1,3 +1,5 @@
+#include <lbs.hpp>
+#if ENABLE_SDL2_MIXER
 #include <audio_base.hpp>
 #include <new.hpp>
 #include <log.hpp>
@@ -451,3 +453,4 @@ void SDLCALL sdl2_music_finish_cb(void) {
 audio::AudioBase* audio::create_sdl2_mixer(bool use_mixer_x) {
     return (audio::AudioBase*)tf::nw<audio::AudioSDL2Mixer>(use_mixer_x);
 }
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#include <lbs.hpp>
 #include <music.hpp>
 #include <vec.hpp>
 
@@ -41,6 +42,8 @@ namespace audio {
     extern AudioBase* au;
 
     AudioBase* create_base();
+#if ENABLE_SDL2_MIXER
     AudioBase* create_sdl2_mixer(bool use_mixer_x);
+#endif
     void free_audio(AudioBase* handle);
 }

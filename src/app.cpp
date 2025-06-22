@@ -129,10 +129,13 @@ bool app::init() {
     if (data->conf.contains("audio") && data->conf.at("audio").is_table()) {
         toml::value au_tab = data->conf.at("audio");
         auto backend_s = toml::find_or<tf::str>(au_tab, "backend", "");
-        if (backend_s == "sdl2_mixer_ext")
+        if (0) {}
+#if ENABLE_SDL2_MIXER
+        else if (backend_s == "sdl2_mixer_ext")
             audio::au = audio::create_sdl2_mixer(true);
         else if (backend_s == "sdl2_mixer")
             audio::au = audio::create_sdl2_mixer(false);
+#endif
     }
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)
