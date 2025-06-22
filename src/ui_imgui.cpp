@@ -586,7 +586,8 @@ void ui::update_meta_info() {
     data->meta_dur = 0.0;
     for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
         audio::Music* m = data->last_pl->mus[*it];
-        data->meta_fn += m->fn + ", ";
+        if (data->meta_fn.size() < 8000)
+            data->meta_fn += m->fn + ", ";
         data->meta_sz += m->file_size;
         data->meta_dur += (double)m->dur;
         data->meta_mod = std::max(data->meta_mod, m->last_mod);
@@ -596,6 +597,8 @@ void ui::update_meta_info() {
         data->meta_fmt += tf::str(audio::get_type_str(*it)) + ", ";
     if (data->meta_fmt.size() >= 2)
         data->meta_fmt.resize(data->meta_fmt.size() - 2);
+    if (data->meta_fmt.size() >= 8000)
+        data->meta_fmt += "...";
     if (data->meta_fn.size() >= 2)
         data->meta_fn.resize(data->meta_fn.size() - 2);
 }

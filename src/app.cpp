@@ -15,6 +15,7 @@
 
 namespace logger {
     extern int log_level;
+    extern int ui_log_level;
 }
 
 namespace mem {
@@ -57,7 +58,7 @@ namespace app {
 
 bool app::init() {
     shift_state = ctrl_state = drop_state = can_i_drop = false;
-    logger::log_level = 0;
+    logger::log_level = logger::ui_log_level = 0;
     Uint8* temp_bump = mem::bump_ptr = (Uint8*)SDL_malloc(BUMP_SIZE);
     if (!mem::bump_ptr) {
         TF_FATAL(<< "Failed to create bump allocator");
@@ -262,7 +263,7 @@ void app::destroy() {
         SDL_DestroyWindow(data->win);
     if (data->stage > 0)
         SDL_Quit();
-    logger::log_level = 0;
+    logger::log_level = logger::ui_log_level = 0;
     Uint8* temp_bump = data->orig_bump;
     tf::bump_dl(data);
     mem::bump_ptr = nullptr;
