@@ -8,6 +8,7 @@
 #include <vec.hpp>
 #include <res.hpp>
 #include <audio_base.hpp>
+#include <set.hpp>
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
@@ -25,6 +26,7 @@ namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
         tf::str meta_fn;
+        tf::str meta_fmt;
         size_t meta_mod;
         double meta_dur;
         char pl_name_buf[64];
@@ -110,6 +112,7 @@ bool ui::init() {
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
     if (!data->pl_path_buf) {
@@ -328,6 +331,7 @@ void ui::draw_meta() {
     ImGui::Text("Items selected: %i", (int)data->last_pl->selected.size());
     fmt_duration(temp_buf, data->meta_dur);
     ImGui::Text("Duration: %s", temp_buf);
+    ImGui::Text("Formats: %s", data->meta_fmt.c_str());
 }
 
 void ui::draw_playlist_view() {
@@ -335,7 +339,7 @@ void ui::draw_playlist_view() {
         bool something_changed = false;
         ImGui::TableSetupColumn("File Name");
         ImGui::TableSetupColumn("Duration");
-        ImGui::TableSetupColumn("Codec");
+        ImGui::TableSetupColumn("Format");
         ImGui::TableSetupColumn("Last Modified");
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
@@ -574,6 +578,8 @@ void ui::destroy() {
 void ui::update_meta_info() {
     if (!data->last_pl)
         return;
+    tf::set<audio::Type> types;
+    data->meta_fmt.clear();
     data->meta_fn.clear();
     data->meta_sz = 0;
     data->meta_mod = 0;
@@ -584,7 +590,12 @@ void ui::update_meta_info() {
         data->meta_sz += m->file_size;
         data->meta_dur += (double)m->dur;
         data->meta_mod = std::max(data->meta_mod, m->last_mod);
+        types.insert(m->type);
     }
+    for (auto it = types.begin(); it != types.end(); it++)
+        data->meta_fmt += tf::str(audio::get_type_str(*it)) + ", ";
+    if (data->meta_fmt.size() >= 2)
+        data->meta_fmt.resize(data->meta_fmt.size() - 2);
     if (data->meta_fn.size() >= 2)
         data->meta_fn.resize(data->meta_fn.size() - 2);
 }
