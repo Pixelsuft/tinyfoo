@@ -365,7 +365,6 @@ void ui::draw_playlist_view() {
                 audio::Music* mus = data->last_pl->mus[row];
                 ImGui::TableSetColumnIndex(0);
                 bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                something_changed |= ret;
                 if (mus->selected)
                     ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
                 else if (!ImGui::IsPopupOpen("MusSelPopup")) {
@@ -382,12 +381,13 @@ void ui::draw_playlist_view() {
                 ImGui::TableSetColumnIndex(1);
                 char buf[64];
                 fmt_duration(buf, (double)mus->dur);
-                ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
-                ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
                 fmt_last_mod(buf, mus->last_mod);
-                ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+                something_changed |= ret;
                 if (ret) {
                     Uint64 now = SDL_GetTicks();
                     bool pushed = false;

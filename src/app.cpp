@@ -39,6 +39,7 @@ namespace app {
         SDL_Window* win;
         Uint8* orig_bump;
         int stage;
+        bool should_play_sel_hack;
         bool rage_quit;
         bool running;
     };
@@ -69,6 +70,7 @@ bool app::init() {
     data = tf::bump_nw<AppData>();
     data->orig_bump = temp_bump;
     data->stage = 0;
+    data->should_play_sel_hack = false;
     data->rage_quit = false;
     data->running = false;
     pl::pls = &data->playlists_vec;
@@ -164,9 +166,7 @@ bool app::init() {
 
 void app::process_event(const SDL_Event& ev) {
 #ifdef IS_IMGUI
-    // Enter key hack
-    if (!(ev.type == SDL_EVENT_KEY_DOWN || ev.type == SDL_EVENT_KEY_UP) || !(ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) || !ui::get_last_pl())
-        ImGui_ImplSDL3_ProcessEvent(&ev);
+    ImGui_ImplSDL3_ProcessEvent(&ev);
 #endif
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
@@ -184,7 +184,7 @@ void app::process_event(const SDL_Event& ev) {
             // TODO: break if other windows are visible (ex. playlist config)
             if (ev.key.down && ev.key.repeat == 0) {
                 if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())
-                    pl::play_selected(ui::get_last_pl());
+                    data->should_play_sel_hack = true;
                 else if (ev.key.scancode == SDL_SCANCODE_DELETE && ui::get_last_pl())
                     pl::remove_selected(ui::get_last_pl());
                 else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl())
@@ -255,6 +255,12 @@ void app::run() {
         audio::au->update();
         ren::begin_frame();
         ui::draw();
+        if (data->should_play_sel_hack) {
+            data->should_play_sel_hack = false;
+            if (ui::get_last_pl()) {
+                pl::play_selected(ui::get_last_pl());
+            }
+        }
         ren::end_frame();
     }
     data->running = false;
