@@ -1,4 +1,7 @@
 #pragma once
+#ifndef TOML11_DISABLE_STD_FILESYSTEM
+#define TOML11_DISABLE_STD_FILESYSTEM
+#endif
 #include <toml.hpp>
 #include <str.hpp>
 

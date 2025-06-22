@@ -179,6 +179,7 @@
     <ClInclude Include="include\audio_base.hpp" />
     <ClInclude Include="include\break.hpp" />
     <ClInclude Include="include\res.hpp" />
+    <ClInclude Include="include\set.hpp" />
     <ClInclude Include="include\util.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />

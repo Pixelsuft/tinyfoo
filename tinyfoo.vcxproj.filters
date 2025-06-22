@@ -130,5 +130,8 @@
     <ClInclude Include="include\res.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\set.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
