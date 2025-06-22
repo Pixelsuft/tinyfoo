@@ -153,6 +153,10 @@ bool app::init() {
         else if (backend_s == "sdl2_mixer")
             audio::au = audio::create_sdl2_mixer(false);
 #endif
+#if ENABLE_FMOD
+        else if (backend_s == "fmod")
+            audio::au = audio::create_fmod();
+#endif
     }
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)

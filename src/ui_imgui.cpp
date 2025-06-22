@@ -100,6 +100,10 @@ namespace ui {
     }
 
     static inline void fmt_duration(char* buf, double dur) {
+        if (dur < 0.0) {
+            SDL_memcpy(buf, "???", 4);
+            return;
+        }
         int rounded_dur = (int)SDL_floor(dur);
         if (rounded_dur < 3600)
             SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);

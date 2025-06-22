@@ -45,5 +45,8 @@ namespace audio {
 #if ENABLE_SDL2_MIXER
     AudioBase* create_sdl2_mixer(bool use_mixer_x);
 #endif
+#if ENABLE_FMOD
+    AudioBase* create_fmod();
+#endif
     void free_audio(AudioBase* handle);
 }

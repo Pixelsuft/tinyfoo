@@ -8,7 +8,7 @@ using audio::Music;
 AudioBase* audio::au;
 
 AudioBase::AudioBase() {
-    lib_name = "dummy";
+    lib_name = "Dummy";
     cache.reserve(256); // Why not lul
     inited = false;
     dev_opened = false;
@@ -41,7 +41,7 @@ void AudioBase::dev_close() {
 
 bool AudioBase::mus_open_fp(Music* mus, const char* fp) {
     mus->h1 = mus->h2 = nullptr;
-    mus->dur = -1.f;
+    // mus->dur = -1.f;
     return false;
 }
 
