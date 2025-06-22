@@ -566,7 +566,7 @@ namespace audio {
 
         bool dev_open() {
             FMOD_RESULT err;
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 32, FMOD_INIT_NORMAL, NULL))) {
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 2, FMOD_INIT_NORMAL, NULL))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
                 return true;
             }
