@@ -423,9 +423,9 @@ void pl::fill_cache() {
     Playlist* p = ui::get_last_pl(2);
     if (!p)
         return;
-    if (p->mus.size() < 5)
+    if (p->mus.size() < 4)
         return;
-    while (audio::au->cache.size() < 2) {
+    while (audio::au->cache.size() < 1) { // Enough?
         audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
         if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
             continue;

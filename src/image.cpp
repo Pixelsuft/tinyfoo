@@ -4,11 +4,167 @@
 #include <log.hpp>
 #include <ren.hpp>
 #include <SDL3/SDL.h>
-/*
-TODO:
-- GdiPlus on Windows
-- Alloc ImgData only if needed
-*/
+#if ENABLE_GDIPLUS
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef UNICODE
+#define UNICODE
+#endif
+#if !defined(_MSC_VER) && !defined(__uuidof)
+#define __uuidof(x) (IID_ ## x)
+#endif
+
+#include <Windows.h>
+#include <objidl.h>
+#include <gdiplus.h>
+
+class SDLWindowsStream : public IStream {
+    SDL_IOStream* ctx;
+    long refCount;
+
+public:
+    SDLWindowsStream(SDL_IOStream* sdl_ctx) : refCount(1) {
+        this->ctx = sdl_ctx;
+    }
+
+    virtual ~SDLWindowsStream() {
+
+    }
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void) {
+        return (ULONG)InterlockedIncrement(&refCount);
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** ppvObject) {
+        if (iid == __uuidof(IUnknown) || iid == __uuidof(ISequentialStream)
+            || iid == __uuidof(IStream)) {
+            *ppvObject = static_cast<IStream*>(this);
+            AddRef();
+            return S_OK;
+        }
+        else {
+            return E_NOINTERFACE;
+        }
+    }
+
+    virtual ULONG STDMETHODCALLTYPE Release(void) {
+        ULONG ret = InterlockedDecrement(&refCount);
+        if (ret == 0) {
+            // delete this;
+            return 0;
+        }
+        return ret;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Read(void* pv, ULONG cb, ULONG* pcbRead) {
+        size_t read = SDL_ReadIO(ctx, pv, (size_t)cb);
+        if (pcbRead) {
+            *pcbRead = (ULONG)read;
+        }
+        return read == cb ? S_OK : E_FAIL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Write(const void* pv, ULONG cb, ULONG* pcbWritten) {
+        (void)pv;
+        (void)cb;
+        (void)pcbWritten;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER* plibNewPosition) {
+        SDL_IOWhence whence;
+        if (dwOrigin == STREAM_SEEK_SET)
+            whence = SDL_IO_SEEK_SET;
+        else if (dwOrigin == STREAM_SEEK_CUR)
+            whence = SDL_IO_SEEK_CUR;
+        else
+            whence = SDL_IO_SEEK_END;
+        Sint64 ret = SDL_SeekIO(ctx, (Sint64)dlibMove.QuadPart, whence);
+        if (ret < 0)
+            return E_FAIL;
+        if (plibNewPosition) {
+            plibNewPosition->QuadPart = (ULONGLONG)ret;
+        }
+        return S_OK;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* pstatstg, DWORD grfStatFlag) {
+        (void)grfStatFlag;
+        SDL_memset(pstatstg, 0, sizeof(*pstatstg));
+        pstatstg->type = STGTY_STREAM;
+        pstatstg->cbSize.QuadPart = (ULONGLONG)SDL_GetIOSize(ctx);
+        return S_OK;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Clone(IStream** ppstm) {
+        (void)ppstm;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Commit(DWORD grfCommitFlags) {
+        (void)grfCommitFlags;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten) {
+        (void)pstm;
+        (void)cb;
+        (void)pcbRead;
+        (void)pcbWritten;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+        (void)libOffset;
+        (void)cb;
+        (void)dwLockType;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE Revert() {
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize) {
+        (void)libNewSize;
+        return E_NOTIMPL;
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
+        (void)libOffset;
+        (void)cb;
+        (void)dwLockType;
+        return E_NOTIMPL;
+    }
+};
+
+static inline const char* gdi32_status_string(const Gdiplus::Status status) {
+    switch (status) {
+    case Gdiplus::Ok: return "Ok";
+    case Gdiplus::GenericError: return "GenericError";
+    case Gdiplus::InvalidParameter: return "InvalidParameter";
+    case Gdiplus::OutOfMemory: return "OutOfMemory";
+    case Gdiplus::ObjectBusy: return "ObjectBusy";
+    case Gdiplus::InsufficientBuffer: return "InsufficientBuffer";
+    case Gdiplus::NotImplemented: return "NotImplemented";
+    case Gdiplus::Win32Error: return "Win32Error";
+    case Gdiplus::Aborted: return "Aborted";
+    case Gdiplus::FileNotFound: return "FileNotFound";
+    case Gdiplus::ValueOverflow: return "ValueOverflow";
+    case Gdiplus::AccessDenied: return "AccessDenied";
+    case Gdiplus::UnknownImageFormat: return "UnknownImageFormat";
+    case Gdiplus::FontFamilyNotFound: return "FontFamilyNotFound";
+    case Gdiplus::FontStyleNotFound: return "FontStyleNotFound";
+    case Gdiplus::NotTrueTypeFont: return "NotTrueTypeFont";
+    case Gdiplus::UnsupportedGdiplusVersion: return "UnsupportedGdiplusVersion";
+    case Gdiplus::GdiplusNotInitialized: return "GdiplusNotInitialized";
+    case Gdiplus::PropertyNotFound: return "PropertyNotFound";
+    case Gdiplus::PropertyNotSupported: return "PropertyNotSupported";
+    default: return "UnknownStatus";
+    }
+}
+#endif
 #if ENABLE_UPNG
 #include <upng.hpp>
 
@@ -31,7 +187,8 @@ static inline const char* upng_error_string(upng_error status) {
 #if ENABLE_GDIPLUS
 namespace img {
     struct ImgData {
-        int dummy;
+        Gdiplus::GdiplusStartupInput start_input;
+        ULONG_PTR token;
     };
 
     ImgData* data;
@@ -41,6 +198,14 @@ namespace img {
 bool img::init() {
 #if ENABLE_GDIPLUS
     data = tf::bump_nw<ImgData>();
+    data->token = 0;
+    Gdiplus::Status ret = Gdiplus::GdiplusStartup(&data->token, &data->start_input, NULL);
+    if (ret != Gdiplus::Ok) {
+        TF_ERROR(<< "Failed to init GDI+ (" << gdi32_status_string(ret) << ")");
+        tf::bump_dl(data);
+        data = nullptr;
+        return false;
+    }
 #endif
     return true;
 }
@@ -99,6 +264,55 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
             TF_ERROR(<< "Failed to load BMP (" << SDL_GetError() << ")");
         return ret;
     }
+#if ENABLE_GDIPLUS
+    SDLWindowsStream* s = data ? tf::nw<SDLWindowsStream>(ctx) : nullptr;
+    if (!s) {
+        TF_ERROR(<< "Failed to create SDLWindowsStream");
+        loader_close_io(ctx, free_src);
+        return create_fallback_surface();
+    }
+    SDL_Surface* ret = nullptr;
+    Gdiplus::Bitmap* gdi_bmp = Gdiplus::Bitmap::FromStream(s, false);
+    if (gdi_bmp) {
+        const uint32_t w = gdi_bmp->GetWidth();
+        const uint32_t h = gdi_bmp->GetHeight();
+        ret = SDL_CreateSurface((int)w, (int)h, SDL_PIXELFORMAT_BGRA32);
+        if (ret) {
+            Gdiplus::BitmapData* gdi_lock = tf::nw<Gdiplus::BitmapData>();
+            Gdiplus::Rect rect(0, 0, w, h);
+            Gdiplus::Status lock_ret = gdi_bmp->LockBits(&rect, Gdiplus::ImageLockModeRead, PixelFormat32bppARGB, gdi_lock);
+            if (lock_ret == Gdiplus::Ok) {
+                if (SDL_MUSTLOCK(ret))
+                    SDL_LockSurface(ret);
+                unsigned char* in = (unsigned char*)gdi_lock->Scan0;
+                unsigned char* out = (unsigned char*)ret->pixels;
+                if (gdi_lock->Stride == ret->pitch)
+                    SDL_memcpy(out, in, h * (uint32_t)gdi_lock->Stride);
+                else {
+                    uint32_t rows = h;
+                    while (rows--) {
+                        SDL_memcpy(out, in, (((size_t)w) << 2));
+                        in += gdi_lock->Stride;
+                        out += ret->pitch;
+                    }
+                }
+                if (SDL_MUSTLOCK(ret))
+                    SDL_UnlockSurface(ret);
+                gdi_bmp->UnlockBits(gdi_lock);
+            }
+            else
+                TF_ERROR(<< "Gdiplus::Bitmap->LockBits failed (" << gdi32_status_string(lock_ret) << ")");
+            tf::dl(gdi_lock);
+        }
+        else
+            TF_ERROR(<< "Failed to create SDL surface (" << SDL_GetError() << ")");
+        Gdiplus::GdiplusBase::operator delete(gdi_bmp);
+    }
+    s->Release();
+    tf::dl(s);
+    loader_close_io(ctx, free_src);
+    return ret ? ret : create_fallback_surface();
+#endif
 #if ENABLE_UPNG
     if (fmt == img::format::PNG) {
         SDL_Surface* ret = nullptr;
@@ -161,6 +375,7 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
 
 void img::destroy() {
 #if ENABLE_GDIPLUS
+    Gdiplus::GdiplusShutdown(data->token);
     tf::bump_dl(data);
 #endif
 }
