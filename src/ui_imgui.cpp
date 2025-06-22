@@ -45,6 +45,9 @@ namespace ui {
     UiData* data;
 
     pl::Playlist* get_last_pl() {
+        // Hacky
+        if (data->show_about || data->show_logs || data->show_playlist_conf)
+            return nullptr;
         return data->last_pl;
     }
 

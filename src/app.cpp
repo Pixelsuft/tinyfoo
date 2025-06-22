@@ -164,7 +164,9 @@ bool app::init() {
 
 void app::process_event(const SDL_Event& ev) {
 #ifdef IS_IMGUI
-    ImGui_ImplSDL3_ProcessEvent(&ev);
+    // Enter key hack
+    if (!(ev.type == SDL_EVENT_KEY_DOWN || ev.type == SDL_EVENT_KEY_UP) || !(ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) || !ui::get_last_pl())
+        ImGui_ImplSDL3_ProcessEvent(&ev);
 #endif
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
@@ -179,10 +181,6 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_KEY_UP: {
             ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
-#if IS_IMGUI && 0
-            if (ImGui::GetIO().WantCaptureKeyboard)
-                break;
-#endif
             // TODO: break if other windows are visible (ex. playlist config)
             if (ev.key.down && ev.key.repeat == 0) {
                 if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())

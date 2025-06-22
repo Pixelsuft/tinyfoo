@@ -4,6 +4,11 @@
 #include <log.hpp>
 #include <ren.hpp>
 #include <SDL3/SDL.h>
+/*
+TODO:
+- GdiPlus on Windows
+- Alloc ImgData only if needed
+*/
 #if ENABLE_UPNG
 #include <upng.hpp>
 
@@ -32,7 +37,9 @@ namespace img {
 }
 
 bool img::init() {
+#if 0
     data = tf::bump_nw<ImgData>();
+#endif
     return true;
 }
 
@@ -67,7 +74,6 @@ static inline void loader_close_io(SDL_IOStream* ctx, bool free_src) {
 
 void* img::surf_from_io(void* _ctx, bool free_src) {
     SDL_IOStream* ctx = (SDL_IOStream*)_ctx;
-    // TODO: wrap SDL_CloseIO
     Sint64 data_size = SDL_GetIOSize(ctx);
     if (data_size < 0) {
         TF_ERROR(<< "Failed to get image data size (" << SDL_GetError() << ")");
@@ -152,5 +158,7 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
 }
 
 void img::destroy() {
+#if 0
     tf::bump_dl(data);
+#endif
 }
