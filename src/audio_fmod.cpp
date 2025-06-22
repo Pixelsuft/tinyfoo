@@ -584,6 +584,12 @@ namespace audio {
                 TF_ERROR(<< "Failed to close FMOD system (" << FMOD_ErrorString(err) << ")");
         }
 
+        void update() {
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Update(sys)))
+                TF_WARN(<< "Failed to update FMOD system (" << FMOD_ErrorString(err) << ")");
+        }
+
         ~AudioFMOD() {
             if (!inited)
                 return;
