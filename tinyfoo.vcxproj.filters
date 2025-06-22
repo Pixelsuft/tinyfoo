@@ -71,6 +71,12 @@
     <ClCompile Include="src\res.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\upng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.hpp">
@@ -131,6 +137,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\set.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\upng.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

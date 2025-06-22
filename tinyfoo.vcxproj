@@ -165,6 +165,7 @@
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\audio_base.cpp" />
     <ClCompile Include="src\audio_sdl2_mixer.cpp" />
+    <ClCompile Include="src\image.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
@@ -172,14 +173,17 @@
     <ClCompile Include="src\ren.cpp" />
     <ClCompile Include="src\res.cpp" />
     <ClCompile Include="src\ui_imgui.cpp" />
+    <ClCompile Include="src\upng.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\alloc.hpp" />
     <ClInclude Include="include\app.hpp" />
     <ClInclude Include="include\audio_base.hpp" />
     <ClInclude Include="include\break.hpp" />
+    <ClInclude Include="include\image.hpp" />
     <ClInclude Include="include\res.hpp" />
     <ClInclude Include="include\set.hpp" />
+    <ClInclude Include="include\upng.hpp" />
     <ClInclude Include="include\util.hpp" />
     <ClInclude Include="include\log.hpp" />
     <ClInclude Include="include\mem.hpp" />

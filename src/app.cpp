@@ -4,6 +4,8 @@
 #include <new.hpp>
 #include <lbs.hpp>
 #include <ui.hpp>
+#include <res.hpp>
+#include <image.hpp>
 #include <audio_base.hpp>
 #include <conf.hpp>
 #include <playlist.hpp>
@@ -122,8 +124,21 @@ bool app::init() {
         return false;
     }
     data->stage = 3;
+    if (!img::init()) {
+        TF_FATAL(<< "Image module init failed");
+        destroy();
+        return false;
+    }
+    if (1) {
+        SDL_Surface* icon = (SDL_Surface*)img::surf_from_io(res::get_asset_io("icon.png"), true);
+        if (icon && !SDL_SetWindowIcon(data->win, icon))
+            TF_WARN(<< "Failed to set window icon (" << SDL_GetError() << ")");
+        if (icon)
+            SDL_DestroySurface(icon);
+    }
     // This one actually never fails
     ui::init();
+    img::destroy(); // Hack: we don't need it anymore actually
     data->stage = 4;
     audio::au = nullptr;
     if (data->conf.contains("audio") && data->conf.at("audio").is_table()) {

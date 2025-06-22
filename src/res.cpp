@@ -6,7 +6,7 @@
 #include <res_data.hpp>
 #endif
 
-SDL_IOStream* res::get_asset_io(const char* fn) {
+void* res::get_asset_io(const char* fn) {
 #if IS_RELEASE
     if (!SDL_strcmp(fn, "icon.png"))
         return SDL_IOFromConstMem((const void*)asset_icon, sizeof(asset_icon));
