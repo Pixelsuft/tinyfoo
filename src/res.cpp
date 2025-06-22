@@ -26,10 +26,10 @@ void* res::get_asset_io(const char* fn) {
 #endif
 }
 
-void* res::read_asset_data(const char* fn, size_t& size_buf) {
+void* res::read_asset_data(const char* fn, int& size_buf) {
 #if IS_RELEASE
     if (!SDL_strcmp(fn, "Roboto-Regular.ttf")) {
-        size_buf = sizeof(asset_font1);
+        size_buf = (int)sizeof(asset_font1);
         return (void*)asset_font1;
     }
     return nullptr;
@@ -39,12 +39,14 @@ void* res::read_asset_data(const char* fn, size_t& size_buf) {
         path = "assets/Roboto-Regular.ttf";
     else
         TF_ERROR(<< "Unknown asset: " << fn);
-    void* ret = SDL_LoadFile(path, &size_buf);
+    size_t load_size_buf;
+    void* ret = SDL_LoadFile(path, &load_size_buf);
     if (!ret) {
         TF_ERROR(<< "Failed to read asset file (" << SDL_GetError() << ")");
         size_buf = 0;
         return nullptr;
     }
+    size_buf = (int)load_size_buf;
     return ret;
 #endif
 }

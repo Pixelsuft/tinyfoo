@@ -135,9 +135,9 @@ bool ui::init() {
     if (!data->font1) {
         ImFontConfig font_cfg;
         font_cfg.FontDataOwnedByAtlas = false;
-        size_t sz_buf;
+        int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
-        data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, 16.f, &font_cfg);
+        data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 16.f, &font_cfg);
         if (!data->font1) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font1 = io.Fonts->AddFontDefault();
@@ -147,9 +147,9 @@ bool ui::init() {
     if (!data->font2) {
         ImFontConfig font_cfg;
         font_cfg.FontDataOwnedByAtlas = false;
-        size_t sz_buf;
+        int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
-        data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, 24.f, &font_cfg);
+        data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 24.f, &font_cfg);
         if (!data->font2) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font2 = io.Fonts->AddFontDefault();
