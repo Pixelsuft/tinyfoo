@@ -35,6 +35,7 @@ namespace ui {
         ImFont* font1;
         ImFont* font2;
         pl::Playlist* last_pl;
+        pl::Playlist* sel_pl;
         pl::Playlist* need_conf_pl;
         Point size;
         bool show_about;
@@ -48,7 +49,7 @@ namespace ui {
         if (hacky == 1 && (data->show_about || data->show_logs || data->show_playlist_conf))
             return nullptr;
         if (hacky == 2)
-            return 1 ? data->last_pl : data->last_pl;  // TODO
+            return data->sel_pl ? data->sel_pl : data->last_pl;
         return data->last_pl;
     }
 
@@ -107,12 +108,16 @@ namespace ui {
         else
             SDL_snprintf(buf, 11, "%id %i:%02i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 3600, ((rounded_dur % 86400) % 3600) / 60, rounded_dur % 60);
     }
+
+    void fix_selected_pl() {
+        data->sel_pl = data->last_pl;
+    }
 }
 
 bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
-    data->last_pl = nullptr;
+    data->last_pl = data->sel_pl = nullptr;
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
@@ -324,8 +329,8 @@ void ui::draw_meta() {
     // TODO: move this to new debug window
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
-    if (!data->last_pl)
-        return;
+    if (audio::au->cur_mus)
+        ImGui::Text("Current: %s", audio::au->cur_mus->fn.c_str());
     ImGui::Text("Opened:");
     for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
         if (audio::au->mus_opened(*it))

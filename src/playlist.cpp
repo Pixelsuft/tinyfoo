@@ -25,6 +25,7 @@ namespace app {
 
 namespace ui {
     void update_meta_info();
+    void fix_selected_pl();
     pl::Playlist* get_last_pl(int hacky);
 }
 
@@ -321,6 +322,7 @@ void pl::audio_clear_cache() {
 }
 
 void pl::play_selected(Playlist* p) {
+    ui::fix_selected_pl();
     if (p->selected.size() == 0)
         return;
     // Maybe clear cache after started playing???
@@ -423,12 +425,10 @@ void pl::fill_cache() {
         return;
     if (p->mus.size() < 5)
         return;
-    TF_INFO(<< "filling cache");
     while (audio::au->cache.size() < 2) {
         audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
         if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
             continue;
-        TF_INFO(<< m->fn);
         mus_open_file(m);
         audio::au->cache.push_back(m);
     }

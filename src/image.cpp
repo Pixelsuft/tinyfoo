@@ -28,6 +28,7 @@ static inline const char* upng_error_string(upng_error status) {
 }
 #endif
 
+#if ENABLE_GDIPLUS
 namespace img {
     struct ImgData {
         int dummy;
@@ -35,9 +36,10 @@ namespace img {
 
     ImgData* data;
 }
+#endif
 
 bool img::init() {
-#if 0
+#if ENABLE_GDIPLUS
     data = tf::bump_nw<ImgData>();
 #endif
     return true;
@@ -158,7 +160,7 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
 }
 
 void img::destroy() {
-#if 0
+#if ENABLE_GDIPLUS
     tf::bump_dl(data);
 #endif
 }
