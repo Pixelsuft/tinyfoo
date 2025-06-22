@@ -25,7 +25,8 @@ namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
         tf::str meta_fn;
-        char meta_mod_buf[64];
+        size_t meta_mod;
+        double meta_dur;
         char pl_name_buf[64];
         size_t meta_sz;
         char* pl_path_buf;
@@ -93,10 +94,12 @@ namespace ui {
 
     static inline void fmt_duration(char* buf, double dur) {
         int rounded_dur = (int)SDL_floor(dur);
-        if (rounded_dur < 86400)
+        if (rounded_dur < 3600)
             SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+        else if (rounded_dur < 86400)
+            SDL_snprintf(buf, 11, "%i:%02i:%02i", rounded_dur / 3600, (rounded_dur % 3600) / 60, rounded_dur % 60);
         else
-            SDL_snprintf(buf, 11, "%id %i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 11, "%id %i:%02i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 3600, ((rounded_dur % 86400) % 3600) / 60, rounded_dur % 60);
     }
 }
 
@@ -310,18 +313,21 @@ void ui::draw_meta() {
             ImGui::Text("%s", (*it)->fn.c_str());
     }
     // TODO: improve
-    char temp_buf[32];
+    char temp_buf[64];
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Location");
     ImGui::PopFont();
     ImGui::Text("File names: %s", data->meta_fn.c_str());
     fmt_file_size(temp_buf, data->meta_sz);
     ImGui::Text("Total size: %s", temp_buf);
-    ImGui::Text("Last modified: %s", data->meta_mod_buf);
+    fmt_last_mod(temp_buf, data->meta_mod);
+    ImGui::Text("Last modified: %s", temp_buf);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "General");
     ImGui::PopFont();
     ImGui::Text("Items selected: %i", (int)data->last_pl->selected.size());
+    fmt_duration(temp_buf, data->meta_dur);
+    ImGui::Text("Duration: %s", temp_buf);
 }
 
 void ui::draw_playlist_view() {
@@ -570,16 +576,17 @@ void ui::update_meta_info() {
         return;
     data->meta_fn.clear();
     data->meta_sz = 0;
-    size_t last_mod = 0;
+    data->meta_mod = 0;
+    data->meta_dur = 0.0;
     for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
         audio::Music* m = data->last_pl->mus[*it];
         data->meta_fn += m->fn + ", ";
         data->meta_sz += m->file_size;
-        last_mod = std::max(last_mod, m->last_mod);
+        data->meta_dur += (double)m->dur;
+        data->meta_mod = std::max(data->meta_mod, m->last_mod);
     }
     if (data->meta_fn.size() >= 2)
         data->meta_fn.resize(data->meta_fn.size() - 2);
-    fmt_last_mod(data->meta_mod_buf, last_mod);
 }
 
 void ui::push_log(const char* msg, const char* file, const char* func, int line, int category) {

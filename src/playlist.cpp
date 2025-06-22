@@ -23,6 +23,10 @@ namespace app {
     tf::str get_data_path();
 }
 
+namespace ui {
+    void update_meta_info();
+}
+
 namespace pl {
     tf::vec<Playlist*>* pls;
 
@@ -376,6 +380,7 @@ void pl::remove_selected(Playlist* p) {
     }
     p->changed = true;
     p->selected.clear();
+    ui::update_meta_info();
 }
 
 void pl::clear_selected(Playlist* p) {
@@ -383,6 +388,7 @@ void pl::clear_selected(Playlist* p) {
         p->mus[*it]->selected = false;
     }
     p->selected.clear();
+    ui::update_meta_info();
 }
 
 void pl::remember_selected(Playlist* p) {
@@ -414,4 +420,5 @@ void pl::select_all(Playlist* p) {
         p->selected.push_back(i);
         p->mus[i]->selected = true;
     }
+    ui::update_meta_info();
 }
