@@ -25,6 +25,7 @@ namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
         tf::str meta_fn;
+        char meta_mod_buf[64];
         char pl_name_buf[64];
         size_t meta_sz;
         char* pl_path_buf;
@@ -75,6 +76,27 @@ namespace ui {
             SDL_itoa((int)(sz >> 30), buf, 10);
             SDL_strlcat(buf, " GB", 32);
         }
+    }
+
+    static inline void fmt_last_mod(char* buf, uint64_t last_mod) {
+        if (last_mod == 0)
+            SDL_memcpy(buf, "Unknown", 8);
+        else {
+            struct tm* time_s = util::tm_from_sdl_time(last_mod);
+            SDL_snprintf(
+                buf, 64, "%i-%02i-%02i %02i:%02i:%02i",
+                time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
+                time_s->tm_hour, time_s->tm_min, time_s->tm_sec
+            );
+        }
+    }
+
+    static inline void fmt_duration(char* buf, double dur) {
+        int rounded_dur = (int)SDL_floor(dur);
+        if (rounded_dur < 86400)
+            SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+        else
+            SDL_snprintf(buf, 11, "%id %i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 60, rounded_dur % 60);
     }
 }
 
@@ -295,6 +317,7 @@ void ui::draw_meta() {
     ImGui::Text("File names: %s", data->meta_fn.c_str());
     fmt_file_size(temp_buf, data->meta_sz);
     ImGui::Text("Total size: %s", temp_buf);
+    ImGui::Text("Last modified: %s", data->meta_mod_buf);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "General");
     ImGui::PopFont();
@@ -334,22 +357,12 @@ void ui::draw_playlist_view() {
                 }
                 ImGui::TableSetColumnIndex(1);
                 char buf[64];
-                int rounded_dur = (int)SDL_floorf(mus->dur);
-                SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+                fmt_duration(buf, (double)mus->dur);
                 ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(2);
                 ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 ImGui::TableSetColumnIndex(3);
-                if (mus->last_mod == 0)
-                    SDL_memcpy(buf, "Unknown", 8);
-                else {
-                    struct tm* time_s = util::tm_from_sdl_time(mus->last_mod);
-                    SDL_snprintf(
-                        buf, 64, "%i-%02i-%02i %02i:%02i:%02i",
-                        time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
-                        time_s->tm_hour, time_s->tm_min, time_s->tm_sec
-                    );
-                }
+                fmt_last_mod(buf, mus->last_mod);
                 ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
                 if (ret) {
                     Uint64 now = SDL_GetTicks();
@@ -557,13 +570,16 @@ void ui::update_meta_info() {
         return;
     data->meta_fn.clear();
     data->meta_sz = 0;
+    size_t last_mod = 0;
     for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
         audio::Music* m = data->last_pl->mus[*it];
         data->meta_fn += m->fn + ", ";
         data->meta_sz += m->file_size;
+        last_mod = std::max(last_mod, m->last_mod);
     }
     if (data->meta_fn.size() >= 2)
         data->meta_fn.resize(data->meta_fn.size() - 2);
+    fmt_last_mod(data->meta_mod_buf, last_mod);
 }
 
 void ui::push_log(const char* msg, const char* file, const char* func, int line, int category) {

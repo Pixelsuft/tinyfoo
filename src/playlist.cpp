@@ -294,6 +294,7 @@ bool pl::save(Playlist* p) {
 }
 
 void pl::unload_playlists(bool rage) {
+    audio::au->cur_stop();
     audio_clear_cache();
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
