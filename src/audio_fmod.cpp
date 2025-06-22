@@ -434,16 +434,79 @@ static const char* FMOD_ErrorString(FMOD_RESULT errcode) {
     default:                                return "Unknown error.";
     };
 }
+
+#define FMOD_LOAD_FUNC(func_name) do { \
+    *(void**)&fmod.func_name = (void*)SDL_LoadFunction(fmod.handle, #func_name); \
+    if (!fmod.func_name) { \
+        TF_ERROR(<< "Failed to load " << lib_name << " function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
+        SDL_UnloadObject(fmod.handle); \
+        return; \
+    } \
+} while (0)
 #endif
+#define FMOD_HAS_ERROR(res) ((res) != FMOD_OK)
+
+void* SDLCALL FMOD_malloc(unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr) {
+    (void)type;
+    (void)sourcestr;
+	void* result = SDL_malloc((size_t)size);
+	return result;
+}
+
+void* SDLCALL FMOD_realloc(void* ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr) {
+    (void)type;
+    (void)sourcestr;
+	void* result = SDL_realloc(ptr, (size_t)size);
+	return result;
+}
+
+void SDLCALL FMOD_free(void* ptr, FMOD_MEMORY_TYPE type, const char* sourcestr) {
+    (void)type;
+    (void)sourcestr;
+	SDL_free(ptr);
+}
 
 namespace audio {
     struct FMODApi {
         SDL_SharedObject* handle;
+        FMOD_RESULT (SDLCALL *FMOD_System_Create)(FMOD_SYSTEM**, unsigned int);
+        FMOD_RESULT (SDLCALL *FMOD_System_Release)(FMOD_SYSTEM*);
+        FMOD_RESULT (SDLCALL *FMOD_System_Init)(FMOD_SYSTEM*, int, FMOD_INITFLAGS, void*);
+        FMOD_RESULT (SDLCALL *FMOD_System_Close)(FMOD_SYSTEM*);
+        FMOD_RESULT (SDLCALL *FMOD_System_Update)(FMOD_SYSTEM*);
+        FMOD_RESULT (SDLCALL *FMOD_System_GetVersion)(FMOD_SYSTEM*, unsigned int*);
+        FMOD_RESULT (SDLCALL *FMOD_System_CreateStream)(FMOD_SYSTEM*, const char*, FMOD_MODE, FMOD_CREATESOUNDEXINFO*, FMOD_SOUND**);
+        FMOD_RESULT (SDLCALL *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
+        FMOD_RESULT (SDLCALL *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_Release)(FMOD_SOUND*);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
+        FMOD_RESULT (SDLCALL *FMOD_Sound_GetLoopCount)(FMOD_SOUND*, int*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_Stop)(FMOD_CHANNEL*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPaused)(FMOD_CHANNEL*, FMOD_BOOL);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPaused)(FMOD_CHANNEL*, FMOD_BOOL*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetVolume)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetVolume)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPitch)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPitch)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetMode)(FMOD_CHANNEL*, FMOD_MODE);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetMode)(FMOD_CHANNEL*, FMOD_MODE*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetCallback)(FMOD_CHANNEL*, FMOD_CHANNELCONTROL_CALLBACK);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetUserData)(FMOD_CHANNEL*, void*);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetUserData)(FMOD_CHANNEL*, void**);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
+        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (SDLCALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
     class AudioFMOD : public AudioBase {
         protected:
+	    FMOD_SYSTEM* sys;
         FMODApi fmod;
+        unsigned int fmod_ver;
         public:
         AudioFMOD() : AudioBase() {
             lib_name = "FMOD";
@@ -453,7 +516,72 @@ namespace audio {
                 TF_WARN(<< "Failed to load FMOD library (" << SDL_GetError() << ")");
                 return;
             }
+            FMOD_LOAD_FUNC(FMOD_System_Create);
+            FMOD_LOAD_FUNC(FMOD_System_Release);
+            FMOD_LOAD_FUNC(FMOD_System_Init);
+            FMOD_LOAD_FUNC(FMOD_System_Close);
+            FMOD_LOAD_FUNC(FMOD_System_Update);
+            FMOD_LOAD_FUNC(FMOD_System_GetVersion);
+            FMOD_LOAD_FUNC(FMOD_System_CreateStream);
+            FMOD_LOAD_FUNC(FMOD_System_PlaySound);
+            FMOD_LOAD_FUNC(FMOD_System_GetChannel);
+            FMOD_LOAD_FUNC(FMOD_Sound_Release);
+            FMOD_LOAD_FUNC(FMOD_Sound_GetLength);
+            FMOD_LOAD_FUNC(FMOD_Sound_SetMode);
+            FMOD_LOAD_FUNC(FMOD_Sound_GetMode);
+            FMOD_LOAD_FUNC(FMOD_Sound_SetLoopCount);
+            FMOD_LOAD_FUNC(FMOD_Sound_GetLoopCount);
+            FMOD_LOAD_FUNC(FMOD_Channel_Stop);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetPaused);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetPaused);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetVolume);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetVolume);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetPitch);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetPitch);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetMode);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetMode);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetCallback);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetUserData);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetUserData);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetCurrentSound);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetPosition);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetPosition);
+            FMOD_LOAD_FUNC(FMOD_Memory_Initialize);
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Memory_Initialize(
+                NULL, 0, FMOD_malloc, FMOD_realloc, FMOD_free, FMOD_MEMORY_ALL
+            ))) {
+                TF_ERROR(<< "Failed set FMOD memory callbacks (" << FMOD_ErrorString(err) << ")");
+                SDL_UnloadObject(fmod.handle);
+                return;
+            }
+            // TODO: brute force version/read from config
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, 0x00020308))) {
+                TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
+                SDL_UnloadObject(fmod.handle);
+                return;
+            }
             inited = true;
+        }
+
+        bool dev_open() {
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 32, FMOD_INIT_NORMAL, NULL))) {
+                TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
+                return true;
+            }
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetVersion(sys, &fmod_ver))) {
+                TF_WARN(<< "Failed to get FMOD version (" << FMOD_ErrorString(err) << ")");
+                fmod_ver = 0;
+            }
+            dev_opened = true;
+            return true;
+        }
+
+        void dev_close() {
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Close(sys)))
+                TF_ERROR(<< "Failed to close FMOD system (" << FMOD_ErrorString(err) << ")");
         }
 
         ~AudioFMOD() {
@@ -461,6 +589,9 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Release(sys)))
+                TF_ERROR(<< "Failed to release FMOD system (" << FMOD_ErrorString(err) << ")");
             SDL_UnloadObject(fmod.handle);
             inited = false;
         }
