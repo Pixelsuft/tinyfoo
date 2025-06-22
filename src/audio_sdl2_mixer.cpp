@@ -65,10 +65,9 @@ typedef struct _Mix_Music Mix_Music;
 
 void SDLCALL sdl2_music_finish_cb(void);
 
-/*
-TODO:
- - Rework, make everything dependent on finished hook
-*/
+namespace pl {
+    void fill_cache();
+}
 
 namespace audio {
     struct SDL2MixerApi {
@@ -273,6 +272,7 @@ namespace audio {
             }
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
+            pl::fill_cache();
         }
     
         bool mus_fill_info(Music* mus) {
@@ -337,6 +337,7 @@ namespace audio {
                 }
                 if (!stopped)
                     force_play_cache();
+                pl::fill_cache();
                 int cnt = std::min((int)cache.size(), cache_opened_cnt);
                 for (int i = 0; i < cnt; i++)
                     pl::mus_open_file(cache[i]);
@@ -351,6 +352,7 @@ namespace audio {
                 mix.Mix_HaltMusic();
             else
                 mix.Mix_FadeOutMusic((int)(fade_stop_time * 1000.f));
+            pl::fill_cache();
         }
 
         float cur_get_pos() {
@@ -419,7 +421,8 @@ namespace audio {
         }
 
         void update_volume() {
-            // TODO: check if music playing
+            if (!mix.Mix_PlayingMusic())
+                return;
             mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));            
         }
 

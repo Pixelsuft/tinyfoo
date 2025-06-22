@@ -25,7 +25,7 @@ namespace mem {
 }
 
 namespace ui {
-    pl::Playlist* get_last_pl();
+    pl::Playlist* get_last_pl(int hacky);
 }
 
 namespace app {
@@ -161,6 +161,14 @@ bool app::init() {
         TF_WARN(<< "Using dummy audio library");
     }
     pl::load_playlists();
+    if (1) {
+        SDL_Time ticks;
+        if (SDL_GetCurrentTime(&ticks)) {
+            SDL_srand((Uint64)ticks);
+        }
+        else
+            TF_ERROR(<< "Failed to get current time (" << SDL_GetError() << ")");
+    }
     return true;
 }
 
@@ -183,14 +191,14 @@ void app::process_event(const SDL_Event& ev) {
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
             // TODO: break if other windows are visible (ex. playlist config)
             if (ev.key.down && ev.key.repeat == 0) {
-                if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl())
+                if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl(1))
                     data->should_play_sel_hack = true;
-                else if (ev.key.scancode == SDL_SCANCODE_DELETE && ui::get_last_pl())
-                    pl::remove_selected(ui::get_last_pl());
-                else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl())
-                    pl::select_all(ui::get_last_pl());
-                else if (ev.key.scancode == SDL_SCANCODE_C && ctrl_state && ui::get_last_pl()) {
-                    pl::Playlist* p = ui::get_last_pl();
+                else if (ev.key.scancode == SDL_SCANCODE_DELETE && ui::get_last_pl(1))
+                    pl::remove_selected(ui::get_last_pl(0));
+                else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl(1))
+                    pl::select_all(ui::get_last_pl(0));
+                else if (ev.key.scancode == SDL_SCANCODE_C && ctrl_state && ui::get_last_pl(1)) {
+                    pl::Playlist* p = ui::get_last_pl(0);
                     if (p->selected.size() == 0)
                         break;
                     tf::str copy_str = tf::str("\"") + p->mus[p->selected[0]]->full_path + "\"";
@@ -200,7 +208,7 @@ void app::process_event(const SDL_Event& ev) {
                     if (!SDL_SetClipboardText(copy_str.c_str()))
                         TF_WARN(<< "Failed to update clipboard (" << SDL_GetError() << ")");
                 }
-                else if (ev.key.scancode == SDL_SCANCODE_V && ctrl_state && ui::get_last_pl()) {
+                else if (ev.key.scancode == SDL_SCANCODE_V && ctrl_state && ui::get_last_pl(1)) {
                     // TODO: WAIT UNTIL SDL3 FINALLY MAKES A PROPER CLIPBOARD API!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 }
             }
@@ -229,8 +237,8 @@ void app::process_event(const SDL_Event& ev) {
             if (!can_i_drop)
                 break;
             drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
-            if (ui::get_last_pl())
-                pl::add_file_by_fp(ui::get_last_pl(), ev.drop.data);
+            if (ui::get_last_pl(1))
+                pl::add_file_by_fp(ui::get_last_pl(0), ev.drop.data);
             break;
         }
         case SDL_EVENT_DROP_TEXT: {
@@ -257,8 +265,8 @@ void app::run() {
         ui::draw();
         if (data->should_play_sel_hack) {
             data->should_play_sel_hack = false;
-            if (ui::get_last_pl()) {
-                pl::play_selected(ui::get_last_pl());
+            if (ui::get_last_pl(1)) {
+                pl::play_selected(ui::get_last_pl(0));
             }
         }
         ren::end_frame();

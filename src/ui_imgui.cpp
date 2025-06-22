@@ -44,10 +44,11 @@ namespace ui {
 
     UiData* data;
 
-    pl::Playlist* get_last_pl() {
-        // Hacky
-        if (data->show_about || data->show_logs || data->show_playlist_conf)
+    pl::Playlist* get_last_pl(int hacky) {
+        if (hacky == 1 && (data->show_about || data->show_logs || data->show_playlist_conf))
             return nullptr;
+        if (hacky == 2)
+            return 1 ? data->last_pl : data->last_pl;  // TODO
         return data->last_pl;
     }
 
@@ -320,6 +321,7 @@ void ui::draw_playlist_tabs() {
 }
 
 void ui::draw_meta() {
+    // TODO: move this to new debug window
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
     if (!data->last_pl)
@@ -328,6 +330,10 @@ void ui::draw_meta() {
     for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
         if (audio::au->mus_opened(*it))
             ImGui::Text("%s", (*it)->fn.c_str());
+    }
+    ImGui::Text("Cache:");
+    for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
+        ImGui::Text("%s", (*it)->fn.c_str());
     }
     // TODO: improve
     char temp_buf[64];

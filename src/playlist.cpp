@@ -25,6 +25,7 @@ namespace app {
 
 namespace ui {
     void update_meta_info();
+    pl::Playlist* get_last_pl(int hacky);
 }
 
 namespace pl {
@@ -34,6 +35,7 @@ namespace pl {
     void audio_clear_cache();
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(audio::Music* mus);
+    void fill_cache();
 }
 
 static inline tf::str fn_from_fp(const tf::str& fp) {
@@ -144,6 +146,7 @@ void pl::load_playlists() {
 }
 
 bool pl::mus_open_file(audio::Music* mus) {
+    // TODO: support custom handles like SDL_IOstream maybe? (currently not because of sdl2-compat)
     return audio::au->mus_open_fp(mus, mus->full_path.c_str());
 }
 
@@ -411,6 +414,24 @@ void pl::unremember_selected(Playlist* p) {
         it2++;
     }
     p->remembering.clear();
+}
+
+void pl::fill_cache() {
+    // TODO: improve
+    Playlist* p = ui::get_last_pl(2);
+    if (!p)
+        return;
+    if (p->mus.size() < 5)
+        return;
+    TF_INFO(<< "filling cache");
+    while (audio::au->cache.size() < 2) {
+        audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
+        if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
+            continue;
+        TF_INFO(<< m->fn);
+        mus_open_file(m);
+        audio::au->cache.push_back(m);
+    }
 }
 
 void pl::select_all(Playlist* p) {
