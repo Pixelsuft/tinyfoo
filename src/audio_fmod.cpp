@@ -580,6 +580,7 @@ namespace audio {
         FMOD_RESULT (F_CALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
         FMOD_RESULT (F_CALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
         FMOD_RESULT (F_CALL *FMOD_Channel_SetDelay)(FMOD_CHANNEL*, unsigned long long, unsigned long long, FMOD_BOOL);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetDSPClock)(FMOD_CHANNEL*, unsigned long long*, unsigned long long*);
         FMOD_RESULT (F_CALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
@@ -589,6 +590,7 @@ namespace audio {
         FMOD_CHANNEL* ch;
 	    FMOD_SYSTEM* sys;
         FMODApi fmod;
+        float sps;
         float pause_pos;
         unsigned int fmod_ver;
         bool was_finished;
@@ -597,6 +599,7 @@ namespace audio {
         AudioFMOD() : AudioBase() {
             lib_name = "FMOD";
             ch = nullptr;
+            sps = 44100.f;
             stopped = was_finished = fading = false;
             // max_volume = 2.f;
             pause_pos = 0.f;
@@ -639,6 +642,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_Channel_SetPosition);
             FMOD_LOAD_FUNC(FMOD_Channel_GetPosition);
             FMOD_LOAD_FUNC(FMOD_Channel_SetDelay);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetDSPClock);
             FMOD_LOAD_FUNC(FMOD_Memory_Initialize);
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Memory_Initialize(
@@ -723,6 +727,13 @@ namespace audio {
             }
             else {
                 was_finished = false;
+                unsigned int samp_buf;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(cur_h, &samp_buf, FMOD_TIMEUNIT_PCM))) {
+                    TF_WARN(<< "Failed to get music pcm length (" << FMOD_ErrorString(err) << ")");
+                    sps = 44100.f;
+                }
+                else
+                    sps = (float)samp_buf / cur_mus->dur;
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetCallback(ch, fmod_channel_callback)))
                     TF_WARN(<< "Failed to set music callback (" << FMOD_ErrorString(err) << ")");
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetVolume(ch, volume)))
