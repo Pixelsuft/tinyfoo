@@ -229,7 +229,8 @@ img::format get_image_format(SDL_IOStream* ctx) {
 	return img::format::UNKNOWN;
 }
 
-static inline SDL_Surface* create_fallback_surface() {
+static inline void* create_fallback_surf() {
+    // TODO
     TF_WARN(<< "Returning fallback surface");
     return nullptr;
 }
@@ -245,18 +246,18 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
     if (data_size < 0) {
         TF_ERROR(<< "Failed to get image data size (" << SDL_GetError() << ")");
         loader_close_io(ctx, free_src);
-        return create_fallback_surface();
+        return create_fallback_surf();
     }
     if (data_size < 10) {
         TF_ERROR(<< "Too small data size for an image");
         loader_close_io(ctx, free_src);
-        return create_fallback_surface();
+        return create_fallback_surf();
     }
     img::format fmt = get_image_format(ctx);
     if (fmt == img::format::UNKNOWN) {
         TF_ERROR(<< "Unknown image format");
         loader_close_io(ctx, free_src);
-        return create_fallback_surface();
+        return create_fallback_surf();
     }
     if (fmt == img::format::BMP) {
         SDL_Surface* ret = SDL_LoadBMP_IO(ctx, free_src);
@@ -269,7 +270,7 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
     if (!s) {
         TF_ERROR(<< "Failed to create SDLWindowsStream");
         loader_close_io(ctx, free_src);
-        return create_fallback_surface();
+        return create_fallback_surf();
     }
     SDL_Surface* ret = nullptr;
     Gdiplus::Bitmap* gdi_bmp = Gdiplus::Bitmap::FromStream(s, false);
@@ -311,7 +312,7 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
     s->Release();
     tf::dl(s);
     loader_close_io(ctx, free_src);
-    return ret ? ret : create_fallback_surface();
+    return ret ? ret : create_fallback_surf();
 #endif
 #if ENABLE_UPNG
     if (fmt == img::format::PNG) {
@@ -365,12 +366,12 @@ void* img::surf_from_io(void* _ctx, bool free_src) {
         else
             TF_ERROR(<< "Failed to allocate image buffer");
         loader_close_io(ctx, free_src);
-        return ret ? ret : create_fallback_surface();
+        return ret ? ret : create_fallback_surf();
     }
 #endif
     loader_close_io(ctx, free_src);
     TF_ERROR(<< "Failed to find loader for an image");
-    return create_fallback_surface();
+    return create_fallback_surf();
 }
 
 void img::destroy() {

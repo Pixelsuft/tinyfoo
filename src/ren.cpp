@@ -3,6 +3,7 @@
 #include <log.hpp>
 #include <lbs.hpp>
 #include <conf.hpp>
+#include <image.hpp>
 #include <SDL3/SDL.h>
 #if IS_IMGUI
 #include <imgui.h>
@@ -129,4 +130,26 @@ void ren::destroy() {
     ImGui::DestroyContext();
 #endif
     tf::bump_dl(data);
+}
+
+static inline void* create_fallback_texture() {
+    // TODO
+    TF_WARN(<< "Returning fallback texture");
+    return nullptr;
+}
+
+void* ren::tex_from_io(void* ctx, bool free_src) {
+    SDL_Surface* surf = (SDL_Surface*)img::surf_from_io(ctx, free_src);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(data->ren, surf);
+    if (!tex) {
+        TF_ERROR(<< "Failed to create texture from surface (" << SDL_GetError() << ")");
+        SDL_DestroySurface(surf);
+        return create_fallback_texture();
+    }
+    SDL_DestroySurface(surf);
+    return tex;
+}
+
+void ren::tex_destroy(void* tex) {
+    SDL_DestroyTexture((SDL_Texture*)tex);
 }
