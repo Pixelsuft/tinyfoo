@@ -28,7 +28,8 @@ namespace audio {
         AUDIOQUEUE = 21,
         MFA = 22,
         M4A = 23,
-        FADPCM = 24
+        FADPCM = 24,
+        WMA = 25
     };
 
     static const char* get_type_str(Type tp) {
@@ -104,6 +105,9 @@ namespace audio {
             }
             case Type::FADPCM: {
                 return "FADPCM";
+            }
+            case Type::WMA: {
+                return "WMA";
             }
         }
         return "NONE";

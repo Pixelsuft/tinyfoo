@@ -692,7 +692,50 @@ namespace audio {
                 ret = false;
             }
             else {
-                mus->type = Type::MP3; // TODO
+                if (tp == FMOD_SOUND_TYPE_UNKNOWN)
+                    mus->type = Type::NONE;
+                else if (tp == FMOD_SOUND_TYPE_AIFF)
+                    mus->type = Type::AIFF;
+                else if (tp == FMOD_SOUND_TYPE_ASF)
+                    mus->type = Type::ASF;
+                else if (tp == FMOD_SOUND_TYPE_DLS)
+                    mus->type = Type::DLS;
+                else if (tp == FMOD_SOUND_TYPE_FLAC)
+                    mus->type = Type::FLAC;
+                else if (tp == FMOD_SOUND_TYPE_FSB || tp == FMOD_SOUND_TYPE_XMA || tp == FMOD_SOUND_TYPE_AT9)
+                    mus->type = Type::FSB;
+                else if (tp == FMOD_SOUND_TYPE_IT)
+                    mus->type = Type::IT;
+                else if (tp == FMOD_SOUND_TYPE_MIDI)
+                    mus->type = Type::MID;
+                else if (tp == FMOD_SOUND_TYPE_MOD)
+                    mus->type = Type::MOD;
+                else if (tp == FMOD_SOUND_TYPE_MPEG)
+                    mus->type = Type::MP3;
+                else if (tp == FMOD_SOUND_TYPE_OGGVORBIS)
+                    mus->type = Type::OGG;
+                else if (tp == FMOD_SOUND_TYPE_RAW)
+                    mus->type = Type::RAW;
+                else if (tp == FMOD_SOUND_TYPE_S3M)
+                    mus->type = Type::S3M;
+                else if (tp == FMOD_SOUND_TYPE_WAV)
+                    mus->type = Type::WAV;
+                else if (tp == FMOD_SOUND_TYPE_XM)
+                    mus->type = Type::XM;
+                else if (tp == FMOD_SOUND_TYPE_AUDIOQUEUE)
+                    mus->type = Type::AAC;
+                else if (tp == FMOD_SOUND_TYPE_VORBIS)
+                    mus->type = Type::VORBIS;
+                else if (tp == FMOD_SOUND_TYPE_MEDIA_FOUNDATION)
+                    mus->type = Type::WMA;
+                else if (tp == FMOD_SOUND_TYPE_MEDIACODEC)
+                    mus->type = Type::M4A;
+                else if (tp == FMOD_SOUND_TYPE_FADPCM)
+                    mus->type = Type::FADPCM;
+                else if (tp == FMOD_SOUND_TYPE_OPUS)
+                    mus->type = Type::OPUS;
+                else
+                    mus->type = Type::NONE;
             }
             return ret;
         }
