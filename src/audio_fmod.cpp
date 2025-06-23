@@ -153,6 +153,33 @@ typedef enum FMOD_CHANNELCONTROL_CALLBACK_TYPE {
     FMOD_CHANNELCONTROL_CALLBACK_FORCEINT = 65536
 } FMOD_CHANNELCONTROL_CALLBACK_TYPE;
 
+typedef enum FMOD_OUTPUTTYPE {
+    FMOD_OUTPUTTYPE_AUTODETECT,
+    FMOD_OUTPUTTYPE_UNKNOWN,
+    FMOD_OUTPUTTYPE_NOSOUND,
+    FMOD_OUTPUTTYPE_WAVWRITER,
+    FMOD_OUTPUTTYPE_NOSOUND_NRT,
+    FMOD_OUTPUTTYPE_WAVWRITER_NRT,
+    FMOD_OUTPUTTYPE_WASAPI,
+    FMOD_OUTPUTTYPE_ASIO,
+    FMOD_OUTPUTTYPE_PULSEAUDIO,
+    FMOD_OUTPUTTYPE_ALSA,
+    FMOD_OUTPUTTYPE_COREAUDIO,
+    FMOD_OUTPUTTYPE_AUDIOTRACK,
+    FMOD_OUTPUTTYPE_OPENSL,
+    FMOD_OUTPUTTYPE_AUDIOOUT,
+    FMOD_OUTPUTTYPE_AUDIO3D,
+    FMOD_OUTPUTTYPE_WEBAUDIO,
+    FMOD_OUTPUTTYPE_NNAUDIO,
+    FMOD_OUTPUTTYPE_WINSONIC,
+    FMOD_OUTPUTTYPE_AAUDIO,
+    FMOD_OUTPUTTYPE_AUDIOWORKLET,
+    FMOD_OUTPUTTYPE_PHASE,
+    FMOD_OUTPUTTYPE_OHAUDIO,
+    FMOD_OUTPUTTYPE_MAX,
+    FMOD_OUTPUTTYPE_FORCEINT = 65536
+} FMOD_OUTPUTTYPE;
+
 typedef enum FMOD_SOUND_TYPE {
     FMOD_SOUND_TYPE_UNKNOWN,
     FMOD_SOUND_TYPE_AIFF,
@@ -467,39 +494,86 @@ void SDLCALL FMOD_free(void* ptr, FMOD_MEMORY_TYPE type, const char* sourcestr) 
 }
 
 namespace audio {
+    static inline const char* output_type_to_str(FMOD_OUTPUTTYPE type) {
+        if (type == FMOD_OUTPUTTYPE_UNKNOWN)
+            return "unknown";
+        else if (type == FMOD_OUTPUTTYPE_NOSOUND)
+            return "nosound";
+        else if (type == FMOD_OUTPUTTYPE_WAVWRITER)
+            return "wavwriter";
+        else if (type == FMOD_OUTPUTTYPE_NOSOUND_NRT)
+            return "nosound_nrt";
+        else if (type == FMOD_OUTPUTTYPE_WAVWRITER_NRT)
+            return "wavwriter_nrt";
+        else if (type == FMOD_OUTPUTTYPE_WASAPI)
+            return "wasapi";
+        else if (type == FMOD_OUTPUTTYPE_ASIO)
+            return "asio";
+        else if (type == FMOD_OUTPUTTYPE_PULSEAUDIO)
+            return "pulseaudio";
+        else if (type == FMOD_OUTPUTTYPE_ALSA)
+            return "alsa";
+        else if (type == FMOD_OUTPUTTYPE_COREAUDIO)
+            return "coreaudio";
+        else if (type == FMOD_OUTPUTTYPE_AUDIOTRACK)
+            return "audiotrack";
+        else if (type == FMOD_OUTPUTTYPE_OPENSL)
+            return "opensl";
+        else if (type == FMOD_OUTPUTTYPE_AUDIOOUT)
+            return "audioout";
+        else if (type == FMOD_OUTPUTTYPE_AUDIO3D)
+            return "audio3d";
+        else if (type == FMOD_OUTPUTTYPE_WEBAUDIO)
+            return "webaudio";
+        else if (type == FMOD_OUTPUTTYPE_NNAUDIO)
+            return "nnaudio";
+        else if (type == FMOD_OUTPUTTYPE_WINSONIC)
+            return "winsonic";
+        else if (type == FMOD_OUTPUTTYPE_AAUDIO)
+            return "aaudio";
+        else if (type == FMOD_OUTPUTTYPE_AUDIOWORKLET)
+            return "audioworklet";
+        else if (type == FMOD_OUTPUTTYPE_PHASE)
+            return "phase";
+        else if (type == FMOD_OUTPUTTYPE_OHAUDIO)
+            return "ohaudio";
+        return "nosound";
+    }
+
     struct FMODApi {
         SDL_SharedObject* handle;
-        FMOD_RESULT (SDLCALL *FMOD_System_Create)(FMOD_SYSTEM**, unsigned int);
-        FMOD_RESULT (SDLCALL *FMOD_System_Release)(FMOD_SYSTEM*);
-        FMOD_RESULT (SDLCALL *FMOD_System_Init)(FMOD_SYSTEM*, int, FMOD_INITFLAGS, void*);
-        FMOD_RESULT (SDLCALL *FMOD_System_Close)(FMOD_SYSTEM*);
-        FMOD_RESULT (SDLCALL *FMOD_System_Update)(FMOD_SYSTEM*);
-        FMOD_RESULT (SDLCALL *FMOD_System_GetVersion)(FMOD_SYSTEM*, unsigned int*);
-        FMOD_RESULT (SDLCALL *FMOD_System_CreateStream)(FMOD_SYSTEM*, const char*, FMOD_MODE, FMOD_CREATESOUNDEXINFO*, FMOD_SOUND**);
-        FMOD_RESULT (SDLCALL *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
-        FMOD_RESULT (SDLCALL *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_Release)(FMOD_SOUND*);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
-        FMOD_RESULT (SDLCALL *FMOD_Sound_GetLoopCount)(FMOD_SOUND*, int*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_Stop)(FMOD_CHANNEL*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPaused)(FMOD_CHANNEL*, FMOD_BOOL);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPaused)(FMOD_CHANNEL*, FMOD_BOOL*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetVolume)(FMOD_CHANNEL*, float);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetVolume)(FMOD_CHANNEL*, float*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPitch)(FMOD_CHANNEL*, float);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPitch)(FMOD_CHANNEL*, float*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetMode)(FMOD_CHANNEL*, FMOD_MODE);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetMode)(FMOD_CHANNEL*, FMOD_MODE*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetCallback)(FMOD_CHANNEL*, FMOD_CHANNELCONTROL_CALLBACK);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetUserData)(FMOD_CHANNEL*, void*);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetUserData)(FMOD_CHANNEL*, void**);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
-        FMOD_RESULT (SDLCALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
-        FMOD_RESULT (SDLCALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
+        FMOD_RESULT (F_CALL *FMOD_System_Create)(FMOD_SYSTEM**, unsigned int);
+        FMOD_RESULT (F_CALL *FMOD_System_Release)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_CALL *FMOD_System_Init)(FMOD_SYSTEM*, int, FMOD_INITFLAGS, void*);
+        FMOD_RESULT (F_CALL *FMOD_System_Close)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_CALL *FMOD_System_Update)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_CALL *FMOD_System_GetVersion)(FMOD_SYSTEM*, unsigned int*);
+        FMOD_RESULT (F_CALL *FMOD_System_CreateStream)(FMOD_SYSTEM*, const char*, FMOD_MODE, FMOD_CREATESOUNDEXINFO*, FMOD_SOUND**);
+        FMOD_RESULT (F_CALL *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
+        FMOD_RESULT (F_CALL *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
+        FMOD_RESULT (F_CALL *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
+        FMOD_RESULT (F_CALL *FMOD_Sound_Release)(FMOD_SOUND*);
+        FMOD_RESULT (F_CALL *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_CALL *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
+        FMOD_RESULT (F_CALL *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
+        FMOD_RESULT (F_CALL *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
+        FMOD_RESULT (F_CALL *FMOD_Sound_GetLoopCount)(FMOD_SOUND*, int*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_Stop)(FMOD_CHANNEL*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetPaused)(FMOD_CHANNEL*, FMOD_BOOL);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetPaused)(FMOD_CHANNEL*, FMOD_BOOL*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetVolume)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetVolume)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetPitch)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetPitch)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetMode)(FMOD_CHANNEL*, FMOD_MODE);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetMode)(FMOD_CHANNEL*, FMOD_MODE*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetCallback)(FMOD_CHANNEL*, FMOD_CHANNELCONTROL_CALLBACK);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetUserData)(FMOD_CHANNEL*, void*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetUserData)(FMOD_CHANNEL*, void**);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_CALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_CALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
     class AudioFMOD : public AudioBase {
@@ -525,6 +599,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_System_CreateStream);
             FMOD_LOAD_FUNC(FMOD_System_PlaySound);
             FMOD_LOAD_FUNC(FMOD_System_GetChannel);
+            FMOD_LOAD_FUNC(FMOD_System_GetOutput);
             FMOD_LOAD_FUNC(FMOD_Sound_Release);
             FMOD_LOAD_FUNC(FMOD_Sound_GetLength);
             FMOD_LOAD_FUNC(FMOD_Sound_SetMode);
@@ -561,6 +636,12 @@ namespace audio {
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
+            FMOD_OUTPUTTYPE out_type;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetOutput(sys, &out_type))) {
+                TF_WARN(<< "Failed to get FMOD output type (" << FMOD_ErrorString(err) << ")");
+                out_type = FMOD_OUTPUTTYPE_NOSOUND;
+            }
+            TF_INFO(<< "FMOD inited successfully with " << output_type_to_str(out_type) << " driver");
             inited = true;
         }
 

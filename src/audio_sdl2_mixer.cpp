@@ -171,7 +171,10 @@ namespace audio {
             }
             if (ret_flags < init_flags)
                 TF_WARN(<< "Failed to init some " << lib_name << "formats (" << SDL_GetError() << ")");
-            TF_INFO(<< "" << lib_name << " inited successfully");
+            const char* drv_name = SDL_GetCurrentAudioDriver();
+            if (!drv_name)
+                drv_name = "unknown";
+            TF_INFO(<< lib_name << " inited successfully with " << drv_name << " driver");
             inited = true;
         }
 
@@ -190,10 +193,7 @@ namespace audio {
             Uint16 num_fmt = 0;
             int num_ch = 0;
             mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
-            const char* drv_name = SDL_GetCurrentAudioDriver();
-            if (!drv_name)
-                drv_name = "unknown";
-            TF_INFO(<< "Audio device opened (" << drv_name << ", " << num_fr << "Hz freq, " << num_ch << " channels)");
+            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels)");
             mix.Mix_AllocateChannels(0);
             dev_opened = true;
             return true;
