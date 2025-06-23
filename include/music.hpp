@@ -13,7 +13,9 @@ namespace audio {
         FLAC = 6,
         OPUS = 7,
         WAVPACK = 8,
-        GME = 9
+        GME = 9,
+        PXTONE = 10,
+        AAC = 11
     };
 
     static const char* get_type_str(Type tp) {
@@ -47,6 +49,12 @@ namespace audio {
             }
             case Type::GME: {
                 return "GME";
+            }
+            case Type::PXTONE: {
+                return "PXTONE";
+            }
+            case Type::AAC: {
+                return "AAC";
             }
         }
         return "NONE";

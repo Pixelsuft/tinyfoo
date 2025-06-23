@@ -31,7 +31,14 @@ typedef enum {
     MUS_MODPLUG_UNUSED,
     MUS_OPUS,
     MUS_WAVPACK,
-    MUS_GME
+    MUS_GME,
+    MUS_FFMPEG = 100,
+    MUS_PXTONE,
+    MUS_ADLMIDI = 200,
+    MUS_OPNMIDI,
+    MUS_FLUIDLITE,
+    MUS_EDMIDI,
+    MUS_NATIVEMIDI
 } Mix_MusicType;
 
 typedef struct _Mix_Music Mix_Music;
@@ -288,7 +295,12 @@ namespace audio {
                 mus->type = Type::MOD;
                 break;
             }
-            case MUS_MID: {
+            case MUS_MID:
+            case MUS_ADLMIDI: 
+            case MUS_OPNMIDI: 
+            case MUS_FLUIDLITE: 
+            case MUS_EDMIDI: 
+            case MUS_NATIVEMIDI: {
                 mus->type = Type::MID;
                 break;
             }
@@ -314,6 +326,14 @@ namespace audio {
             }
             case MUS_GME: {
                 mus->type = Type::GME;
+                break;
+            }
+            case MUS_PXTONE: {
+                mus->type = Type::PXTONE;
+                break;
+            }
+            case MUS_FFMPEG: {
+                mus->type = Type::AAC;  // Not only AAC
                 break;
             }
             default: {

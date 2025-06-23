@@ -23,7 +23,7 @@ namespace util {
             return false;
         auto it2 = p2.begin();
         for (auto it = p1.begin(); it != p1.end(); it++) {
-            if (((*it) == '\\' || (*it) == '//') && ((*it2) == '\\' || (*it2) == '//')) {
+            if (((*it) == '\\' || (*it) == '/') && ((*it2) == '\\' || (*it2) == '/')) {
                 it2++;
                 continue;
             }
