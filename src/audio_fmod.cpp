@@ -713,7 +713,6 @@ namespace audio {
                 cache.erase(cache.begin());
             }
             pl::mus_open_file(cur_mus);
-            TF_INFO(<< "playin " << cur_mus->fn);
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_PlaySound(sys, cur_h, nullptr, 1, &ch))) {
                 TF_ERROR(<< "Failed to play music (" << FMOD_ErrorString(err) << ")");
                 ch = nullptr;

@@ -41,6 +41,7 @@ namespace ui {
         bool show_about;
         bool show_logs;
         bool show_playlist_conf;
+        bool show_meta_debug;
     };
 
     UiData* data;
@@ -142,6 +143,7 @@ bool ui::init() {
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    data->show_meta_debug = !IS_RELEASE;
     data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
@@ -257,6 +259,7 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Help")) {
+        ImGui::MenuItem("Show Debug Info", nullptr, &data->show_meta_debug);
         if (ImGui::MenuItem("Show Logs", nullptr, nullptr))
             data->show_logs = true;
         if (ImGui::MenuItem("About", nullptr, nullptr))
@@ -347,19 +350,23 @@ void ui::draw_playlist_tabs() {
 }
 
 void ui::draw_meta() {
-    // TODO: move this to new debug window
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
-    if (audio::au->cur_mus)
-        ImGui::Text("Current: %s", audio::au->cur_mus->fn.c_str());
-    ImGui::Text("Opened:");
-    for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
-        if (audio::au->mus_opened(*it))
+    if (data->show_meta_debug) {
+        ImGui::PushFont(data->font2);
+        ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Debug");
+        ImGui::PopFont();
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
+        if (audio::au->cur_mus)
+            ImGui::Text("Current: %s", audio::au->cur_mus->fn.c_str());
+        ImGui::Text("Opened:");
+        for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
+            if (audio::au->mus_opened(*it))
+                ImGui::Text("%s", (*it)->fn.c_str());
+        }
+        ImGui::Text("Cache:");
+        for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
             ImGui::Text("%s", (*it)->fn.c_str());
-    }
-    ImGui::Text("Cache:");
-    for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
-        ImGui::Text("%s", (*it)->fn.c_str());
+        }
     }
     // TODO: improve
     char temp_buf[64];

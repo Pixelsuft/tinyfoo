@@ -147,7 +147,10 @@ void pl::load_playlists() {
 
 bool pl::mus_open_file(audio::Music* mus) {
     // TODO: support custom handles like SDL_IOstream maybe? (currently not because of sdl2-compat)
-    return audio::au->mus_open_fp(mus, mus->full_path.c_str());
+    bool ret = audio::au->mus_open_fp(mus, mus->full_path.c_str());
+    if (!ret && mus->fn.size() > 0)
+        TF_WARN(<< "Music \"" << mus->fn << "\" failed to open");
+    return ret;
 }
 
 void pl::add_file_by_fp(Playlist* p, const char* fp) {
