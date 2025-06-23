@@ -215,6 +215,9 @@ void app::process_event(const SDL_Event& ev) {
                 else if (ev.key.scancode == SDL_SCANCODE_V && ctrl_state && ui::get_last_pl(1)) {
                     // TODO: WAIT UNTIL SDL3 FINALLY MAKES A PROPER CLIPBOARD API!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 }
+                else if (ev.key.scancode == SDL_SCANCODE_ESCAPE) {
+                    ui::handle_esc();
+                }
             }
         }
         case SDL_EVENT_CLIPBOARD_UPDATE: {

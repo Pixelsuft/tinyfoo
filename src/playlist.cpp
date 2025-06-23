@@ -327,6 +327,7 @@ void pl::play_selected(Playlist* p) {
     // Maybe clear cache after started playing???
     audio_clear_cache();
     audio::Music* mus = p->mus[p->selected[0]];
+    // Should I handle open errors here?
     mus_open_file(mus);
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();

@@ -106,11 +106,28 @@ namespace ui {
         }
         int rounded_dur = (int)SDL_floor(dur);
         if (rounded_dur < 3600)
-            SDL_snprintf(buf, 11, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
         else if (rounded_dur < 86400)
-            SDL_snprintf(buf, 11, "%i:%02i:%02i", rounded_dur / 3600, (rounded_dur % 3600) / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%i:%02i:%02i", rounded_dur / 3600, (rounded_dur % 3600) / 60, rounded_dur % 60);
         else
-            SDL_snprintf(buf, 11, "%id %i:%02i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 3600, ((rounded_dur % 86400) % 3600) / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%id %i:%02i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 3600, ((rounded_dur % 86400) % 3600) / 60, rounded_dur % 60);
+    }
+
+    static inline void do_extra_stuff() {
+        if (1) {
+            // Useful on windows
+            if (audio::au->cur_mus) {
+                char pos_buf[32];
+                char dur_buf[32];
+                fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
+                fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
+                tf::str title = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "]";
+                SDL_SetWindowTitle((SDL_Window*)app::win_handle, title.c_str());
+            }
+            else {
+                SDL_SetWindowTitle((SDL_Window*)app::win_handle, "tinyfoo");
+            }
+        }
     }
 
     void fix_selected_pl() {
@@ -523,6 +540,7 @@ void ui::draw_tab() {
 }
 
 void ui::draw() {
+    do_extra_stuff();
     ImGui::PushFont(data->font1);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::SetNextWindowPos({ 0.f, 0.f }, 1);
@@ -642,6 +660,12 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
     if (data->log_cache.size() >= LOG_CACHE_COUNT)
         data->log_cache.erase(data->log_cache.begin());
     data->log_cache.push_back(tf::str(msg));
+}
+
+void ui::handle_esc() {
+    data->show_about = false;
+    data->show_logs = false;
+    data->show_playlist_conf = false;
 }
 
 void ui::draw_logs() {
