@@ -15,7 +15,20 @@ namespace audio {
         WAVPACK = 8,
         GME = 9,
         PXTONE = 10,
-        AAC = 11
+        AAC = 11,
+        AIFF = 12,
+        ASF = 13,
+        DLS = 14,
+        FSB = 15,
+        IT = 16,
+        RAW = 17,
+        S3M = 18,
+        XM = 19,
+        VORBIS = 20,
+        AUDIOQUEUE = 21,
+        MFA = 22,
+        M4A = 23,
+        FADPCM = 24
     };
 
     static const char* get_type_str(Type tp) {
@@ -55,6 +68,42 @@ namespace audio {
             }
             case Type::AAC: {
                 return "AAC";
+            }
+            case Type::AIFF: {
+                return "AIFF";
+            }
+            case Type::ASF: {
+                return "ASF";
+            }
+            case Type::FSB: {
+                return "FSB";
+            }
+            case Type::IT: {
+                return "IT";
+            }
+            case Type::RAW: {
+                return "RAW";
+            }
+            case Type::S3M: {
+                return "S3M";
+            }
+            case Type::XM: {
+                return "XM";
+            }
+            case Type::VORBIS: {
+                return "VORBIS";
+            }
+            case Type::AUDIOQUEUE: {
+                return "AUDIOQUEUE";
+            }
+            case Type::MFA: {
+                return "MFA";
+            }
+            case Type::M4A: {
+                return "M4A";
+            }
+            case Type::FADPCM: {
+                return "FADPCM";
             }
         }
         return "NONE";

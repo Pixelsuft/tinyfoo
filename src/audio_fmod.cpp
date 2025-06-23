@@ -206,6 +206,7 @@ typedef enum FMOD_SOUND_TYPE {
     FMOD_SOUND_TYPE_MEDIACODEC,
     FMOD_SOUND_TYPE_FADPCM,
     FMOD_SOUND_TYPE_OPUS,
+
     FMOD_SOUND_TYPE_MAX,
     FMOD_SOUND_TYPE_FORCEINT = 65536
 } FMOD_SOUND_TYPE;
@@ -472,6 +473,8 @@ static const char* FMOD_ErrorString(FMOD_RESULT errcode) {
 } while (0)
 #endif
 #define FMOD_HAS_ERROR(res) ((res) != FMOD_OK)
+#define mus_h ((FMOD_SOUND*)mus->h1)
+#define cur_h ((FMOD_SOUND*)cur_mus->h1)
 
 void* SDLCALL FMOD_malloc(unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr) {
     (void)type;
@@ -554,6 +557,7 @@ namespace audio {
         FMOD_RESULT (F_CALL *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
         FMOD_RESULT (F_CALL *FMOD_Sound_Release)(FMOD_SOUND*);
         FMOD_RESULT (F_CALL *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_CALL *FMOD_Sound_GetFormat)(FMOD_SOUND*, FMOD_SOUND_TYPE*, FMOD_SOUND_FORMAT*, int*, int*);
         FMOD_RESULT (F_CALL *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
         FMOD_RESULT (F_CALL *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
         FMOD_RESULT (F_CALL *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
@@ -602,6 +606,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_System_GetOutput);
             FMOD_LOAD_FUNC(FMOD_Sound_Release);
             FMOD_LOAD_FUNC(FMOD_Sound_GetLength);
+            FMOD_LOAD_FUNC(FMOD_Sound_GetFormat);
             FMOD_LOAD_FUNC(FMOD_Sound_SetMode);
             FMOD_LOAD_FUNC(FMOD_Sound_GetMode);
             FMOD_LOAD_FUNC(FMOD_Sound_SetLoopCount);
@@ -669,6 +674,51 @@ namespace audio {
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Update(sys)))
                 TF_WARN(<< "Failed to update FMOD system (" << FMOD_ErrorString(err) << ")");
+        }
+
+        bool mus_fill_info(Music* mus) {
+            bool ret = true;
+            FMOD_RESULT err;
+            unsigned int buf;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(mus_h, &buf, FMOD_TIMEUNIT_MS))) {
+                TF_ERROR(<< "Failed to get FMOD music length (" << FMOD_ErrorString(err) << ")");
+                ret = false;
+            }
+            else
+                mus->dur = (float)buf / 1000.f;
+            FMOD_SOUND_TYPE tp;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetFormat(mus_h, &tp, nullptr, nullptr, nullptr))) {
+                TF_ERROR(<< "Failed to get FMOD music length (" << FMOD_ErrorString(err) << ")");
+                ret = false;
+            }
+            else {
+                mus->type = Type::MP3; // TODO
+            }
+            return ret;
+        }
+
+        bool mus_open_fp(Music* mus, const char* fp) {
+            if (mus->h1)
+                return true;
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_CreateStream(
+                sys, fp, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM,
+                nullptr, (FMOD_SOUND**)&mus->h1
+            ))) {
+                TF_ERROR(<< "Failed to create FMOD music (" << FMOD_ErrorString(err) << ")");
+                mus->h1 = nullptr;
+                return false;
+            }
+            return true;
+        }
+
+        void mus_close(Music* mus) {
+            if (!mus->h1)
+                return;
+            FMOD_RESULT err;
+            if (err = fmod.FMOD_Sound_Release(mus_h))
+                TF_ERROR(<< "Failed to close FMOD music (" << FMOD_ErrorString(err) << ")");
+            mus->h1 = nullptr;
         }
 
         ~AudioFMOD() {
