@@ -283,7 +283,8 @@ void ui::draw_playback_buttons() {
         if (audio::au->cur_paused())
             audio::au->cur_resume();
         else {
-            // ?
+            pl::fill_cache();
+            audio::au->force_play_cache();
         }
     }
     if (ImGui::Button("||")) {
