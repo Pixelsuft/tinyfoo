@@ -12,6 +12,8 @@
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
+// TODO: conf in lbs
+#define WIN_TITLE_PATCH 1
 
 namespace app {
     extern void* win_handle;
@@ -27,6 +29,9 @@ namespace ui {
         tf::vec<tf::str> log_cache;
         tf::str meta_fn;
         tf::str meta_fmt;
+#if WIN_TITLE_PATCH
+        tf::str last_cap;
+#endif
         size_t meta_mod;
         double meta_dur;
         char pl_name_buf[64];
@@ -115,20 +120,23 @@ namespace ui {
     }
 
     static inline void do_extra_stuff() {
-        if (1) {
-            // Useful on windows
-            if (audio::au->cur_mus) {
-                char pos_buf[32];
-                char dur_buf[32];
-                fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
-                fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
-                tf::str title = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "]";
-                SDL_SetWindowTitle((SDL_Window*)app::win_handle, title.c_str());
-            }
-            else {
-                SDL_SetWindowTitle((SDL_Window*)app::win_handle, "tinyfoo");
-            }
+#if WIN_TITLE_PATCH
+        tf::str new_cap;
+        // TODO: when not stopped
+        if (audio::au->cur_mus) {
+            char pos_buf[32];
+            char dur_buf[32];
+            fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
+            fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
+            new_cap = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "]";
         }
+        else
+            new_cap = "tinyfoo";
+        if (new_cap != data->last_cap) {
+            data->last_cap = new_cap;
+            SDL_SetWindowTitle((SDL_Window*)app::win_handle, new_cap.c_str());
+        }
+#endif
     }
 
     void fix_selected_pl() {

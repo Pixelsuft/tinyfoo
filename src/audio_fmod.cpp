@@ -579,6 +579,7 @@ namespace audio {
         FMOD_RESULT (F_CALL *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
         FMOD_RESULT (F_CALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
         FMOD_RESULT (F_CALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_CALL *FMOD_Channel_SetDelay)(FMOD_CHANNEL*, unsigned long long, unsigned long long, FMOD_BOOL);
         FMOD_RESULT (F_CALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
@@ -592,10 +593,11 @@ namespace audio {
         unsigned int fmod_ver;
         bool was_finished;
         bool stopped;
+        bool fading;
         AudioFMOD() : AudioBase() {
             lib_name = "FMOD";
             ch = nullptr;
-            stopped = was_finished = false;
+            stopped = was_finished = fading = false;
             // max_volume = 2.f;
             pause_pos = 0.f;
             const char* lib_path = IS_WIN ? "fmod.dll" : "libfmod.so";
@@ -636,6 +638,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_Channel_GetCurrentSound);
             FMOD_LOAD_FUNC(FMOD_Channel_SetPosition);
             FMOD_LOAD_FUNC(FMOD_Channel_GetPosition);
+            FMOD_LOAD_FUNC(FMOD_Channel_SetDelay);
             FMOD_LOAD_FUNC(FMOD_Memory_Initialize);
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Memory_Initialize(
@@ -730,6 +733,24 @@ namespace audio {
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
             pl::fill_cache();
+        }
+
+        void cur_pause() {
+        }
+
+        void cur_resume() {
+        }
+
+        bool cur_paused() {
+            if (!ch)
+                return false;
+            FMOD_RESULT err;
+            FMOD_BOOL ret;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetPaused(ch, &ret))) {
+                TF_WARN(<< "Failed to get music pause state (" << FMOD_ErrorString(err) << ")");
+                return false;
+            }
+            return ret ? true : false;
         }
 
         void update_volume() {
@@ -901,6 +922,7 @@ FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FM
 	if ((controltype == FMOD_CHANNELCONTROL_CHANNEL) && (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)) {
 		((audio::AudioFMOD*)audio::au)->ch = nullptr;
 		((audio::AudioFMOD*)audio::au)->was_finished = true;
+		((audio::AudioFMOD*)audio::au)->fading = false;
 	}
 	return FMOD_OK;
 }
