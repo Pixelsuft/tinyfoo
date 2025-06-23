@@ -253,7 +253,6 @@ namespace audio {
                     mix.Mix_FadeOutMusic((int)(fade_next_time * 1000.f));
                 return;
             }
-            // TODO: improve
             Music* prev = nullptr;
             if (!from_rep) {
                 prev = cur_mus;
@@ -385,16 +384,14 @@ namespace audio {
         }
 
         void cur_set_pos(float pos) {
-            if (!cur_mus)
+            if (!cur_mus || !hooked)
                 return;
-            if (paused) {
-                pause_pos = pos;
-                return;
-            }
             if (pos < 0.f)
                 pos = 0.f;
-            else if (pos > cur_mus->dur) {
-                // TODO: next
+            else if (pos > cur_mus->dur)
+                pos = cur_mus->dur;
+            if (paused) {
+                pause_pos = pos;
                 return;
             }
             if (mix.Mix_SetMusicPosition((double)pos) < 0)

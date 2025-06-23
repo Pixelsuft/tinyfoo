@@ -476,6 +476,8 @@ static const char* FMOD_ErrorString(FMOD_RESULT errcode) {
 #define mus_h ((FMOD_SOUND*)mus->h1)
 #define cur_h ((FMOD_SOUND*)cur_mus->h1)
 
+FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FMOD_CHANNELCONTROL_TYPE controltype, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype, void* commanddata1, void* commanddata2);
+
 void* SDLCALL FMOD_malloc(unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr) {
     (void)type;
     (void)sourcestr;
@@ -582,12 +584,20 @@ namespace audio {
 
     class AudioFMOD : public AudioBase {
         protected:
+        public:
+        FMOD_CHANNEL* ch;
 	    FMOD_SYSTEM* sys;
         FMODApi fmod;
+        float pause_pos;
         unsigned int fmod_ver;
-        public:
+        bool was_finished;
+        bool stopped;
         AudioFMOD() : AudioBase() {
             lib_name = "FMOD";
+            ch = nullptr;
+            stopped = was_finished = false;
+            // max_volume = 2.f;
+            pause_pos = 0.f;
             const char* lib_path = IS_WIN ? "fmod.dll" : "libfmod.so";
             fmod.handle = SDL_LoadObject(lib_path);
             if (!fmod.handle) {
@@ -670,10 +680,119 @@ namespace audio {
                 TF_ERROR(<< "Failed to close FMOD system (" << FMOD_ErrorString(err) << ")");
         }
 
+        void force_play_cache() {
+            FMOD_RESULT err;
+            if (cache.size() == 0)
+                return;
+            bool from_rep = false;
+            if (cache[0] == cur_mus) {
+                cache.erase(cache.begin());
+                if (stopped || was_finished) {
+                    // Hack
+                    cur_mus = nullptr;
+                    force_play_cache();
+                    return;
+                }
+                if (ch) {
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, 0, FMOD_TIMEUNIT_MS)))
+                        TF_WARN(<< "Failed to seek music to start (" << FMOD_ErrorString(err) << ")");
+                    return;
+                }
+                from_rep = true;
+            }
+            stopped = false;
+            if (ch) {
+                // TODO: fade out
+                fmod.FMOD_Channel_Stop(ch);
+                return;
+            }
+            Music* prev = nullptr;
+            if (!from_rep) {
+                prev = cur_mus;
+                cur_mus = cache[0];
+                cache.erase(cache.begin());
+            }
+            pl::mus_open_file(cur_mus);
+            TF_INFO(<< "playin " << cur_mus->fn);
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_PlaySound(sys, cur_h, nullptr, 1, &ch))) {
+                TF_ERROR(<< "Failed to play music (" << FMOD_ErrorString(err) << ")");
+                ch = nullptr;
+                was_finished = true;
+            }
+            else {
+                was_finished = false;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetCallback(ch, fmod_channel_callback)))
+                    TF_WARN(<< "Failed to set music callback (" << FMOD_ErrorString(err) << ")");
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetVolume(ch, volume)))
+                    TF_WARN(<< "Failed to set music volume (" << FMOD_ErrorString(err) << ")");
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPaused(ch, 0)))
+                    TF_WARN(<< "WTF failed to unpause music for playing (" << FMOD_ErrorString(err) << ")");
+            }
+            if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
+                mus_close(prev);
+            pl::fill_cache();
+        }
+
+        void update_volume() {
+            FMOD_RESULT err;
+            if (ch && FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetVolume(ch, volume)))
+                TF_WARN(<< "Failed to set music volume (" << FMOD_ErrorString(err) << ")");
+        }
+
+        void cur_stop() {
+            if (!ch)
+                return;
+            bool was_paused = cur_paused();
+            stopped = true;
+            // TODO: fade out
+            fmod.FMOD_Channel_Stop(ch);
+            pl::fill_cache();
+        }
+
+        float cur_get_pos() {
+            if (cur_paused())
+                return pause_pos;
+            if (!cur_mus || stopped || !ch)
+                return 0.f;
+            FMOD_RESULT err;
+            unsigned int buf;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetPosition(ch, &buf, FMOD_TIMEUNIT_MS))) {
+                TF_WARN(<< "Failed to get music pos (" << FMOD_ErrorString(err) << ")");
+                return 0.f;
+            }
+            return (float)buf / 1000.f;
+        }
+
+        void cur_set_pos(float pos) {
+            if (!cur_mus || !ch)
+                return;
+            if (pos < 0.f)
+                pos = 0.f;
+            else if (pos > cur_mus->dur)
+                pos = cur_mus->dur;
+            // TODO: if paused
+            if (0) {
+                pause_pos = pos;
+                return;
+            }
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, (unsigned int)(pos * 1000.f), FMOD_TIMEUNIT_MS)))
+                TF_WARN(<< "Failed to set music pos (" << FMOD_ErrorString(err) << ")");
+        }
+
         void update() {
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Update(sys)))
                 TF_WARN(<< "Failed to update FMOD system (" << FMOD_ErrorString(err) << ")");
+            if (was_finished) {
+                was_finished = false;
+                if (!stopped)
+                    force_play_cache();
+                pl::fill_cache();
+                int cnt = std::min((int)cache.size(), cache_opened_cnt);
+                for (int i = 0; i < cnt; i++)
+                    pl::mus_open_file(cache[i]);
+            }
         }
 
         bool mus_fill_info(Music* mus) {
@@ -681,14 +800,14 @@ namespace audio {
             FMOD_RESULT err;
             unsigned int buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(mus_h, &buf, FMOD_TIMEUNIT_MS))) {
-                TF_ERROR(<< "Failed to get FMOD music length (" << FMOD_ErrorString(err) << ")");
+                TF_ERROR(<< "Failed to get music length (" << FMOD_ErrorString(err) << ")");
                 ret = false;
             }
             else
                 mus->dur = (float)buf / 1000.f;
             FMOD_SOUND_TYPE tp;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetFormat(mus_h, &tp, nullptr, nullptr, nullptr))) {
-                TF_ERROR(<< "Failed to get FMOD music length (" << FMOD_ErrorString(err) << ")");
+                TF_ERROR(<< "Failed to get music format (" << FMOD_ErrorString(err) << ")");
                 ret = false;
             }
             else {
@@ -748,7 +867,7 @@ namespace audio {
                 sys, fp, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM,
                 nullptr, (FMOD_SOUND**)&mus->h1
             ))) {
-                TF_ERROR(<< "Failed to create FMOD music (" << FMOD_ErrorString(err) << ")");
+                TF_ERROR(<< "Failed to open music (" << FMOD_ErrorString(err) << ")");
                 mus->h1 = nullptr;
                 return false;
             }
@@ -760,7 +879,7 @@ namespace audio {
                 return;
             FMOD_RESULT err;
             if (err = fmod.FMOD_Sound_Release(mus_h))
-                TF_ERROR(<< "Failed to close FMOD music (" << FMOD_ErrorString(err) << ")");
+                TF_ERROR(<< "Failed to close music (" << FMOD_ErrorString(err) << ")");
             mus->h1 = nullptr;
         }
 
@@ -776,6 +895,15 @@ namespace audio {
             inited = false;
         }
     };
+}
+
+FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FMOD_CHANNELCONTROL_TYPE controltype, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype, void* commanddata1, void* commanddata2) {
+	if ((controltype == FMOD_CHANNELCONTROL_CHANNEL) && (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)) {
+		((audio::AudioFMOD*)audio::au)->ch = nullptr;
+		((audio::AudioFMOD*)audio::au)->was_finished = true;
+        // TODO: optimize this cuz its main thread
+	}
+	return FMOD_OK;
 }
 
 audio::AudioBase* audio::create_fmod() {
