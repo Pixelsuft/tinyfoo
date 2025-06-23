@@ -581,6 +581,8 @@ namespace audio {
         FMOD_RESULT (F_CALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
         FMOD_RESULT (F_CALL *FMOD_Channel_SetDelay)(FMOD_CHANNEL*, unsigned long long, unsigned long long, FMOD_BOOL);
         FMOD_RESULT (F_CALL *FMOD_Channel_GetDSPClock)(FMOD_CHANNEL*, unsigned long long*, unsigned long long*);
+        FMOD_RESULT (F_CALL *FMOD_Channel_AddFadePoint)(FMOD_CHANNEL*, unsigned long long, float);
+        FMOD_RESULT (F_CALL *FMOD_Channel_RemoveFadePoints)(FMOD_CHANNEL*, unsigned long long, unsigned long long);
         FMOD_RESULT (F_CALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
@@ -643,6 +645,8 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_Channel_GetPosition);
             FMOD_LOAD_FUNC(FMOD_Channel_SetDelay);
             FMOD_LOAD_FUNC(FMOD_Channel_GetDSPClock);
+            FMOD_LOAD_FUNC(FMOD_Channel_AddFadePoint);
+            FMOD_LOAD_FUNC(FMOD_Channel_RemoveFadePoints);
             FMOD_LOAD_FUNC(FMOD_Memory_Initialize);
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Memory_Initialize(
@@ -747,9 +751,36 @@ namespace audio {
         }
 
         void cur_pause() {
+            if (!ch || cur_paused())
+                return;
+            FMOD_RESULT err;
+            unsigned long long buf;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
+                TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
+                return;
+            }
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
+                TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_pause_time * sps), 0.f)))
+                TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
+            fading = true;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_pause_time * sps), 0)))
+                TF_WARN(<< "Failed to set music delay (" << FMOD_ErrorString(err) << ")");
+        }
+
+        void remove_fades() {
+            if (!ch || !fading)
+                return;
+            FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_RemoveFadePoints(ch, 0, (unsigned long long)((cur_mus->dur + 1.f) * sps))))
+                TF_WARN(<< "Failed to remove music fade points (" << FMOD_ErrorString(err) << ")");
+            fading = false;
         }
 
         void cur_resume() {
+            if (!ch)
+                return;
+            remove_fades();
         }
 
         bool cur_paused() {
@@ -807,6 +838,7 @@ namespace audio {
                 return;
             }
             FMOD_RESULT err;
+            remove_fades();
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, (unsigned int)(pos * 1000.f), FMOD_TIMEUNIT_MS)))
                 TF_WARN(<< "Failed to set music pos (" << FMOD_ErrorString(err) << ")");
         }
