@@ -6,6 +6,7 @@
 #include <playlist.hpp>
 #include <util.hpp>
 #include <vec.hpp>
+#include <ren.hpp>
 #include <res.hpp>
 #include <audio_base.hpp>
 #include <set.hpp>
@@ -42,6 +43,7 @@ namespace ui {
         pl::Playlist* last_pl;
         pl::Playlist* sel_pl;
         pl::Playlist* need_conf_pl;
+        void* logo_tex;
         Point size;
         bool show_about;
         bool show_logs;
@@ -152,6 +154,7 @@ bool ui::init() {
     data->show_logs = false;
     data->show_playlist_conf = false;
     data->show_meta_debug = !IS_RELEASE;
+    data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
     data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
@@ -629,11 +632,13 @@ void ui::draw_playlist_conf() {
 }
 
 void ui::draw_about() {
+    ImGui::Image((ImTextureID)(intptr_t)data->logo_tex, ImVec2(128.f, 128.f));
     ImGui::Text("tinyfoo by Pixelsuft");
 }
 
 void ui::destroy() {
     mem::free((void*)data->pl_path_buf);
+    ren::tex_destroy(data->logo_tex);
     tf::bump_dl(data);
     data = nullptr;
 }
