@@ -703,19 +703,31 @@ namespace audio {
                     // Hack
                     cur_mus = nullptr;
                     force_play_cache();
+                    pl::fill_cache();
                     return;
                 }
                 if (ch) {
                     if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, 0, FMOD_TIMEUNIT_MS)))
                         TF_WARN(<< "Failed to seek music to start (" << FMOD_ErrorString(err) << ")");
+                    pl::fill_cache();
                     return;
                 }
                 from_rep = true;
             }
             stopped = false;
             if (ch) {
-                // TODO: fade out
-                fmod.FMOD_Channel_Stop(ch);
+                unsigned long long buf;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
+                    TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
+                    return;
+                }
+                fading = true;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
+                    TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_next_time * sps), 0.f)))
+                    TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_next_time * sps), 1)))
+                    TF_WARN(<< "Failed to set next music delay (" << FMOD_ErrorString(err) << ")");
                 return;
             }
             Music* prev = nullptr;
@@ -757,6 +769,7 @@ namespace audio {
                 return;
             remove_fades();
             FMOD_RESULT err;
+            pause_pos = cur_get_pos();
             unsigned long long buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
                 TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
@@ -786,6 +799,8 @@ namespace audio {
                 return;
             remove_fades();
             FMOD_RESULT err;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, (unsigned int)(pause_pos * 1000.f), FMOD_TIMEUNIT_MS)))
+                TF_WARN(<< "Failed to seek music pause pos (" << FMOD_ErrorString(err) << ")");
             unsigned long long buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
                 TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
@@ -798,23 +813,13 @@ namespace audio {
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_resume_time * sps), 1.f)))
                 TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, buf, 0, 0)))
-                TF_WARN(<< "Failed to set music delay (" << FMOD_ErrorString(err) << ")");
+                TF_WARN(<< "Failed to set resume music delay (" << FMOD_ErrorString(err) << ")");
         }
 
         bool cur_paused() {
             if (!ch)
                 return false;
             return paused;
-            /*
-            FMOD_RESULT err;
-            FMOD_BOOL ret;
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetPaused(ch, &ret))) {
-                TF_WARN(<< "Failed to get music pause state (" << FMOD_ErrorString(err) << ")");
-                return false;
-            }
-            TF_INFO(<< "paused ?" << ret);
-            return ret ? true : false;
-            */
         }
 
         void update_volume() {
@@ -828,8 +833,19 @@ namespace audio {
                 return;
             bool was_paused = cur_paused();
             stopped = true;
-            // TODO: fade out
-            fmod.FMOD_Channel_Stop(ch);
+            FMOD_RESULT err;
+            unsigned long long buf;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
+                TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
+                return;
+            }
+            fading = true;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
+                TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_stop_time * sps), 0.f)))
+                TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_stop_time * sps), 1)))
+                TF_WARN(<< "Failed to set stop music delay (" << FMOD_ErrorString(err) << ")");
             pl::fill_cache();
         }
 
@@ -854,8 +870,7 @@ namespace audio {
                 pos = 0.f;
             else if (pos > cur_mus->dur)
                 pos = cur_mus->dur;
-            // TODO: if paused
-            if (0) {
+            if (cur_paused()) {
                 pause_pos = pos;
                 return;
             }

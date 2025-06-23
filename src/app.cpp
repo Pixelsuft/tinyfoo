@@ -268,6 +268,7 @@ void app::run() {
             app::process_event(ev);
         }
         audio::au->update();
+        pl::update_cache();
         ren::begin_frame();
         ui::draw();
         if (data->should_play_sel_hack) {

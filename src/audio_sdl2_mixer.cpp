@@ -237,10 +237,12 @@ namespace audio {
                     // Hack
                     cur_mus = nullptr;
                     force_play_cache();
+                    pl::fill_cache();
                     return;
                 }
                 if (mix.Mix_PlayingMusic()) {
                     cur_set_pos(0.f);
+                    pl::fill_cache();
                     return;
                 }
                 from_rep = true;

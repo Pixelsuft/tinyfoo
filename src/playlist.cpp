@@ -421,6 +421,10 @@ void pl::unremember_selected(Playlist* p) {
     p->remembering.clear();
 }
 
+void pl::update_cache() {
+
+}
+
 void pl::fill_cache() {
     // TODO: improve
     Playlist* p = ui::get_last_pl(2);
