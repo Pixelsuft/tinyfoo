@@ -230,9 +230,19 @@ img::format get_image_format(SDL_IOStream* ctx) {
 }
 
 static inline void* create_fallback_surf() {
-    // TODO
-    TF_WARN(<< "Returning fallback surface");
-    return nullptr;
+    // TODO: actually don't blur when creating a texture
+    SDL_Surface* result = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_XRGB8888);
+    if (!result) {
+        TF_ERROR(<< "WTF failed to create fallback surface (" << SDL_GetError() << ")");
+        return nullptr;
+    }
+	if (SDL_MUSTLOCK(result))
+		SDL_LockSurface(result);
+	((Uint32*)result->pixels)[0] = ((Uint32*)result->pixels)[3] = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? 0xF93EFB : 0xFB3EF9;
+	((Uint32*)result->pixels)[1] = ((Uint32*)result->pixels)[2] = 0;
+	if (SDL_MUSTLOCK(result))
+		SDL_UnlockSurface(result);
+	return result;
 }
 
 static inline void loader_close_io(SDL_IOStream* ctx, bool free_src) {

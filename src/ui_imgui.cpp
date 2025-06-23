@@ -45,6 +45,7 @@ namespace ui {
         pl::Playlist* need_conf_pl;
         void* logo_tex;
         Point size;
+        float img_scale;
         bool show_about;
         bool show_logs;
         bool show_playlist_conf;
@@ -154,6 +155,7 @@ bool ui::init() {
     data->show_logs = false;
     data->show_playlist_conf = false;
     data->show_meta_debug = !IS_RELEASE;
+    data->img_scale = 1.f;
     data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
     data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
@@ -166,12 +168,14 @@ bool ui::init() {
     data->font1 = nullptr;
     data->font2 = nullptr;
     // TODO: read font from config
+    // TODO: more fonts for different shit
     if (!data->font1) {
         ImFontConfig font_cfg;
         font_cfg.FontDataOwnedByAtlas = false;
         int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
-        data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 16.f, &font_cfg);
+        if (font_data)
+            data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 16.f, &font_cfg);
         if (!data->font1) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font1 = io.Fonts->AddFontDefault();
@@ -183,7 +187,8 @@ bool ui::init() {
         font_cfg.FontDataOwnedByAtlas = false;
         int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
-        data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 24.f, &font_cfg);
+        if (font_data)
+            data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 24.f, &font_cfg);
         if (!data->font2) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font2 = io.Fonts->AddFontDefault();
@@ -632,7 +637,7 @@ void ui::draw_playlist_conf() {
 }
 
 void ui::draw_about() {
-    ImGui::Image((ImTextureID)(intptr_t)data->logo_tex, ImVec2(128.f, 128.f));
+    ImGui::Image((ImTextureID)(intptr_t)data->logo_tex, ImVec2(128.f * data->img_scale, 128.f * data->img_scale));
     ImGui::Text("tinyfoo by Pixelsuft");
 }
 
