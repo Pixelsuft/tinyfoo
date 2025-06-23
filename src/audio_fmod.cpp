@@ -783,6 +783,7 @@ namespace audio {
             FMOD_RESULT err;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Update(sys)))
                 TF_WARN(<< "Failed to update FMOD system (" << FMOD_ErrorString(err) << ")");
+            // fmod_channel_callback is called here, am i right?
             if (was_finished) {
                 was_finished = false;
                 if (!stopped)
@@ -900,7 +901,6 @@ FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FM
 	if ((controltype == FMOD_CHANNELCONTROL_CHANNEL) && (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)) {
 		((audio::AudioFMOD*)audio::au)->ch = nullptr;
 		((audio::AudioFMOD*)audio::au)->was_finished = true;
-        // TODO: optimize this cuz its main thread
 	}
 	return FMOD_OK;
 }
