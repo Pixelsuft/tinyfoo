@@ -596,13 +596,14 @@ namespace audio {
         float pause_pos;
         unsigned int fmod_ver;
         bool was_finished;
+        bool paused;
         bool stopped;
         bool fading;
         AudioFMOD() : AudioBase() {
             lib_name = "FMOD";
             ch = nullptr;
             sps = 44100.f;
-            stopped = was_finished = fading = false;
+            stopped = was_finished = fading = paused = false;
             // max_volume = 2.f;
             pause_pos = 0.f;
             const char* lib_path = IS_WIN ? "fmod.dll" : "libfmod.so";
@@ -724,6 +725,7 @@ namespace audio {
                 cache.erase(cache.begin());
             }
             pl::mus_open_file(cur_mus);
+            paused = false;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_PlaySound(sys, cur_h, nullptr, 1, &ch))) {
                 TF_ERROR(<< "Failed to play music (" << FMOD_ErrorString(err) << ")");
                 ch = nullptr;
@@ -753,17 +755,19 @@ namespace audio {
         void cur_pause() {
             if (!ch || cur_paused())
                 return;
+            remove_fades();
             FMOD_RESULT err;
             unsigned long long buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
                 TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
                 return;
             }
+            paused = true;
+            fading = true;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
                 TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_pause_time * sps), 0.f)))
                 TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
-            fading = true;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_pause_time * sps), 0)))
                 TF_WARN(<< "Failed to set music delay (" << FMOD_ErrorString(err) << ")");
         }
@@ -781,18 +785,36 @@ namespace audio {
             if (!ch)
                 return;
             remove_fades();
+            FMOD_RESULT err;
+            unsigned long long buf;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetDSPClock(ch, nullptr, &buf))) {
+                TF_WARN(<< "Failed to get music DSP clock (" << FMOD_ErrorString(err) << ")");
+                return;
+            }
+            fading = true;
+            paused = false;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 0.f)))
+                TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_resume_time * sps), 1.f)))
+                TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, buf, 0, 0)))
+                TF_WARN(<< "Failed to set music delay (" << FMOD_ErrorString(err) << ")");
         }
 
         bool cur_paused() {
             if (!ch)
                 return false;
+            return paused;
+            /*
             FMOD_RESULT err;
             FMOD_BOOL ret;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetPaused(ch, &ret))) {
                 TF_WARN(<< "Failed to get music pause state (" << FMOD_ErrorString(err) << ")");
                 return false;
             }
+            TF_INFO(<< "paused ?" << ret);
             return ret ? true : false;
+            */
         }
 
         void update_volume() {
@@ -966,6 +988,7 @@ FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FM
 		((audio::AudioFMOD*)audio::au)->ch = nullptr;
 		((audio::AudioFMOD*)audio::au)->was_finished = true;
 		((audio::AudioFMOD*)audio::au)->fading = false;
+		((audio::AudioFMOD*)audio::au)->paused = false;
 	}
 	return FMOD_OK;
 }
