@@ -146,6 +146,9 @@ void* ren::tex_from_io(void* ctx, bool free_src) {
         SDL_DestroySurface(surf);
         return create_fallback_texture();
     }
+    // Hack for error image
+    if (surf->w == 2 && surf->h == 2 && !SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST))
+        TF_WARN(<< "Failed to set texture scale mode (" << SDL_GetError() << ")");
     SDL_DestroySurface(surf);
     return tex;
 }

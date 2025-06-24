@@ -133,7 +133,7 @@ bool app::init() {
     }
     if (1) {
         SDL_Surface* icon = (SDL_Surface*)img::surf_from_io(res::get_asset_io("icon.png"), true);
-        if (icon && !SDL_SetWindowIcon(data->win, icon))
+        if (icon && !(icon->w == 2 && icon->h == 2) && !SDL_SetWindowIcon(data->win, icon))
             TF_WARN(<< "Failed to set window icon (" << SDL_GetError() << ")");
         if (icon)
             SDL_DestroySurface(icon);

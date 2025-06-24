@@ -230,7 +230,6 @@ img::format get_image_format(SDL_IOStream* ctx) {
 }
 
 static inline void* create_fallback_surf() {
-    // TODO: actually don't blur when creating a texture
     SDL_Surface* result = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_XRGB8888);
     if (!result) {
         TF_ERROR(<< "WTF failed to create fallback surface (" << SDL_GetError() << ")");
