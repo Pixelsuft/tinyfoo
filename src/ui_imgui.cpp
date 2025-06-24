@@ -654,7 +654,10 @@ void ui::draw_playlist_conf() {
 
 void ui::draw_about() {
     ImGui::Image((ImTextureID)(intptr_t)data->logo_tex, ImVec2(128.f * data->img_scale, 128.f * data->img_scale));
-    ImGui::Text("tinyfoo by Pixelsuft");
+    ImGui::PushFont(data->font2);
+    ImGui::Text("Tinyfoo");
+    ImGui::PopFont();
+    ImGui::Text("Created by Pixelsuft");
 }
 
 void ui::destroy() {
