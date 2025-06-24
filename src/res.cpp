@@ -10,6 +10,18 @@ void* res::get_asset_io(const char* fn) {
 #if IS_RELEASE
     if (!SDL_strcmp(fn, "icon.png"))
         return SDL_IOFromConstMem((const void*)asset_icon, sizeof(asset_icon));
+    else if (!SDL_strcmp(fn, "icon_stop.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_stop, sizeof(asset_icon_stop));
+    else if (!SDL_strcmp(fn, "icon_play.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_play, sizeof(asset_icon_play));
+    else if (!SDL_strcmp(fn, "icon_pause.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_pause, sizeof(asset_icon_pause));
+    else if (!SDL_strcmp(fn, "icon_back.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_back, sizeof(asset_icon_back));
+    else if (!SDL_strcmp(fn, "icon_fwd.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_fwd, sizeof(asset_icon_fwd));
+    else if (!SDL_strcmp(fn, "icon_rng.png"))
+        return SDL_IOFromConstMem((const void*)asset_icon_rng, sizeof(asset_icon_rng));
     return nullptr;
 #else
     const char* path = nullptr;
