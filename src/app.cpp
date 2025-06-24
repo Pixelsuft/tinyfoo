@@ -164,6 +164,7 @@ bool app::init() {
         audio::au = audio::create_base();
         TF_WARN(<< "Using dummy audio library");
     }
+    audio::au->update_volume();
     pl::load_playlists();
     if (1) {
         SDL_Time ticks;

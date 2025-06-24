@@ -436,6 +436,7 @@ namespace audio {
         }
 
         void update_volume() {
+            volume = std::min(std::max(volume, 0.f), 1.f);
             if (!mix.Mix_PlayingMusic())
                 return;
             mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));            

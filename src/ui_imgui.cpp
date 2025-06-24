@@ -44,6 +44,12 @@ namespace ui {
         pl::Playlist* sel_pl;
         pl::Playlist* need_conf_pl;
         void* logo_tex;
+        void* icon_stop;
+        void* icon_play;
+        void* icon_pause;
+        void* icon_back;
+        void* icon_fwd;
+        void* icon_rng;
         Point size;
         float img_scale;
         bool show_about;
@@ -157,6 +163,12 @@ bool ui::init() {
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
     data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
+    data->icon_stop = ren::tex_from_io(res::get_asset_io("icon_stop.png"), true);
+    data->icon_play = ren::tex_from_io(res::get_asset_io("icon_play.png"), true);
+    data->icon_pause = ren::tex_from_io(res::get_asset_io("icon_pause.png"), true);
+    data->icon_back = ren::tex_from_io(res::get_asset_io("icon_back.png"), true);
+    data->icon_fwd = ren::tex_from_io(res::get_asset_io("icon_fwd.png"), true);
+    data->icon_rng = ren::tex_from_io(res::get_asset_io("icon_rng.png"), true);
     data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
@@ -285,9 +297,11 @@ void ui::draw_menubar() {
 }
 
 void ui::draw_playback_buttons() {
-    if (ImGui::Button("0"))
+    // TODO: functionality
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
+    if (ImGui::ImageButton("IconStop", (ImTextureID)(intptr_t)data->icon_stop, ImVec2(20.f * data->img_scale, 20.f * data->img_scale)))
         audio::au->cur_stop();
-    if (ImGui::Button(">")) { 
+    if (ImGui::ImageButton("IconPlay", (ImTextureID)(intptr_t)data->icon_play, ImVec2(20.f * data->img_scale, 20.f * data->img_scale))) { 
         if (audio::au->cur_paused())
             audio::au->cur_resume();
         else {
@@ -295,16 +309,18 @@ void ui::draw_playback_buttons() {
             audio::au->force_play_cache();
         }
     }
-    if (ImGui::Button("||")) {
+    if (ImGui::ImageButton("IconPause", (ImTextureID)(intptr_t)data->icon_pause, ImVec2(20.f * data->img_scale, 20.f * data->img_scale))) {
         if (audio::au->cur_paused())
             audio::au->cur_resume();
         else
             audio::au->cur_pause();
     }
-    ImGui::Button("|<");
-    if (ImGui::Button(">|"))
+    ImGui::ImageButton("IconBack", (ImTextureID)(intptr_t)data->icon_back, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
+    if (ImGui::ImageButton("IconFwd", (ImTextureID)(intptr_t)data->icon_fwd, ImVec2(20.f * data->img_scale, 20.f * data->img_scale)))
         audio::au->force_play_cache();
-    ImGui::Button(">?");
+    // TODO: icon
+    ImGui::ImageButton("IconRng", (ImTextureID)(intptr_t)data->icon_rng, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
+    ImGui::PopStyleVar();
 }
 
 void ui::draw_volume_control() {
@@ -643,7 +659,13 @@ void ui::draw_about() {
 
 void ui::destroy() {
     mem::free((void*)data->pl_path_buf);
+    ren::tex_destroy(data->icon_stop);
+    ren::tex_destroy(data->icon_play);
+    ren::tex_destroy(data->icon_pause);
+    ren::tex_destroy(data->icon_back);
+    ren::tex_destroy(data->icon_fwd);
     ren::tex_destroy(data->logo_tex);
+    ren::tex_destroy(data->icon_rng);
     tf::bump_dl(data);
     data = nullptr;
 }

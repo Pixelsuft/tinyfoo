@@ -15,6 +15,18 @@ void* res::get_asset_io(const char* fn) {
     const char* path = nullptr;
     if (!SDL_strcmp(fn, "icon.png"))
         path = "assets/icon.png";
+    else if (!SDL_strcmp(fn, "icon_stop.png"))
+        path = "assets/icon_stop.png";
+    else if (!SDL_strcmp(fn, "icon_play.png"))
+        path = "assets/icon_play.png";
+    else if (!SDL_strcmp(fn, "icon_pause.png"))
+        path = "assets/icon_pause.png";
+    else if (!SDL_strcmp(fn, "icon_back.png"))
+        path = "assets/icon_back.png";
+    else if (!SDL_strcmp(fn, "icon_fwd.png"))
+        path = "assets/icon_fwd.png";
+    else if (!SDL_strcmp(fn, "icon_rng.png"))
+        path = "assets/icon_rng.png";
     else
         TF_ERROR(<< "Unknown asset: " << fn);
     SDL_IOStream* ret = SDL_IOFromFile(path, "rb");
