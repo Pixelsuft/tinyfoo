@@ -722,11 +722,12 @@ namespace audio {
                     return;
                 }
                 fading = true;
+                unsigned int dd = cur_paused() ? 0 : (unsigned long long)(fade_next_time * sps);
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
                     TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
-                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_next_time * sps), 0.f)))
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + dd, 0.f)))
                     TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
-                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_next_time * sps), 1)))
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + dd, 1)))
                     TF_WARN(<< "Failed to set next music delay (" << FMOD_ErrorString(err) << ")");
                 return;
             }
@@ -841,11 +842,12 @@ namespace audio {
                 return;
             }
             fading = true;
+            unsigned int dd = was_paused ? 0 : (unsigned long long)(fade_stop_time * sps);
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf, 1.f)))
                 TF_WARN(<< "Failed to add music fade start point (" << FMOD_ErrorString(err) << ")");
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + (unsigned long long)(fade_stop_time * sps), 0.f)))
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, buf + dd, 0.f)))
                 TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + (unsigned long long)(fade_stop_time * sps), 1)))
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, buf + dd, 1)))
                 TF_WARN(<< "Failed to set stop music delay (" << FMOD_ErrorString(err) << ")");
             pl::fill_cache();
         }

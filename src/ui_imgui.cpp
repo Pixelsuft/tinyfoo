@@ -717,7 +717,7 @@ void ui::handle_esc() {
 }
 
 void ui::draw_logs() {
-    // TODO: color, disable autoscrolling
+    // TODO: log info, color, disable autoscrolling properly
     for (auto it = data->log_cache.begin(); it != data->log_cache.end(); it++) {
         ImGui::Text("%s", (*it).c_str());
     }
