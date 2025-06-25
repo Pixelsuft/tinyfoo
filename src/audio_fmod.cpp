@@ -972,7 +972,7 @@ namespace audio {
                 sys, fp, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM,
                 nullptr, (FMOD_SOUND**)&mus->h1
             ))) {
-                TF_ERROR(<< "Failed to open music (" << FMOD_ErrorString(err) << ")");
+                TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << FMOD_ErrorString(err) << ")");
                 mus->h1 = nullptr;
                 return false;
             }

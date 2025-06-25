@@ -82,6 +82,8 @@ typedef int BOOL;
 #define BASS_DEVICE_DSOUND		0x40000
 #define BASS_DEVICE_SOFTWARE	0x80000
 
+#define BASS_SAMPLE_FLOAT		256
+
 #define BASS_CONFIG_GVOL_STREAM		5
 
 #define BASS_ACTIVE_STOPPED			0
@@ -193,6 +195,7 @@ typedef struct {
     } \
 } while (0)
 #endif
+#define mus_h (*(DWORD*)(&mus->h1))
 #define BASS_LIKES_WCHAR (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
 
 static inline const char* BASS_ErrorString(int errcode) {
@@ -354,19 +357,28 @@ namespace audio {
         }
 
         void dev_close() {
-            bass.BASS_Free();
+            if (!bass.BASS_Free())
+                TF_ERROR(<< "Failed to close audio device (" << BASS_GetError() << ")");
             dev_opened = false;
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
-            return false;
+            HSTREAM h = bass.BASS_StreamCreateFile(0, (const void*)fp, 0, 0, BASS_SAMPLE_FLOAT);
+            if (!h) {
+                TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << BASS_GetError() << ")");
+                return false;
+            }
+            mus_h = h;
+            return true;
         }
 
         void mus_close(Music* mus) {
-            if (!mus->h1)
+            if (!mus_h)
                 return;
+            if (!bass.BASS_StreamFree(mus_h))
+                TF_ERROR(<< "Failed to free music (" << BASS_GetError() << ")");
             mus->h1 = nullptr;
         }
 
@@ -413,7 +425,6 @@ namespace audio {
             if (dev_opened)
                 dev_close();
             inited = false;
-            SDL_QuitSubSystem(SDL_INIT_AUDIO);
             SDL_UnloadObject(bass.handle);
         }
     };
