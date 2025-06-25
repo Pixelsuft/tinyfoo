@@ -14,6 +14,7 @@
 #ifdef WINAPI_FAMILY
 #include <winapifamily.h>
 #endif
+typedef unsigned __int64 QWORD;
 #else
 #define WINAPI
 typedef uint8_t BYTE;
@@ -134,6 +135,16 @@ typedef int BOOL;
 #define BASS_POS_DECODETO		0x20000000
 #define BASS_POS_SCAN			0x40000000
 
+typedef DWORD HMUSIC;
+typedef DWORD HSAMPLE;
+typedef DWORD HCHANNEL;
+typedef DWORD HSTREAM;
+typedef DWORD HRECORD;
+typedef DWORD HSYNC;
+typedef DWORD HDSP;
+typedef DWORD HFX;
+typedef DWORD HPLUGIN;
+
 typedef struct {
 #if defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
 	const wchar_t* name;
@@ -161,6 +172,17 @@ typedef struct {
 	DWORD speakers; 
 	DWORD freq;		
 } BASS_INFO;
+
+typedef struct {
+	DWORD freq;
+	DWORD chans;
+	DWORD flags;
+	DWORD ctype;
+	DWORD origres;
+	HPLUGIN plugin;
+	HSAMPLE sample;
+	const char* filename;
+} BASS_CHANNELINFO;
 
 #define BASS_LOAD_FUNC(func_name) do { \
     *(void**)&bass.func_name = (void*)SDL_LoadFunction(bass.handle, #func_name); \
@@ -232,9 +254,27 @@ namespace audio {
         BOOL BASSDEF(BASS_Init)(int, DWORD, DWORD, void*, const void*);
         BOOL BASSDEF(BASS_Free)();
         int BASSDEF(BASS_ErrorGetCode)(void);
+        BOOL BASSDEF(BASS_SetConfig)(DWORD, DWORD);
+        BOOL BASSDEF(BASS_SetConfigPtr)(DWORD, const void*);
+        DWORD BASSDEF(BASS_GetVersion)(void);
         BOOL BASSDEF(BASS_GetInfo)(BASS_INFO*);
+        DWORD BASSDEF(BASS_GetCPU)(void);
         DWORD BASSDEF(BASS_GetDevice)(void);
         BOOL BASSDEF(BASS_GetDeviceInfo)(DWORD, BASS_DEVICEINFO*);
+        HSTREAM BASSDEF(BASS_StreamCreateFile)(BOOL, const void*, QWORD, QWORD, DWORD);
+        BOOL BASSDEF(BASS_StreamFree)(HSTREAM);
+        DWORD BASSDEF(BASS_ChannelIsActive)(DWORD);
+        BOOL BASSDEF(BASS_ChannelGetInfo)(DWORD, BASS_CHANNELINFO*);
+        BOOL BASSDEF(BASS_ChannelPlay)(DWORD, BOOL);
+        BOOL BASSDEF(BASS_ChannelStart)(DWORD);
+        BOOL BASSDEF(BASS_ChannelStop)(DWORD);
+        BOOL BASSDEF(BASS_ChannelPause)(DWORD);
+        BOOL BASSDEF(BASS_ChannelUpdate)(DWORD, DWORD);
+        BOOL BASSDEF(BASS_ChannelSlideAttribute)(DWORD, DWORD, float, DWORD);
+        BOOL BASSDEF(BASS_ChannelIsSliding)(DWORD, DWORD);
+        QWORD BASSDEF(BASS_ChannelGetLength)(DWORD, DWORD);
+        BOOL BASSDEF(BASS_ChannelSetPosition)(DWORD, QWORD, DWORD);
+        QWORD BASSDEF(BASS_ChannelGetPosition)(DWORD, DWORD);
     };
 
     class AudioBASS : public AudioBase {
@@ -253,9 +293,27 @@ namespace audio {
             BASS_LOAD_FUNC(BASS_Init);
             BASS_LOAD_FUNC(BASS_Free);
             BASS_LOAD_FUNC(BASS_ErrorGetCode);
+            BASS_LOAD_FUNC(BASS_SetConfig);
+            BASS_LOAD_FUNC(BASS_SetConfigPtr);
+            BASS_LOAD_FUNC(BASS_GetVersion);
             BASS_LOAD_FUNC(BASS_GetInfo);
+            BASS_LOAD_FUNC(BASS_GetCPU);
             BASS_LOAD_FUNC(BASS_GetDevice);
             BASS_LOAD_FUNC(BASS_GetDeviceInfo);
+            BASS_LOAD_FUNC(BASS_StreamCreateFile);
+            BASS_LOAD_FUNC(BASS_StreamFree);
+            BASS_LOAD_FUNC(BASS_ChannelIsActive);
+            BASS_LOAD_FUNC(BASS_ChannelGetInfo);
+            BASS_LOAD_FUNC(BASS_ChannelPlay);
+            BASS_LOAD_FUNC(BASS_ChannelStart);
+            BASS_LOAD_FUNC(BASS_ChannelStop);
+            BASS_LOAD_FUNC(BASS_ChannelPause);
+            BASS_LOAD_FUNC(BASS_ChannelUpdate);
+            BASS_LOAD_FUNC(BASS_ChannelSlideAttribute);
+            BASS_LOAD_FUNC(BASS_ChannelIsSliding);
+            BASS_LOAD_FUNC(BASS_ChannelGetLength);
+            BASS_LOAD_FUNC(BASS_ChannelSetPosition);
+            BASS_LOAD_FUNC(BASS_ChannelGetPosition);
             TF_INFO(<< "BASS inited successfully");
             inited = true;
         }
