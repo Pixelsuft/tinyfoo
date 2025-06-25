@@ -895,9 +895,7 @@ namespace audio {
                 if (!stopped)
                     force_play_cache();
                 pl::fill_cache();
-                int cnt = std::min((int)cache.size(), cache_opened_cnt);
-                for (int i = 0; i < cnt; i++)
-                    pl::mus_open_file(cache[i]);
+                pre_open();
             }
         }
 

@@ -1,5 +1,6 @@
 #include <audio_base.hpp>
 #include <new.hpp>
+#include <playlist.hpp>
 #include <algorithm>
 
 using audio::AudioBase;
@@ -103,6 +104,13 @@ bool AudioBase::mus_beging_used(Music* mus) {
     if (cur_mus == mus)
         return true;
     return std::find(cache.begin(), cache.end(), mus) != cache.end();
+}
+
+void AudioBase::pre_open() {
+    pl::fill_cache();
+    int cnt = std::min((int)cache.size(), cache_opened_cnt);
+    for (int i = 0; i < cnt; i++)
+        pl::mus_open_file(cache[i]);
 }
 
 AudioBase* audio::create_base() {

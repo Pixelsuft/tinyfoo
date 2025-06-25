@@ -37,6 +37,7 @@ namespace audio {
         virtual void cur_resume();
         virtual bool cur_paused();
         virtual void cur_stop();
+        void pre_open();
     };
 
     extern AudioBase* au;

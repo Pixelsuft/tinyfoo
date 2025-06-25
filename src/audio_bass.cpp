@@ -69,6 +69,14 @@ typedef int BOOL;
 #define BASS_ERROR_DENIED	49
 #define BASS_ERROR_UNKNOWN	-1
 
+#define BASS_CONFIG_BUFFER			0
+#define BASS_CONFIG_UPDATEPERIOD	1
+#define BASS_CONFIG_GVOL_SAMPLE		4
+#define BASS_CONFIG_GVOL_STREAM		5
+#define BASS_CONFIG_GVOL_MUSIC		6
+#define BASS_CONFIG_CURVE_VOL		7
+#define BASS_CONFIG_CURVE_PAN		8
+
 #define BASS_DEVICE_MONO		2
 #define BASS_DEVICE_16BITS		8
 #define BASS_DEVICE_REINIT		128
@@ -379,6 +387,7 @@ namespace audio {
                 d_info.name = "";
 #endif
             }
+            // bass.BASS_SetConfig(BASS_CONFIG_CURVE_VOL, 1);
             TF_INFO(<< "Audio device \"" << d_info.name << "\" opened (" << info.freq << "Hz freq)");
             dev_opened = true;
             return true;
@@ -466,6 +475,19 @@ namespace audio {
         }
 
         void update() {
+            if (cur_mus) {
+                if (paused) {
+                    if (!bass.BASS_ChannelIsSliding(cur_h, BASS_ATTRIB_VOL) && bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_PAUSED) {
+                        if (!bass.BASS_ChannelPause(cur_h))
+                            TF_WARN(<< "Failed to pause music (" << BASS_GetError() << ")");
+                    }
+                }
+                else if (!stopped && bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED) {
+                    fading = false;
+                    force_play_cache();
+                    pre_open();
+                }
+            }
         }
 
         void cur_stop() {
@@ -504,11 +526,24 @@ namespace audio {
         }
 
         void cur_pause() {
+            if (!cur_mus)
+                return;
+            pause_pos = cur_get_pos();
             paused = true;
+            if (!bass.BASS_ChannelSlideAttribute(cur_h, BASS_ATTRIB_VOL | BASS_SLIDE_LOG, 0.f, (DWORD)(fade_pause_time * 1000.f)))
+                TF_WARN(<< "Failed to set music pause fade out (" << BASS_GetError() << ")");
         }
 
         void cur_resume() {
+            if (!cur_mus)
+                return;
             paused = false;
+            if (!bass.BASS_ChannelSetPosition(cur_h, bass.BASS_ChannelSeconds2Bytes(cur_h, (double)pause_pos), BASS_POS_BYTE))
+                TF_WARN(<< "Failed to set music resume position (" << BASS_GetError() << ")");
+            if (!bass.BASS_ChannelStart(cur_h))
+                TF_WARN(<< "Failed to resume music (" << BASS_GetError() << ")");
+            if (!bass.BASS_ChannelSlideAttribute(cur_h, BASS_ATTRIB_VOL | BASS_SLIDE_LOG, volume, (DWORD)(fade_resume_time * 1000.f)))
+                TF_WARN(<< "Failed to set music resume fade out (" << BASS_GetError() << ")");
         }
 
         bool cur_paused() {
