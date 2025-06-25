@@ -682,6 +682,7 @@ namespace audio {
                 TF_WARN(<< "Failed to get FMOD version (" << FMOD_ErrorString(err) << ")");
                 fmod_ver = 0;
             }
+            TF_INFO(<< "Audio device opened");
             dev_opened = true;
             return true;
         }
