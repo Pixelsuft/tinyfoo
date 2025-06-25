@@ -314,7 +314,7 @@ namespace audio {
         float pause_pos;
         bool paused;
         bool stopped;
-        bool fading;
+        bool fading; // Actually for stopping only
 
         AudioBASS() : AudioBase() {
             lib_name = "BASS";
@@ -432,7 +432,8 @@ namespace audio {
                     return;
                 }
                 if (bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
-                    // TODO: seek to 0 and play
+                    if (!bass.BASS_ChannelPlay(cur_h, 1))
+                        TF_WARN(<< "Failed to play music from start (" << BASS_GetError() << ")");
                     pl::fill_cache();
                     return;
                 }
@@ -440,7 +441,11 @@ namespace audio {
             }
             stopped = false;
             if (cur_mus && bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
-                // TODO: fade out
+                fading = true;
+                stopped = false;
+                paused = false;
+                if (!bass.BASS_ChannelSlideAttribute(cur_h, BASS_ATTRIB_VOL | BASS_SLIDE_LOG, 0.f, (DWORD)(fade_next_time * 1000.f)))
+                    TF_WARN(<< "Failed to set music next fade out (" << BASS_GetError() << ")");                
                 return;
             }
             Music* prev = nullptr;
@@ -451,7 +456,6 @@ namespace audio {
             }
             pl::mus_open_file(cur_mus);
             paused = false;
-            // TODO: fade in
             if (bass.BASS_ChannelPlay(cur_h, TRUE)) {
                 stopped = false;
                 paused = false;
@@ -482,9 +486,15 @@ namespace audio {
                             TF_WARN(<< "Failed to pause music (" << BASS_GetError() << ")");
                     }
                 }
-                else if (!stopped && bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED) {
+                else if (fading && !bass.BASS_ChannelIsSliding(cur_h, BASS_ATTRIB_VOL)) {
+                    if (!bass.BASS_ChannelStop(cur_h))
+                        TF_WARN(<< "Failed to stop music (" << BASS_GetError() << ")");
                     fading = false;
-                    force_play_cache();
+                }
+                if (!paused && bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED) {
+                    fading = false;
+                    if (!stopped)
+                        force_play_cache();
                     pre_open();
                 }
             }
@@ -493,6 +503,12 @@ namespace audio {
         void cur_stop() {
             if (!cur_mus)
                 return;
+            paused = false;
+            stopped = true;
+            fading = true;
+            if (!bass.BASS_ChannelSlideAttribute(cur_h, BASS_ATTRIB_VOL | BASS_SLIDE_LOG, 0.f, (DWORD)(fade_stop_time * 1000.f)))
+                TF_WARN(<< "Failed to set music stop fade out (" << BASS_GetError() << ")");
+            pl::fill_cache();
         }
 
         float cur_get_pos() {
@@ -543,7 +559,7 @@ namespace audio {
             if (!bass.BASS_ChannelStart(cur_h))
                 TF_WARN(<< "Failed to resume music (" << BASS_GetError() << ")");
             if (!bass.BASS_ChannelSlideAttribute(cur_h, BASS_ATTRIB_VOL | BASS_SLIDE_LOG, volume, (DWORD)(fade_resume_time * 1000.f)))
-                TF_WARN(<< "Failed to set music resume fade out (" << BASS_GetError() << ")");
+                TF_WARN(<< "Failed to set music resume fade in (" << BASS_GetError() << ")");
         }
 
         bool cur_paused() {
