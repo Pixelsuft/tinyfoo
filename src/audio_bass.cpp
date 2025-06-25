@@ -501,7 +501,7 @@ namespace audio {
                 dur = 0;
             }
             mus->dur = (float)bass.BASS_ChannelBytes2Seconds(mus_h, dur);
-            if (mus->dur < 0.f)
+            if (mus->dur < 0.f || mus->dur > 86400000.f)
                 mus->dur = 0.f;
             BASS_CHANNELINFO info;
             if (!bass.BASS_ChannelGetInfo(mus_h, &info)) {

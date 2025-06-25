@@ -115,17 +115,17 @@ namespace ui {
     }
 
     static inline void fmt_duration(char* buf, double dur) {
-        if (dur < 0.0) {
+        if (dur <= 0.0) {
             SDL_memcpy(buf, "???", 4);
             return;
         }
-        int rounded_dur = (int)SDL_floor(dur);
+        size_t rounded_dur = (int)SDL_floor(dur);
         if (rounded_dur < 3600)
-            SDL_snprintf(buf, 32, "%i:%02i", rounded_dur / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%i:%02i", (int)rounded_dur / 60, (int)rounded_dur % 60);
         else if (rounded_dur < 86400)
-            SDL_snprintf(buf, 32, "%i:%02i:%02i", rounded_dur / 3600, (rounded_dur % 3600) / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%i:%02i:%02i", (int)rounded_dur / 3600, ((int)rounded_dur % 3600) / 60, (int)rounded_dur % 60);
         else
-            SDL_snprintf(buf, 32, "%id %i:%02i:%02i", rounded_dur / 86400, (rounded_dur % 86400) / 3600, ((rounded_dur % 86400) % 3600) / 60, rounded_dur % 60);
+            SDL_snprintf(buf, 32, "%id %i:%02i:%02i", (int)(rounded_dur / 86400), (int)((rounded_dur % 86400) / 3600), (int)(((rounded_dur % 86400) % 3600) / 60), (int)(rounded_dur % 60));
     }
 
     static inline void do_extra_stuff() {
