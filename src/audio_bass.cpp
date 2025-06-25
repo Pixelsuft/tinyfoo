@@ -300,6 +300,8 @@ namespace audio {
         BOOL BASSDEF(BASS_GetDeviceInfo)(DWORD, BASS_DEVICEINFO*);
         HSTREAM BASSDEF(BASS_StreamCreateFile)(BOOL, const void*, QWORD, QWORD, DWORD);
         BOOL BASSDEF(BASS_StreamFree)(HSTREAM);
+        HMUSIC BASSDEF(BASS_MusicLoad)(BOOL, const void*, QWORD, DWORD, DWORD, DWORD);
+        BOOL BASSDEF(BASS_MusicFree)(HMUSIC);
         DWORD BASSDEF(BASS_ChannelIsActive)(DWORD);
         BOOL BASSDEF(BASS_ChannelGetInfo)(DWORD, BASS_CHANNELINFO*);
         BOOL BASSDEF(BASS_ChannelPlay)(DWORD, BOOL);
@@ -348,6 +350,8 @@ namespace audio {
             BASS_LOAD_FUNC(BASS_GetDeviceInfo);
             BASS_LOAD_FUNC(BASS_StreamCreateFile);
             BASS_LOAD_FUNC(BASS_StreamFree);
+            BASS_LOAD_FUNC(BASS_MusicLoad);
+            BASS_LOAD_FUNC(BASS_MusicFree);
             BASS_LOAD_FUNC(BASS_ChannelIsActive);
             BASS_LOAD_FUNC(BASS_ChannelGetInfo);
             BASS_LOAD_FUNC(BASS_ChannelPlay);
@@ -413,6 +417,12 @@ namespace audio {
             if (mus->h1)
                 return true;
             HSTREAM h = bass.BASS_StreamCreateFile(0, (const void*)fp, 0, 0, BASS_SAMPLE_FLOAT);
+            if (!h && bass.BASS_ErrorGetCode() == BASS_ERROR_FILEFORM) {
+                // Is last arg right?
+                h = bass.BASS_MusicLoad(0, (const void*)fp, 0, 0, 0, 1);
+                if (h)
+                    mus->h2 = (void*)((size_t)6969);
+            }
             if (!h) {
                 TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << BASS_GetError() << ")");
                 return false;
@@ -424,7 +434,7 @@ namespace audio {
         void mus_close(Music* mus) {
             if (!mus_h)
                 return;
-            if (!bass.BASS_StreamFree(mus_h))
+            if (!((((size_t)mus->h2) == 6969) ? bass.BASS_MusicFree(mus_h) : bass.BASS_StreamFree(mus_h)))
                 TF_ERROR(<< "Failed to free music (" << BASS_GetError() << ")");
             mus->h1 = nullptr;
         }
@@ -491,6 +501,8 @@ namespace audio {
                 dur = 0;
             }
             mus->dur = (float)bass.BASS_ChannelBytes2Seconds(mus_h, dur);
+            if (mus->dur < 0.f)
+                mus->dur = 0.f;
             BASS_CHANNELINFO info;
             if (!bass.BASS_ChannelGetInfo(mus_h, &info)) {
                 TF_ERROR(<< "Failed to get music info (" << BASS_GetError() << ")");
@@ -524,7 +536,7 @@ namespace audio {
                 mus->type = Type::XM;
             else if (info.ctype == BASS_CTYPE_MUSIC_IT)
                 mus->type = Type::IT;
-            else if (info.ctype == BASS_CTYPE_MUSIC_MO3)
+            else if ((info.ctype & BASS_CTYPE_MUSIC_MO3) == BASS_CTYPE_MUSIC_MO3) // ?
                 mus->type = Type::MO3;
             else
                 mus->type = Type::NONE;
