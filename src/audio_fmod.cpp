@@ -589,9 +589,9 @@ namespace audio {
     class AudioFMOD : public AudioBase {
         protected:
         public:
+        FMODApi fmod;
         FMOD_CHANNEL* ch;
 	    FMOD_SYSTEM* sys;
-        FMODApi fmod;
         float sps;
         float pause_pos;
         unsigned int fmod_ver;
@@ -708,6 +708,7 @@ namespace audio {
                     return;
                 }
                 if (ch) {
+                    // TODO: resume if needed
                     if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, 0, FMOD_TIMEUNIT_MS)))
                         TF_WARN(<< "Failed to seek music to start (" << FMOD_ErrorString(err) << ")");
                     pl::fill_cache();

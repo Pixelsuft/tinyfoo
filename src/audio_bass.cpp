@@ -82,6 +82,21 @@ typedef int BOOL;
 #define BASS_DEVICE_DSOUND		0x40000
 #define BASS_DEVICE_SOFTWARE	0x80000
 
+#define BASS_CTYPE_STREAM_OGG	0x10002
+#define BASS_CTYPE_STREAM_MP1	0x10003
+#define BASS_CTYPE_STREAM_MP2	0x10004
+#define BASS_CTYPE_STREAM_MP3	0x10005
+#define BASS_CTYPE_STREAM_AIFF	0x10006
+#define BASS_CTYPE_STREAM_CA	0x10007
+#define BASS_CTYPE_STREAM_MF	0x10008
+#define BASS_CTYPE_STREAM_AM	0x10009
+#define BASS_CTYPE_STREAM_SAMPLE	0x1000a
+#define BASS_CTYPE_STREAM_DUMMY		0x18000
+#define BASS_CTYPE_STREAM_DEVICE	0x18001
+#define BASS_CTYPE_STREAM_WAV	0x40000
+#define BASS_CTYPE_STREAM_WAV_PCM	0x50001
+#define BASS_CTYPE_STREAM_WAV_FLOAT	0x50003
+
 #define BASS_SAMPLE_FLOAT		256
 
 #define BASS_CONFIG_GVOL_STREAM		5
@@ -195,7 +210,8 @@ typedef struct {
     } \
 } while (0)
 #endif
-#define mus_h (*(DWORD*)(&mus->h1))
+#define mus_h (*((DWORD*)(&mus->h1)))
+#define cur_h (*((DWORD*)(&cur_mus->h1)))
 #define BASS_LIKES_WCHAR (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
 
 static inline const char* BASS_ErrorString(int errcode) {
@@ -278,15 +294,22 @@ namespace audio {
         QWORD BASSDEF(BASS_ChannelGetLength)(DWORD, DWORD);
         BOOL BASSDEF(BASS_ChannelSetPosition)(DWORD, QWORD, DWORD);
         QWORD BASSDEF(BASS_ChannelGetPosition)(DWORD, DWORD);
+        BOOL BASSDEF(BASS_ChannelSetAttribute)(DWORD, DWORD, float);
     };
 
     class AudioBASS : public AudioBase {
         protected:
         BASSApi bass;
         public:
+        float pause_pos;
+        bool paused;
+        bool stopped;
+        bool fading;
 
         AudioBASS() : AudioBase() {
             lib_name = "BASS";
+            pause_pos = 0.f;
+            paused = stopped = fading = false;
             const char* lib_path = IS_WIN ? "bass.dll" : "libbass.so";
             bass.handle = SDL_LoadObject(lib_path);
             if (!bass.handle) {
@@ -317,6 +340,7 @@ namespace audio {
             BASS_LOAD_FUNC(BASS_ChannelGetLength);
             BASS_LOAD_FUNC(BASS_ChannelSetPosition);
             BASS_LOAD_FUNC(BASS_ChannelGetPosition);
+            BASS_LOAD_FUNC(BASS_ChannelSetAttribute);
             TF_INFO(<< "BASS inited successfully");
             inited = true;
         }
@@ -385,6 +409,52 @@ namespace audio {
         void force_play_cache() {
             if (cache.size() == 0)
                 return;
+            bool from_rep = false;
+            if (cache[0] == cur_mus) {
+                cache.erase(cache.begin());
+                if (stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED) {
+                    cur_mus = nullptr;
+                    force_play_cache();
+                    pl::fill_cache();
+                    return;
+                }
+                if (bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
+                    // TODO: seek to 0 and play
+                    pl::fill_cache();
+                    return;
+                }
+                from_rep = true;
+            }
+            stopped = false;
+            if (cur_mus && bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
+                // TODO: fade out
+                return;
+            }
+            Music* prev = nullptr;
+            if (!from_rep) {
+                prev = cur_mus;
+                cur_mus = cache[0];
+                cache.erase(cache.begin());
+            }
+            pl::mus_open_file(cur_mus);
+            paused = false;
+            // TODO: fade in
+            if (bass.BASS_ChannelPlay(cur_h, TRUE)) {
+                stopped = false;
+                paused = false;
+                fading = false;
+                if (!bass.BASS_ChannelSetAttribute(cur_h, BASS_ATTRIB_VOL, volume))
+                    TF_WARN(<< "Failed to set music volume (" << BASS_GetError() << ")");
+            }
+            else {
+                TF_WARN(<< "Failed to play music (" << BASS_GetError() << ")");
+                stopped = true;
+                paused = false;
+                fading = false;                
+            }
+            if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
+                mus_close(prev);
+            pl::fill_cache();
         }
     
         bool mus_fill_info(Music* mus) {
@@ -395,7 +465,8 @@ namespace audio {
         }
 
         void cur_stop() {
-
+            if (!cur_mus)
+                return;
         }
 
         float cur_get_pos() {
@@ -416,7 +487,9 @@ namespace audio {
             return false;
         }
 
-        void update_volume() {    
+        void update_volume() {
+            if (cur_mus && !bass.BASS_ChannelSetAttribute(cur_h, BASS_ATTRIB_VOL, volume))
+                TF_WARN(<< "Failed to update music volume (" << BASS_GetError() << ")");
         }
 
         ~AudioBASS() {
