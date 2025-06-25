@@ -295,6 +295,8 @@ namespace audio {
         BOOL BASSDEF(BASS_ChannelSetPosition)(DWORD, QWORD, DWORD);
         QWORD BASSDEF(BASS_ChannelGetPosition)(DWORD, DWORD);
         BOOL BASSDEF(BASS_ChannelSetAttribute)(DWORD, DWORD, float);
+        double BASSDEF(BASS_ChannelBytes2Seconds)(DWORD, QWORD);
+        QWORD BASSDEF(BASS_ChannelSeconds2Bytes)(DWORD, double);
     };
 
     class AudioBASS : public AudioBase {
@@ -341,6 +343,8 @@ namespace audio {
             BASS_LOAD_FUNC(BASS_ChannelSetPosition);
             BASS_LOAD_FUNC(BASS_ChannelGetPosition);
             BASS_LOAD_FUNC(BASS_ChannelSetAttribute);
+            BASS_LOAD_FUNC(BASS_ChannelBytes2Seconds);
+            BASS_LOAD_FUNC(BASS_ChannelSeconds2Bytes);
             TF_INFO(<< "BASS inited successfully");
             inited = true;
         }
@@ -470,21 +474,45 @@ namespace audio {
         }
 
         float cur_get_pos() {
-            return 0.f;
+            if (cur_paused())
+                return pause_pos;
+            if (!cur_mus || stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED)
+                return 0.f;
+            QWORD b_pos = bass.BASS_ChannelGetPosition(cur_h, BASS_POS_BYTE);
+            if (b_pos < 0) {
+                TF_WARN(<< "Failed to get music position (" << BASS_GetError() << ")");
+                return 0.f;
+            }
+            // Actually shouldn't fail
+            return (float)bass.BASS_ChannelBytes2Seconds(cur_h, b_pos);
         }
 
         void cur_set_pos(float pos) {
-            
+            if (!cur_mus || stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED)
+                return;
+            // TODO: use min max clamp
+            if (pos < 0.f)
+                pos = 0.f;
+            else if (pos > cur_mus->dur)
+                pos = cur_mus->dur;
+            if (paused) {
+                pause_pos = pos;
+                return;
+            }
+            if (!bass.BASS_ChannelSetPosition(cur_h, bass.BASS_ChannelSeconds2Bytes(cur_h, (double)pos), BASS_POS_BYTE))
+                TF_WARN(<< "Failed to set music position (" << BASS_GetError() << ")");
         }
 
         void cur_pause() {
+            paused = true;
         }
 
         void cur_resume() {
+            paused = false;
         }
 
         bool cur_paused() {
-            return false;
+            return cur_mus && paused;
         }
 
         void update_volume() {
