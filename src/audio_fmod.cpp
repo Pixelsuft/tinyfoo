@@ -708,9 +708,13 @@ namespace audio {
                     return;
                 }
                 if (ch) {
-                    // TODO: resume if needed
+                    paused = false;
                     if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, 0, FMOD_TIMEUNIT_MS)))
                         TF_WARN(<< "Failed to seek music to start (" << FMOD_ErrorString(err) << ")");
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_AddFadePoint(ch, 0, 1.f)))
+                        TF_WARN(<< "Failed to add music fade end point (" << FMOD_ErrorString(err) << ")");
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetDelay(ch, 0, 0, 0)))
+                        TF_WARN(<< "Failed to set resume music delay (" << FMOD_ErrorString(err) << ")");
                     pl::fill_cache();
                     return;
                 }

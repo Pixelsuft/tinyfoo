@@ -451,7 +451,10 @@ namespace audio {
                     pl::fill_cache();
                     return;
                 }
-                if (bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
+                if (paused || bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
+                    paused = false;
+                    fading = false;
+                    update_volume();
                     if (!bass.BASS_ChannelPlay(cur_h, 1))
                         TF_WARN(<< "Failed to play music from start (" << BASS_GetError() << ")");
                     pl::fill_cache();
@@ -547,7 +550,7 @@ namespace audio {
             if (cur_mus) {
                 if (paused) {
                     if (!bass.BASS_ChannelIsSliding(cur_h, BASS_ATTRIB_VOL) && bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_PAUSED) {
-                        if (!bass.BASS_ChannelPause(cur_h))
+                        if (bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED && !bass.BASS_ChannelPause(cur_h))
                             TF_WARN(<< "Failed to pause music (" << BASS_GetError() << ")");
                     }
                 }
