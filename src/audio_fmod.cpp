@@ -904,8 +904,9 @@ namespace audio {
             FMOD_RESULT err;
             unsigned int buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(mus_h, &buf, FMOD_TIMEUNIT_MS))) {
-                TF_ERROR(<< "Failed to get music length (" << FMOD_ErrorString(err) << ")");
-                ret = false;
+                TF_WARN(<< "Failed to get music length (" << FMOD_ErrorString(err) << ")");
+                mus->dur = 0.f;
+                // ret = false;
             }
             else
                 mus->dur = (float)buf / 1000.f;

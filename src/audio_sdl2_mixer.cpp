@@ -282,9 +282,9 @@ namespace audio {
         bool mus_fill_info(Music* mus) {
             double dur = mix.Mix_MusicDuration(mus_h);
             if (dur < 0.0) {
-                mus->dur = -1.f;
-                TF_ERROR(<< "Failed to get music duration (" << SDL_GetError() << ")");
-                return false;
+                mus->dur = 0.f;
+                TF_WARN(<< "Failed to get music duration (" << SDL_GetError() << ")");
+                // return false;
             }
             mus->dur = (float)dur;
             switch (mix.Mix_GetMusicType(mus_h)) {

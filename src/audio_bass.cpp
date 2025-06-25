@@ -90,6 +90,10 @@ typedef int BOOL;
 #define BASS_DEVICE_DSOUND		0x40000
 #define BASS_DEVICE_SOFTWARE	0x80000
 
+#define BASS_CTYPE_SAMPLE		1
+#define BASS_CTYPE_RECORD		2
+#define BASS_CTYPE_STREAM		0x10000
+#define BASS_CTYPE_STREAM_VORBIS	0x10002
 #define BASS_CTYPE_STREAM_OGG	0x10002
 #define BASS_CTYPE_STREAM_MP1	0x10003
 #define BASS_CTYPE_STREAM_MP2	0x10004
@@ -104,6 +108,12 @@ typedef int BOOL;
 #define BASS_CTYPE_STREAM_WAV	0x40000
 #define BASS_CTYPE_STREAM_WAV_PCM	0x50001
 #define BASS_CTYPE_STREAM_WAV_FLOAT	0x50003
+#define BASS_CTYPE_MUSIC_MOD	0x20000
+#define BASS_CTYPE_MUSIC_MTM	0x20001
+#define BASS_CTYPE_MUSIC_S3M	0x20002
+#define BASS_CTYPE_MUSIC_XM		0x20003
+#define BASS_CTYPE_MUSIC_IT		0x20004
+#define BASS_CTYPE_MUSIC_MO3	0x00100
 
 #define BASS_SAMPLE_FLOAT		256
 
@@ -475,6 +485,49 @@ namespace audio {
         }
     
         bool mus_fill_info(Music* mus) {
+            QWORD dur = bass.BASS_ChannelGetLength(mus_h, BASS_POS_BYTE);
+            if (dur < 0) {
+                TF_WARN(<< "Failed to get music duration (" << BASS_GetError() << ")");
+                dur = 0;
+            }
+            mus->dur = (float)bass.BASS_ChannelBytes2Seconds(mus_h, dur);
+            BASS_CHANNELINFO info;
+            if (!bass.BASS_ChannelGetInfo(mus_h, &info)) {
+                TF_ERROR(<< "Failed to get music info (" << BASS_GetError() << ")");
+                return false;
+            }
+            if (info.ctype == BASS_CTYPE_STREAM_MP1)
+                mus->type = Type::MP1;
+            else if (info.ctype == BASS_CTYPE_STREAM_MP2)
+                mus->type = Type::MP2;
+            else if (info.ctype == BASS_CTYPE_STREAM_MP3)
+                mus->type = Type::MP3;
+            else if (info.ctype == BASS_CTYPE_STREAM_OGG)
+                mus->type = Type::OGG;
+            else if (info.ctype == BASS_CTYPE_STREAM_VORBIS)
+                mus->type = Type::VORBIS;
+            else if (info.ctype == BASS_CTYPE_STREAM_AIFF)
+                mus->type = Type::AIFF;
+            else if (info.ctype == BASS_CTYPE_STREAM_CA)
+                mus->type = Type::AAC;
+            else if (info.ctype == BASS_CTYPE_STREAM_MF)
+                mus->type = Type::WMA;
+            else if (info.ctype == BASS_CTYPE_STREAM_AM)
+                mus->type = Type::NONE; // ?
+            else if (info.ctype == BASS_CTYPE_STREAM_WAV || info.ctype == BASS_CTYPE_STREAM_WAV_PCM || info.ctype == BASS_CTYPE_STREAM_WAV_FLOAT)
+                mus->type = Type::WAV;
+            else if (info.ctype == BASS_CTYPE_MUSIC_MOD)
+                mus->type = Type::MOD;
+            else if (info.ctype == BASS_CTYPE_MUSIC_MTM)
+                mus->type = Type::MTM;
+            else if (info.ctype == BASS_CTYPE_MUSIC_XM)
+                mus->type = Type::XM;
+            else if (info.ctype == BASS_CTYPE_MUSIC_IT)
+                mus->type = Type::IT;
+            else if (info.ctype == BASS_CTYPE_MUSIC_MO3)
+                mus->type = Type::MO3;
+            else
+                mus->type = Type::NONE;
             return true;
         }
 

@@ -29,13 +29,17 @@ namespace audio {
         MFA = 22,
         M4A = 23,
         FADPCM = 24,
-        WMA = 25
+        WMA = 25,
+        MP1 = 26,
+        MP2 = 27,
+        MTM = 28,
+        MO3 = 29
     };
 
     static const char* get_type_str(Type tp) {
         switch (tp) {
             case Type::NONE: {
-                return "NONE";
+                return "???";
             }
             case Type::WAV: {
                 return "WAV";
@@ -48,6 +52,12 @@ namespace audio {
             }
             case Type::OGG: {
                 return "OGG";
+            }
+            case Type::MP1: {
+                return "MP1";
+            }
+            case Type::MP2: {
+                return "MP2";
             }
             case Type::MP3: {
                 return "MP3";
@@ -108,6 +118,12 @@ namespace audio {
             }
             case Type::WMA: {
                 return "WMA";
+            }
+            case Type::MTM: {
+                return "MTM";
+            }
+            case Type::MO3: {
+                return "MO3";
             }
         }
         return "NONE";
