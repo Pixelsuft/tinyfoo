@@ -48,5 +48,8 @@ namespace audio {
 #if ENABLE_FMOD
     AudioBase* create_fmod();
 #endif
+#if ENABLE_BASS
+    AudioBase* create_bass();
+#endif
     void free_audio(AudioBase* handle);
 }

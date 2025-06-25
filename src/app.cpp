@@ -157,6 +157,10 @@ bool app::init() {
         else if (backend_s == "fmod")
             audio::au = audio::create_fmod();
 #endif
+#if ENABLE_BASS
+        else if (backend_s == "bass")
+            audio::au = audio::create_bass();
+#endif
     }
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)

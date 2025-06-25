@@ -166,6 +166,7 @@
     <ClCompile Include="msvc\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\audio_base.cpp" />
+    <ClCompile Include="src\audio_bass.cpp" />
     <ClCompile Include="src\audio_fmod.cpp" />
     <ClCompile Include="src\audio_sdl2_mixer.cpp" />
     <ClCompile Include="src\image.cpp" />
