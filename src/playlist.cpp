@@ -358,7 +358,6 @@ void pl::play_selected(Playlist* p) {
         check_music_mod(mus);
         audio::au->cache.push_back(mus);
     }
-    // TODO: actually it's keeps playing from different playlist, FIXME
     for (auto it = cached.begin(); it != cached.end(); it++) {
         if ((*it) == audio::au->cur_mus)
             continue;
