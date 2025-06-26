@@ -743,6 +743,7 @@ namespace audio {
                 cur_mus = cache[0];
                 cache.erase(cache.begin());
             }
+            cur_mus->cached = false;
             pl::mus_open_file(cur_mus);
             paused = false;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_PlaySound(sys, cur_h, nullptr, 1, &ch))) {

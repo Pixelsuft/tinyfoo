@@ -261,6 +261,7 @@ namespace audio {
                 cur_mus = cache[0];
                 cache.erase(cache.begin());
             }
+            cur_mus->cached = false;
             pl::mus_open_file(cur_mus);
             paused = false;
             if (mix.Mix_FadeInMusicPos(cur_h, 0, 0, 0.0) < 0) {

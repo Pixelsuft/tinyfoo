@@ -139,6 +139,7 @@ namespace audio {
         void* h2;
         float dur;
         Type type;
+        bool cached;
         bool selected;
 
         inline Music() {
@@ -147,6 +148,7 @@ namespace audio {
             dur = -1.f;
             type = Type::NONE;
             selected = false;
+            cached = false;
             last_click = 0;
             last_mod = 0;
             file_size = 0;

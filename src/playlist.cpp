@@ -33,7 +33,7 @@ namespace pl {
     tf::vec<Playlist*>* pls;
 
     bool load_pl_from_fp(const tf::str& fp);
-    void audio_clear_cache();
+    void audio_clear_cache(tf::vec<audio::Music*>& cached);
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(audio::Music* mus);
 }
@@ -305,7 +305,9 @@ bool pl::save(Playlist* p) {
 
 void pl::unload_playlists(bool rage) {
     audio::au->cur_stop();
-    audio_clear_cache();
+    for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++)
+        audio::au->mus_close(*it);
+    audio::au->cache.clear();
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
         for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++)
@@ -316,8 +318,12 @@ void pl::unload_playlists(bool rage) {
     }
 }
 
-void pl::audio_clear_cache() {
+void pl::audio_clear_cache(tf::vec<audio::Music*>& cached) {
     for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
+        if ((*it)->cached) {
+            cached.push_back(*it);
+            continue;
+        }
         audio::au->mus_close(*it);
     }
     audio::au->cache.clear();
@@ -327,8 +333,10 @@ void pl::play_selected(Playlist* p) {
     ui::fix_selected_pl();
     if (p->selected.size() == 0)
         return;
+    tf::vec<audio::Music*> cached;
+    cached.reserve(audio::au->cache.size()); // ?
     // Maybe clear cache after started playing???
-    audio_clear_cache();
+    audio_clear_cache(cached);
     audio::Music* mus = p->mus[p->selected[0]];
     // Should I handle open errors here?
     mus_open_file(mus);
@@ -342,8 +350,16 @@ void pl::play_selected(Playlist* p) {
             cnt++;
             mus_open_file(mus);
         }
+        mus->cached = false;
         check_music_mod(mus);
         audio::au->cache.push_back(mus);
+    }
+    for (auto it = cached.begin(); it != cached.end(); it++) {
+        if ((*it) == audio::au->cur_mus)
+            continue;
+        if (std::find(audio::au->cache.begin(), audio::au->cache.end(), *it) != audio::au->cache.end())
+            continue;
+        audio::au->cache.push_back(*it);
     }
 }
 
@@ -437,6 +453,8 @@ void pl::fill_cache() {
         if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
             continue;
         mus_open_file(m);
+        m->cached = true;
+        check_music_mod(m);
         audio::au->cache.push_back(m);
     }
 }

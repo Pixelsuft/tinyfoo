@@ -477,6 +477,7 @@ namespace audio {
                 cur_mus = cache[0];
                 cache.erase(cache.begin());
             }
+            cur_mus->cached = false;
             pl::mus_open_file(cur_mus);
             paused = false;
             if (bass.BASS_ChannelPlay(cur_h, TRUE)) {
