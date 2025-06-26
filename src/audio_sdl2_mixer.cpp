@@ -153,9 +153,23 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
             tf::str drv_hint;
+            bool allow_flac = false;
+            bool allow_mod = false;
+            bool allow_mp3 = true;
+            bool allow_ogg = false;
+            bool allow_mid = false;
+            bool allow_opus = false;
+            bool allow_wavpack = false;
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
                 drv_hint = toml::find_or<tf::str>(tab, "driver", "");
+                allow_flac = toml::find_or<bool>(tab, "allow_flac", false);
+                allow_mod = toml::find_or<bool>(tab, "allow_mod", false);
+                allow_mp3 = toml::find_or<bool>(tab, "allow_mp3", true);
+                allow_ogg = toml::find_or<bool>(tab, "allow_ogg", false);
+                allow_mid = toml::find_or<bool>(tab, "allow_mid", false);
+                allow_opus = toml::find_or<bool>(tab, "allow_opus", false);
+                allow_wavpack = toml::find_or<bool>(tab, "allow_wavpack", false);
             }
             if (drv_hint.size() == 0)
                 SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
@@ -167,9 +181,11 @@ namespace audio {
                 display_available_drivers();
                 return;
             }
-            int init_flags = MIX_INIT_MP3; // TODO
+            int init_flags = (allow_flac ? MIX_INIT_FLAC : 0) | (allow_mod ? MIX_INIT_MOD : 0) |
+                (allow_mp3 ? MIX_INIT_MP3 : 0) | (allow_ogg ? MIX_INIT_OGG : 0) | (allow_mid ? MIX_INIT_MID : 0) |
+                (allow_opus ? MIX_INIT_OPUS : 0) | (allow_wavpack ? MIX_INIT_WAVPACK : 0);
             int ret_flags = mix.Mix_Init(init_flags);
-            if (ret_flags == 0) {
+            if (ret_flags == 0 && (init_flags > 0 || SDL_GetError()[0] != '\0')) {
                 TF_ERROR(<< "Failed to init " << lib_name << " (" << SDL_GetError() << ")");
                 SDL_QuitSubSystem(SDL_INIT_AUDIO);
                 SDL_UnloadObject(mix.handle);
