@@ -5,7 +5,7 @@
 #include <log.hpp>
 #include <break.hpp>
 #include <playlist.hpp>
-#include <algorithm>
+#include <stl.hpp>
 #include <SDL3/SDL.h>
 #if 1
 #define F_CALL SDLCALL
@@ -875,10 +875,7 @@ namespace audio {
         void cur_set_pos(float pos) {
             if (!cur_mus || !ch)
                 return;
-            if (pos < 0.f)
-                pos = 0.f;
-            else if (pos > cur_mus->dur)
-                pos = cur_mus->dur;
+            pos = tf::clamp(pos, 0.f, cur_mus->dur);
             if (cur_paused()) {
                 pause_pos = pos;
                 return;

@@ -5,7 +5,7 @@
 #include <log.hpp>
 #include <break.hpp>
 #include <playlist.hpp>
-#include <algorithm>
+#include <stl.hpp>
 #include <SDL3/SDL.h>
 #if 1
 typedef enum {
@@ -386,10 +386,7 @@ namespace audio {
         void cur_set_pos(float pos) {
             if (!cur_mus || !hooked)
                 return;
-            if (pos < 0.f)
-                pos = 0.f;
-            else if (pos > cur_mus->dur)
-                pos = cur_mus->dur;
+            pos = tf::clamp(pos, 0.f, cur_mus->dur);
             if (paused) {
                 pause_pos = pos;
                 return;

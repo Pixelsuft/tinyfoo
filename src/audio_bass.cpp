@@ -6,7 +6,7 @@
 #include <log.hpp>
 #include <break.hpp>
 #include <playlist.hpp>
-#include <algorithm>
+#include <stl.hpp>
 #include <SDL3/SDL.h>
 #if 1
 #if IS_WIN
@@ -596,11 +596,11 @@ namespace audio {
         void cur_set_pos(float pos) {
             if (!cur_mus || stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED)
                 return;
-            // TODO: use min max clamp
-            if (pos < 0.f)
-                pos = 0.f;
-            else if (pos > cur_mus->dur)
-                pos = cur_mus->dur;
+            pos = tf::clamp(pos, 0.f, cur_mus->dur);
+            if (pos == pos) {
+                force_play_cache();
+                return;
+            }
             if (paused) {
                 pause_pos = pos;
                 return;

@@ -187,6 +187,7 @@
     <ClInclude Include="include\image.hpp" />
     <ClInclude Include="include\res.hpp" />
     <ClInclude Include="include\set.hpp" />
+    <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\upng.hpp" />
     <ClInclude Include="include\util.hpp" />
     <ClInclude Include="include\log.hpp" />

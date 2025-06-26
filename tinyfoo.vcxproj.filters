@@ -151,5 +151,8 @@
     <ClInclude Include="include\image.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\stl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
