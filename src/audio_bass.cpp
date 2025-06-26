@@ -598,6 +598,8 @@ namespace audio {
                 return;
             pos = tf::clamp(pos, 0.f, cur_mus->dur);
             if (pos == cur_mus->dur) {
+                if (!bass.BASS_ChannelStop(cur_h))
+                    TF_WARN(<< "Failed to fast stop music (" << BASS_GetError() << ")");
                 force_play_cache();
                 return;
             }
