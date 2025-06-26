@@ -36,6 +36,7 @@ namespace audio {
         virtual void cur_pause();
         virtual void cur_resume();
         virtual bool cur_paused();
+        virtual bool cur_stopped();
         virtual void cur_stop();
         void pre_open();
     };

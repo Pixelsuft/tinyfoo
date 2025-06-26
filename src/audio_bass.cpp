@@ -569,6 +569,10 @@ namespace audio {
             }
         }
 
+        bool cur_stopped() {
+            return !cur_mus || (bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED);
+        }
+
         void cur_stop() {
             if (!cur_mus)
                 return;

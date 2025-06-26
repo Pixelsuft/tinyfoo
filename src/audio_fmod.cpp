@@ -837,6 +837,10 @@ namespace audio {
                 TF_WARN(<< "Failed to set music volume (" << FMOD_ErrorString(err) << ")");
         }
 
+        bool cur_stopped() {
+            return !ch;
+        }
+
         void cur_stop() {
             if (!ch)
                 return;

@@ -427,6 +427,10 @@ namespace audio {
             }
         }
 
+        bool cur_stopped() {
+            return !hooked;
+        }
+
         bool cur_paused() {
             return paused;
         }

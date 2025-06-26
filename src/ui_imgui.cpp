@@ -310,7 +310,11 @@ void ui::draw_playback_buttons() {
         }
     }
     if (ImGui::ImageButton("IconPause", (ImTextureID)(intptr_t)data->icon_pause, ImVec2(20.f * data->img_scale, 20.f * data->img_scale))) {
-        if (audio::au->cur_paused())
+        if (audio::au->cur_stopped()) {
+            pl::fill_cache();
+            audio::au->force_play_cache();
+        }
+        else if (audio::au->cur_paused())
             audio::au->cur_resume();
         else
             audio::au->cur_pause();

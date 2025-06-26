@@ -92,6 +92,10 @@ bool AudioBase::cur_paused() {
     return false;
 }
 
+bool AudioBase::cur_stopped() {
+    return false;
+}
+
 bool AudioBase::mus_fill_info(Music* mus) {
     return false;
 }
