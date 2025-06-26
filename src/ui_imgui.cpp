@@ -330,7 +330,6 @@ void ui::draw_playback_buttons() {
     ImGui::ImageButton("IconBack", (ImTextureID)(intptr_t)data->icon_back, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
     if (ImGui::ImageButton("IconFwd", (ImTextureID)(intptr_t)data->icon_fwd, ImVec2(20.f * data->img_scale, 20.f * data->img_scale)))
         audio::au->force_play_cache();
-    // TODO: icon
     ImGui::ImageButton("IconRng", (ImTextureID)(intptr_t)data->icon_rng, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
     ImGui::PopStyleVar();
 }

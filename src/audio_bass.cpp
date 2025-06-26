@@ -642,6 +642,7 @@ namespace audio {
         }
 
         void update_volume() {
+            volume = tf::clamp(volume, 0.f, 1.f);
             if (cur_mus && !bass.BASS_ChannelSetAttribute(cur_h, BASS_ATTRIB_VOL, volume))
                 TF_WARN(<< "Failed to update music volume (" << BASS_GetError() << ")");
         }

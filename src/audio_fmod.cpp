@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #if 1
 #define F_CALL SDLCALL
+#define F_API SDLCALL
 
 typedef int                        FMOD_BOOL;
 typedef struct FMOD_SYSTEM         FMOD_SYSTEM;
@@ -547,43 +548,44 @@ namespace audio {
 
     struct FMODApi {
         SDL_SharedObject* handle;
-        FMOD_RESULT (F_CALL *FMOD_System_Create)(FMOD_SYSTEM**, unsigned int);
-        FMOD_RESULT (F_CALL *FMOD_System_Release)(FMOD_SYSTEM*);
-        FMOD_RESULT (F_CALL *FMOD_System_Init)(FMOD_SYSTEM*, int, FMOD_INITFLAGS, void*);
-        FMOD_RESULT (F_CALL *FMOD_System_Close)(FMOD_SYSTEM*);
-        FMOD_RESULT (F_CALL *FMOD_System_Update)(FMOD_SYSTEM*);
-        FMOD_RESULT (F_CALL *FMOD_System_GetVersion)(FMOD_SYSTEM*, unsigned int*);
-        FMOD_RESULT (F_CALL *FMOD_System_CreateStream)(FMOD_SYSTEM*, const char*, FMOD_MODE, FMOD_CREATESOUNDEXINFO*, FMOD_SOUND**);
-        FMOD_RESULT (F_CALL *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
-        FMOD_RESULT (F_CALL *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
-        FMOD_RESULT (F_CALL *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
-        FMOD_RESULT (F_CALL *FMOD_Sound_Release)(FMOD_SOUND*);
-        FMOD_RESULT (F_CALL *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
-        FMOD_RESULT (F_CALL *FMOD_Sound_GetFormat)(FMOD_SOUND*, FMOD_SOUND_TYPE*, FMOD_SOUND_FORMAT*, int*, int*);
-        FMOD_RESULT (F_CALL *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
-        FMOD_RESULT (F_CALL *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
-        FMOD_RESULT (F_CALL *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
-        FMOD_RESULT (F_CALL *FMOD_Sound_GetLoopCount)(FMOD_SOUND*, int*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_Stop)(FMOD_CHANNEL*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetPaused)(FMOD_CHANNEL*, FMOD_BOOL);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetPaused)(FMOD_CHANNEL*, FMOD_BOOL*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetVolume)(FMOD_CHANNEL*, float);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetVolume)(FMOD_CHANNEL*, float*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetPitch)(FMOD_CHANNEL*, float);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetPitch)(FMOD_CHANNEL*, float*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetMode)(FMOD_CHANNEL*, FMOD_MODE);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetMode)(FMOD_CHANNEL*, FMOD_MODE*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetCallback)(FMOD_CHANNEL*, FMOD_CHANNELCONTROL_CALLBACK);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetUserData)(FMOD_CHANNEL*, void*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetUserData)(FMOD_CHANNEL*, void**);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
-        FMOD_RESULT (F_CALL *FMOD_Channel_SetDelay)(FMOD_CHANNEL*, unsigned long long, unsigned long long, FMOD_BOOL);
-        FMOD_RESULT (F_CALL *FMOD_Channel_GetDSPClock)(FMOD_CHANNEL*, unsigned long long*, unsigned long long*);
-        FMOD_RESULT (F_CALL *FMOD_Channel_AddFadePoint)(FMOD_CHANNEL*, unsigned long long, float);
-        FMOD_RESULT (F_CALL *FMOD_Channel_RemoveFadePoints)(FMOD_CHANNEL*, unsigned long long, unsigned long long);
-        FMOD_RESULT (F_CALL *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
+        FMOD_RESULT (F_API *FMOD_System_Create)(FMOD_SYSTEM**, unsigned int);
+        FMOD_RESULT (F_API *FMOD_System_Release)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_API *FMOD_System_Init)(FMOD_SYSTEM*, int, FMOD_INITFLAGS, void*);
+        FMOD_RESULT (F_API *FMOD_System_Close)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_API *FMOD_System_Update)(FMOD_SYSTEM*);
+        FMOD_RESULT (F_API *FMOD_System_GetVersion)(FMOD_SYSTEM*, unsigned int*);
+        FMOD_RESULT (F_API *FMOD_System_CreateStream)(FMOD_SYSTEM*, const char*, FMOD_MODE, FMOD_CREATESOUNDEXINFO*, FMOD_SOUND**);
+        FMOD_RESULT (F_API *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
+        FMOD_RESULT (F_API *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
+        FMOD_RESULT (F_API *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
+        FMOD_RESULT (F_API *FMOD_Sound_Release)(FMOD_SOUND*);
+        FMOD_RESULT (F_API *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_API *FMOD_Sound_GetFormat)(FMOD_SOUND*, FMOD_SOUND_TYPE*, FMOD_SOUND_FORMAT*, int*, int*);
+        FMOD_RESULT (F_API *FMOD_Sound_SetMode)(FMOD_SOUND*, FMOD_MODE);
+        FMOD_RESULT (F_API *FMOD_Sound_GetMode)(FMOD_SOUND*, FMOD_MODE*);
+        FMOD_RESULT (F_API *FMOD_Sound_SetLoopCount)(FMOD_SOUND*, int);
+        FMOD_RESULT (F_API *FMOD_Sound_GetLoopCount)(FMOD_SOUND*, int*);
+        FMOD_RESULT (F_API *FMOD_Channel_Stop)(FMOD_CHANNEL*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetPaused)(FMOD_CHANNEL*, FMOD_BOOL);
+        FMOD_RESULT (F_API *FMOD_Channel_GetPaused)(FMOD_CHANNEL*, FMOD_BOOL*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetVolume)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (F_API *FMOD_Channel_GetVolume)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetPitch)(FMOD_CHANNEL*, float);
+        FMOD_RESULT (F_API *FMOD_Channel_GetPitch)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetMode)(FMOD_CHANNEL*, FMOD_MODE);
+        FMOD_RESULT (F_API *FMOD_Channel_GetMode)(FMOD_CHANNEL*, FMOD_MODE*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetCallback)(FMOD_CHANNEL*, FMOD_CHANNELCONTROL_CALLBACK);
+        FMOD_RESULT (F_API *FMOD_Channel_SetUserData)(FMOD_CHANNEL*, void*);
+        FMOD_RESULT (F_API *FMOD_Channel_GetUserData)(FMOD_CHANNEL*, void**);
+        FMOD_RESULT (F_API *FMOD_Channel_GetCurrentSound)(FMOD_CHANNEL*, FMOD_SOUND**);
+        FMOD_RESULT (F_API *FMOD_Channel_SetPosition)(FMOD_CHANNEL*, unsigned int, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_API *FMOD_Channel_GetPosition)(FMOD_CHANNEL*, unsigned int*, FMOD_TIMEUNIT);
+        FMOD_RESULT (F_API *FMOD_Channel_GetFrequency)(FMOD_CHANNEL*, float*);
+        FMOD_RESULT (F_API *FMOD_Channel_SetDelay)(FMOD_CHANNEL*, unsigned long long, unsigned long long, FMOD_BOOL);
+        FMOD_RESULT (F_API *FMOD_Channel_GetDSPClock)(FMOD_CHANNEL*, unsigned long long*, unsigned long long*);
+        FMOD_RESULT (F_API *FMOD_Channel_AddFadePoint)(FMOD_CHANNEL*, unsigned long long, float);
+        FMOD_RESULT (F_API *FMOD_Channel_RemoveFadePoints)(FMOD_CHANNEL*, unsigned long long, unsigned long long);
+        FMOD_RESULT (F_API *FMOD_Memory_Initialize)(void*, int, FMOD_MEMORY_ALLOC_CALLBACK, FMOD_MEMORY_REALLOC_CALLBACK, FMOD_MEMORY_FREE_CALLBACK, FMOD_MEMORY_TYPE);
     };
 
     class AudioFMOD : public AudioBase {
@@ -644,6 +646,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_Channel_GetCurrentSound);
             FMOD_LOAD_FUNC(FMOD_Channel_SetPosition);
             FMOD_LOAD_FUNC(FMOD_Channel_GetPosition);
+            FMOD_LOAD_FUNC(FMOD_Channel_GetFrequency);
             FMOD_LOAD_FUNC(FMOD_Channel_SetDelay);
             FMOD_LOAD_FUNC(FMOD_Channel_GetDSPClock);
             FMOD_LOAD_FUNC(FMOD_Channel_AddFadePoint);
@@ -753,13 +756,16 @@ namespace audio {
             }
             else {
                 was_finished = false;
-                unsigned int samp_buf;
-                if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(cur_h, &samp_buf, FMOD_TIMEUNIT_PCM))) {
-                    TF_WARN(<< "Failed to get music pcm length (" << FMOD_ErrorString(err) << ")");
-                    sps = 44100.f;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetFrequency(ch, &sps))) {
+                    TF_WARN(<< "Failed to get music frequency (" << FMOD_ErrorString(err) << ")");
+                    unsigned int samp_buf;
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_GetLength(cur_h, &samp_buf, FMOD_TIMEUNIT_PCM))) {
+                        TF_WARN(<< "Failed to get music pcm length (" << FMOD_ErrorString(err) << ")");
+                        sps = 44100.f;
+                    }
+                    else
+                        sps = (float)samp_buf / cur_mus->dur;
                 }
-                else
-                    sps = (float)samp_buf / cur_mus->dur;
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetCallback(ch, fmod_channel_callback)))
                     TF_WARN(<< "Failed to set music callback (" << FMOD_ErrorString(err) << ")");
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetVolume(ch, volume)))
