@@ -2,12 +2,12 @@
 #include <algorithm>
 
 namespace tf {
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L)
-    using clamp = std::clamp;
-#else
     template<class T>
     constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 201703L
+        return std::clamp(v, lo, hi);
+#else
         return std::min(std::max(v, lo), hi);
-    }
 #endif
+    }
 }

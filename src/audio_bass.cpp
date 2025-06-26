@@ -597,7 +597,7 @@ namespace audio {
             if (!cur_mus || stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED)
                 return;
             pos = tf::clamp(pos, 0.f, cur_mus->dur);
-            if (pos == pos) {
+            if (pos == cur_mus->dur) {
                 force_play_cache();
                 return;
             }

@@ -15,7 +15,7 @@ namespace tf {
             // TODO: unreachable (release mode)
 			return nullptr;
 		}
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L) || (__cplusplus >= 202002L)
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
 		return std::construct_at((T*)ptr_res, std::forward<Args>(args)...);
 #else
 		return new(ptr_res) T(std::forward<Args>(args)...);
@@ -24,7 +24,7 @@ namespace tf {
 
 	template <typename T>
 	static inline void dl(T* ptr) {
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L)
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 201703L
 		std::destroy_at(ptr);
 #else
 		ptr->~T();
@@ -39,7 +39,7 @@ namespace tf {
             // TODO: unreachable
 			return nullptr;
 		}
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L) || (__cplusplus >= 202002L)
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
 		return std::construct_at((T*)ptr_res, std::forward<Args>(args)...);
 #else
 		return new(ptr_res) T(std::forward<Args>(args)...);
