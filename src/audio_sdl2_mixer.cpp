@@ -6,6 +6,7 @@
 #include <break.hpp>
 #include <playlist.hpp>
 #include <stl.hpp>
+#include <conf.hpp>
 #include <SDL3/SDL.h>
 #if 1
 typedef enum {
@@ -151,9 +152,14 @@ namespace audio {
             MIX_LOAD_FUNC(Mix_MusicDuration);
             MIX_LOAD_FUNC(Mix_PlayingMusic);
             MIX_LOAD_FUNC(Mix_CloseAudio);
-            // TODO: set hint for backend
-            // TODO: read conf here
-            if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "directsound"))
+            tf::str drv_hint;
+            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
+                toml::value tab = conf::get().at("sdl2_mixer");
+                drv_hint = toml::find_or<tf::str>(tab, "driver", "");
+            }
+            if (drv_hint.size() == 0)
+                SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
+            else if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, drv_hint.c_str()))
                 TF_WARN(<< "Failed to set SDL3 audio hint (" << SDL_GetError() << ")");
             if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
                 TF_ERROR(<< "Failed to init SDL3 audio (" << SDL_GetError() << ")");
@@ -428,7 +434,7 @@ namespace audio {
         }
 
         bool cur_stopped() {
-            return !hooked;
+            return !hooked && !paused;
         }
 
         bool cur_paused() {
