@@ -40,6 +40,7 @@ namespace ui {
         char* pl_path_buf;
         ImFont* font1;
         ImFont* font2;
+        pl::Playlist* prev_cache_pl;
         pl::Playlist* last_pl;
         pl::Playlist* sel_pl;
         pl::Playlist* need_conf_pl;
@@ -65,6 +66,11 @@ namespace ui {
             return nullptr;
         if (hacky == 2)
             return data->sel_pl ? data->sel_pl : data->last_pl;
+        if (hacky == 3) {
+            pl::Playlist* ret = (data->prev_cache_pl == data->last_pl) ? nullptr : data->last_pl;
+            data->prev_cache_pl = data->last_pl;
+            return ret;
+        }
         return data->last_pl;
     }
 
@@ -156,7 +162,7 @@ namespace ui {
 bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
-    data->last_pl = data->sel_pl = nullptr;
+    data->last_pl = data->sel_pl = data->prev_cache_pl = data->need_conf_pl = nullptr;
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;

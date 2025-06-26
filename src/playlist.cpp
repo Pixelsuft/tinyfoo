@@ -33,7 +33,7 @@ namespace pl {
     tf::vec<Playlist*>* pls;
 
     bool load_pl_from_fp(const tf::str& fp);
-    void audio_clear_cache(tf::vec<audio::Music*>& cached);
+    void audio_clear_cache(tf::vec<audio::Music*>& cached, bool keep_cache);
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(audio::Music* mus);
 }
@@ -318,11 +318,15 @@ void pl::unload_playlists(bool rage) {
     }
 }
 
-void pl::audio_clear_cache(tf::vec<audio::Music*>& cached) {
+void pl::audio_clear_cache(tf::vec<audio::Music*>& cached, bool keep_cache) {
     for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
         if ((*it)->cached) {
-            cached.push_back(*it);
-            continue;
+            if (keep_cache) {
+                cached.push_back(*it);
+                continue;
+            }
+            else
+                (*it)->cached = false;
         }
         audio::au->mus_close(*it);
     }
@@ -334,9 +338,9 @@ void pl::play_selected(Playlist* p) {
     if (p->selected.size() == 0)
         return;
     tf::vec<audio::Music*> cached;
-    cached.reserve(audio::au->cache.size()); // ?
+    cached.reserve(audio::au->cache.size()); // ???
     // Maybe clear cache after started playing???
-    audio_clear_cache(cached);
+    audio_clear_cache(cached, ui::get_last_pl(3) == nullptr);
     audio::Music* mus = p->mus[p->selected[0]];
     // Should I handle open errors here?
     mus_open_file(mus);
