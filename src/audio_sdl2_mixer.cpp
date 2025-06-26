@@ -201,11 +201,24 @@ namespace audio {
         }
 
         bool dev_open() {
-            // TODO: configure
+            // TODO: more conf
             SDL_AudioSpec spec;
             int sample_frames;
-            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &sample_frames))
-                TF_DEBUG_BREAK();
+            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &sample_frames)) {
+                TF_ERROR(<< "Failed to get output device specs (" << SDL_GetError() << ")");
+                spec.channels = 2;
+                spec.freq = 2;
+                spec.format = SDL_AUDIO_F32;
+            }
+            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
+                toml::value tab = conf::get().at("sdl2_mixer");
+                int b_channels = toml::find_or<int>(tab, "channel", 0);
+                int b_freq = toml::find_or<int>(tab, "frequency", 0);
+                if (b_channels > 0)
+                    spec.channels = b_channels;
+                if (b_freq > 0)
+                    spec.freq = b_freq;
+            }
             // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
             if (mix.Mix_OpenAudioDevice(spec.freq, spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
