@@ -48,11 +48,6 @@ if app.stage == 'fetch':
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.cpp',
         'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.h'
     ))
-    if not os.path.isdir(os.path.join(app.b_path, 'bpstd')):
-        os.mkdir(os.path.join(app.b_path, 'bpstd'))
-    if not os.path.isdir(os.path.join(app.b_path, 'bpstd', 'bpstd')):
-        os.mkdir(os.path.join(app.b_path, 'bpstd', 'bpstd'))
-    app.download_bpstd_string_view_lib(os.path.join(app.b_path, 'bpstd', 'bpstd', 'string_view.hpp'))
     if not os.path.isdir(os.path.join(app.b_path, 'toml11')):
         os.mkdir(os.path.join(app.b_path, 'toml11'))
     app.download_toml11_lib(os.path.join(app.b_path, 'toml11', 'toml.hpp'))
