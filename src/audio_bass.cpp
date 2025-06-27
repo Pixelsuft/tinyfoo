@@ -78,6 +78,8 @@ typedef int BOOL;
 #define BASS_CONFIG_CURVE_VOL		7
 #define BASS_CONFIG_CURVE_PAN		8
 
+#define BASS_DEVICE_ENABLED		1
+
 #define BASS_DEVICE_MONO		2
 #define BASS_DEVICE_16BITS		8
 #define BASS_DEVICE_REINIT		128
@@ -373,6 +375,7 @@ namespace audio {
         }
 
         bool dev_open() {
+            BASS_DEVICEINFO d_info;
             void* hwnd = nullptr;
 #if IS_WIN
             SDL_PropertiesID props = SDL_GetWindowProperties((SDL_Window*)app::win_handle);
@@ -385,8 +388,10 @@ namespace audio {
 #endif
             DWORD init_flags = 0;
             int need_freq = 0;
+            tf::str need_dev;
             if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
                 toml::value tab = conf::get().at("bass");
+                need_dev = toml::find_or<tf::str>(tab, "device", "");
                 if (toml::find_or<bool>(tab, "force_16bits", false))
                     init_flags |= BASS_DEVICE_16BITS;
                 if (toml::find_or<bool>(tab, "force_stereo", false))
@@ -403,7 +408,21 @@ namespace audio {
             }
             if (need_freq > 0)
                 init_flags |= BASS_DEVICE_FREQ;
-            if (!bass.BASS_Init(-1, (need_freq > 0) ? need_freq : 48000, init_flags, hwnd, nullptr)) {
+            int dev_id = -1;
+            for (int i = 0; bass.BASS_GetDeviceInfo(i, &d_info); i++) {
+                if (!(d_info.flags & BASS_DEVICE_ENABLED))
+                    continue;
+                // TF_INFO(<< "Found audio device: " << d_info.name);
+#if defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+                // TODO
+#else
+                if (!SDL_strcmp(need_dev.c_str(), d_info.name)) {
+                    dev_id = i;
+                    break;
+                }
+#endif
+            }
+            if (!bass.BASS_Init(dev_id, (need_freq > 0) ? need_freq : 48000, init_flags, hwnd, nullptr)) {
                 TF_INFO(<< "Failed to create BASS device (" << BASS_GetError() << ")");
                 return false;
             }
@@ -412,7 +431,6 @@ namespace audio {
                 TF_WARN(<< "Failed to get BASS info (" << BASS_GetError() << ")");
                 info.freq = 0;
             }
-            BASS_DEVICEINFO d_info;
             if (!bass.BASS_GetDeviceInfo(bass.BASS_GetDevice(), &d_info)) {
                 TF_WARN(<< "Failed to get audio device info (" << BASS_GetError() << ")");
 #if BASS_LIKES_WCHAR
