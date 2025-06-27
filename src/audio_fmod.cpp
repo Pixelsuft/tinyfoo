@@ -377,6 +377,20 @@ typedef struct FMOD_CREATESOUNDEXINFO {
     FMOD_GUID* fsbguid;
 } FMOD_CREATESOUNDEXINFO;
 
+typedef enum FMOD_SPEAKERMODE {
+    FMOD_SPEAKERMODE_DEFAULT,
+    FMOD_SPEAKERMODE_RAW,
+    FMOD_SPEAKERMODE_MONO,
+    FMOD_SPEAKERMODE_STEREO,
+    FMOD_SPEAKERMODE_QUAD,
+    FMOD_SPEAKERMODE_SURROUND,
+    FMOD_SPEAKERMODE_5POINT1,
+    FMOD_SPEAKERMODE_7POINT1,
+    FMOD_SPEAKERMODE_7POINT1POINT4,
+    FMOD_SPEAKERMODE_MAX,
+    FMOD_SPEAKERMODE_FORCEINT = 65536
+} FMOD_SPEAKERMODE;
+
 static const char* FMOD_ErrorString(FMOD_RESULT errcode) {
     switch (errcode) {
     case FMOD_OK:                            return "No errors.";
@@ -604,6 +618,10 @@ namespace audio {
         FMOD_RESULT (F_API *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
         FMOD_RESULT (F_API *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
         FMOD_RESULT (F_API *FMOD_System_SetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE);
+        FMOD_RESULT (F_API *FMOD_System_GetNumDrivers)(FMOD_SYSTEM*, int*);
+        FMOD_RESULT (F_API *FMOD_System_GetDriverInfo)(FMOD_SYSTEM*, int, char*, int, FMOD_GUID*, int*, FMOD_SPEAKERMODE*, int*);
+        FMOD_RESULT (F_API *FMOD_System_GetDriver)(FMOD_SYSTEM*, int*);
+        FMOD_RESULT (F_API *FMOD_System_SetDriver)(FMOD_SYSTEM*, int);
         FMOD_RESULT (F_API *FMOD_Sound_Release)(FMOD_SOUND*);
         FMOD_RESULT (F_API *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
         FMOD_RESULT (F_API *FMOD_Sound_GetFormat)(FMOD_SOUND*, FMOD_SOUND_TYPE*, FMOD_SOUND_FORMAT*, int*, int*);
@@ -671,6 +689,10 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_System_GetChannel);
             FMOD_LOAD_FUNC(FMOD_System_GetOutput);
             FMOD_LOAD_FUNC(FMOD_System_SetOutput);
+            FMOD_LOAD_FUNC(FMOD_System_GetNumDrivers);
+            FMOD_LOAD_FUNC(FMOD_System_GetDriverInfo);
+            FMOD_LOAD_FUNC(FMOD_System_GetDriver);
+            FMOD_LOAD_FUNC(FMOD_System_SetDriver);
             FMOD_LOAD_FUNC(FMOD_Sound_Release);
             FMOD_LOAD_FUNC(FMOD_Sound_GetLength);
             FMOD_LOAD_FUNC(FMOD_Sound_GetFormat);
@@ -731,6 +753,28 @@ namespace audio {
 
         bool dev_open() {
             FMOD_RESULT err;
+            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
+                toml::value tab = conf::get().at("fmod");
+                tf::str need_dev = toml::find_or<tf::str>(tab, "device", "");
+                int num_dev;
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {
+                    TF_ERROR(<< "Failed to get number of audio devices (" << FMOD_ErrorString(err) << ")");
+                    num_dev = 0;
+                }
+                for (int i = 0; i < num_dev; i++) {
+                    char name_buf[512];
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriverInfo(sys, i, name_buf, 512, nullptr, nullptr, nullptr, nullptr))) {
+                        TF_ERROR(<< "Failed to get device info (" << FMOD_ErrorString(err) << ")");
+                        continue;
+                    }
+                    if (!SDL_strncmp(need_dev.c_str(), name_buf, 512)) {
+                        if (FMOD_HAS_ERROR(err = fmod.FMOD_System_SetDriver(sys, i)))
+                            TF_ERROR(<< "Failed to set output device (" << FMOD_ErrorString(err) << ")");
+                        break;
+                    }
+                    // TF_INFO(<< "Found device: " << name_buf);
+                }
+            }
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 2, FMOD_INIT_NORMAL, NULL))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
                 return true;
@@ -739,7 +783,15 @@ namespace audio {
                 TF_WARN(<< "Failed to get FMOD version (" << FMOD_ErrorString(err) << ")");
                 fmod_ver = 0;
             }
-            TF_INFO(<< "Audio device opened");
+            tf::str dev_name;
+            int cur_dev;
+            char name_buf[512];
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriver(sys, &cur_dev)))
+                TF_WARN(<< "Failed to get current device (" << FMOD_ErrorString(err) << ")");
+            else if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriverInfo(sys, cur_dev, name_buf, 512, nullptr, nullptr, nullptr, nullptr)))
+                TF_WARN(<< "Failed to get current device info (" << FMOD_ErrorString(err) << ")");
+            else
+                TF_INFO(<< "Audio device \"" << name_buf << "\" opened");
             dev_opened = true;
             return true;
         }

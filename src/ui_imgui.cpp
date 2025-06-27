@@ -143,7 +143,7 @@ namespace ui {
             char dur_buf[32];
             fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
             fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
-            new_cap = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "]";
+            new_cap = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "] [tinyfoo]";
         }
         else
             new_cap = "tinyfoo";
