@@ -755,25 +755,25 @@ namespace audio {
             FMOD_RESULT err;
             if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
-                tf::str need_dev = toml::find_or<tf::str>(tab, "device", "");
-                int num_dev;
-                if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {
-                    TF_ERROR(<< "Failed to get number of audio devices (" << FMOD_ErrorString(err) << ")");
-                    num_dev = 0;
+                need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+            }
+            int num_dev;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {
+                TF_ERROR(<< "Failed to get number of audio devices (" << FMOD_ErrorString(err) << ")");
+                num_dev = 0;
+            }
+            for (int i = 0; i < num_dev; i++) {
+                char name_buf[512];
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriverInfo(sys, i, name_buf, 512, nullptr, nullptr, nullptr, nullptr))) {
+                    TF_ERROR(<< "Failed to get device info (" << FMOD_ErrorString(err) << ")");
+                    continue;
                 }
-                for (int i = 0; i < num_dev; i++) {
-                    char name_buf[512];
-                    if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriverInfo(sys, i, name_buf, 512, nullptr, nullptr, nullptr, nullptr))) {
-                        TF_ERROR(<< "Failed to get device info (" << FMOD_ErrorString(err) << ")");
-                        continue;
-                    }
-                    if (!SDL_strncmp(need_dev.c_str(), name_buf, 512)) {
-                        if (FMOD_HAS_ERROR(err = fmod.FMOD_System_SetDriver(sys, i)))
-                            TF_ERROR(<< "Failed to set output device (" << FMOD_ErrorString(err) << ")");
-                        break;
-                    }
-                    // TF_INFO(<< "Found device: " << name_buf);
+                if (!SDL_strncmp(need_dev.c_str(), name_buf, 512)) {
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_System_SetDriver(sys, i)))
+                        TF_ERROR(<< "Failed to set output device (" << FMOD_ErrorString(err) << ")");
+                    break;
                 }
+                // TF_INFO(<< "Found device: " << name_buf);
             }
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 2, FMOD_INIT_NORMAL, NULL))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");

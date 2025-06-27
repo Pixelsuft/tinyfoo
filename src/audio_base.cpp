@@ -1,6 +1,7 @@
 #include <audio_base.hpp>
 #include <new.hpp>
 #include <playlist.hpp>
+#include <conf.hpp>
 #include <algorithm>
 
 using audio::AudioBase;
@@ -24,6 +25,10 @@ AudioBase::AudioBase() {
     fade_pause_time = 0.2f;
     fade_stop_time = 0.2f;
     fade_next_time = 0.2f;
+    if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
+        toml::value tab = conf::get().at("audio");
+        need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+    }
 }
 
 AudioBase::~AudioBase() {

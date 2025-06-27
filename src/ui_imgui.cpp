@@ -246,6 +246,8 @@ void ui::draw_menubar() {
         if (ImGui::MenuItem("Save playlist", nullptr, nullptr, data->last_pl != nullptr))
             pl::save(data->last_pl);
         ImGui::Separator();
+        if (ImGui::MenuItem("Settings", nullptr, nullptr)) {} // TODO: settings
+        ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
             app::stop(true);
         if (ImGui::MenuItem("Exit", nullptr, nullptr))
