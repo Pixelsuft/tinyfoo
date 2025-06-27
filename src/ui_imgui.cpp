@@ -630,6 +630,7 @@ void ui::draw() {
     ImGui::PopStyleVar();
     if (data->show_app_conf) {
         ImGui::SetNextWindowSize({ 640.f, 400.f }, ImGuiCond_Appearing);
+        // TODO: fix combo box with that one
         ImGui::SetNextWindowFocus();
         if (ImGui::Begin("Settings", &data->show_app_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
             draw_settings();
@@ -637,7 +638,6 @@ void ui::draw() {
     }
     if (data->show_playlist_conf) {
         ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
-        // TODO: fix combo box with that one
         ImGui::SetNextWindowFocus();
         if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
             draw_playlist_conf();
