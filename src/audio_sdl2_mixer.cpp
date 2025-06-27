@@ -256,13 +256,16 @@ namespace audio {
             }
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
+                spec.format = fmt_from_str(toml::find_or<tf::str>(tab, "format", fmt_to_str(spec.format)));
                 int b_channels = toml::find_or<int>(tab, "channel", 0);
                 int b_freq = toml::find_or<int>(tab, "frequency", 0);
+                int b_samples = toml::find_or<int>(tab, "chunksize", 0);
                 if (b_channels > 0)
                     spec.channels = b_channels;
                 if (b_freq > 0)
                     spec.freq = b_freq;
-                spec.format = fmt_from_str(toml::find_or<tf::str>(tab, "format", "SDL_AUDIO_S16"));
+                if (b_samples > 0)
+                    sample_frames = b_samples;
             }
             // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
             if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
@@ -274,7 +277,8 @@ namespace audio {
             int num_ch = 0;
             mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
             mix.Mix_AllocateChannels(0);
-            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels, " << fmt_to_str((SDL_AudioFormat)num_fmt) << " format)");
+            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels, "
+                << fmt_to_str((SDL_AudioFormat)num_fmt) << " format, " << sample_frames << " chunksize)");
             dev_opened = true;
             return true;
         }
