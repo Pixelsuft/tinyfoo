@@ -9,6 +9,8 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
+#define BASS_LIKES_WCHAR (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
+
 #if 1
 #if IS_WIN
 #include <wtypes.h>
@@ -184,7 +186,7 @@ typedef DWORD HFX;
 typedef DWORD HPLUGIN;
 
 typedef struct {
-#if defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+#if BASS_LIKES_WCHAR
 	const wchar_t* name;
 	const wchar_t* driver;
 #else
@@ -233,7 +235,6 @@ typedef struct {
 #endif
 #define mus_h (*((DWORD*)(&mus->h1)))
 #define cur_h (*((DWORD*)(&cur_mus->h1)))
-#define BASS_LIKES_WCHAR (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
 
 static inline const char* BASS_ErrorString(int errcode) {
     switch (errcode) {
@@ -413,7 +414,7 @@ namespace audio {
                 if (!(d_info.flags & BASS_DEVICE_ENABLED))
                     continue;
                 // TF_INFO(<< "Found audio device: " << d_info.name);
-#if defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+#if BASS_LIKES_WCHAR
                 // TODO
 #else
                 if (!SDL_strcmp(need_dev.c_str(), d_info.name)) {
