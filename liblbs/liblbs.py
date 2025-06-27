@@ -204,6 +204,10 @@ class LbsApp:
     def print_logo(self, data: bin) -> None:
         print(base64.b64decode(data).decode())
         self.info('Lexa\'s build system (WIP)')
+    
+    @staticmethod
+    def cool_list_dir(path: str, fmt_end: str = ''):
+        return [os.path.join(path, x) for x in os.listdir(path) if x.lower().endswith(fmt_end)]
 
     @staticmethod
     def request_json(url: str) -> dict:

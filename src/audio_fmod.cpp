@@ -6,6 +6,7 @@
 #include <break.hpp>
 #include <playlist.hpp>
 #include <stl.hpp>
+#include <conf.hpp>
 #include <SDL3/SDL.h>
 #if 1
 #define F_CALL SDLCALL
@@ -500,6 +501,50 @@ void SDLCALL FMOD_free(void* ptr, FMOD_MEMORY_TYPE type, const char* sourcestr) 
 }
 
 namespace audio {
+    static inline FMOD_OUTPUTTYPE output_type_from_str(const tf::str& type) {
+        if (type == "nosound")
+            return FMOD_OUTPUTTYPE_NOSOUND;
+        else if (type == "wavwriter")
+            return FMOD_OUTPUTTYPE_WAVWRITER;
+        else if (type == "nosound_nrt")
+            return FMOD_OUTPUTTYPE_NOSOUND_NRT;
+        else if (type == "wavwriter_nrt")
+            return FMOD_OUTPUTTYPE_WAVWRITER_NRT;
+        else if (type == "wasapi")
+            return FMOD_OUTPUTTYPE_WASAPI;
+        else if (type == "asio")
+            return FMOD_OUTPUTTYPE_ASIO;
+        else if (type == "pulseaudio")
+            return FMOD_OUTPUTTYPE_PULSEAUDIO;
+        else if (type == "alsa")
+            return FMOD_OUTPUTTYPE_ALSA;
+        else if (type == "coreaudio")
+            return FMOD_OUTPUTTYPE_COREAUDIO;
+        else if (type == "audiotrack")
+            return FMOD_OUTPUTTYPE_AUDIOTRACK;
+        else if (type == "opensl")
+            return FMOD_OUTPUTTYPE_OPENSL;
+        else if (type == "audioout")
+            return FMOD_OUTPUTTYPE_AUDIOOUT;
+        else if (type == "audio3d")
+            return FMOD_OUTPUTTYPE_AUDIO3D;
+        else if (type == "webaudio")
+            return FMOD_OUTPUTTYPE_WEBAUDIO;
+        else if (type == "nnaudio")
+            return FMOD_OUTPUTTYPE_NNAUDIO;
+        else if (type == "winsonic")
+            return FMOD_OUTPUTTYPE_WINSONIC;
+        else if (type == "aaudio")
+            return FMOD_OUTPUTTYPE_AAUDIO;
+        else if (type == "audioworklet")
+            return FMOD_OUTPUTTYPE_AUDIOWORKLET;
+        else if (type == "phase")
+            return FMOD_OUTPUTTYPE_PHASE;
+        else if (type == "ohaudio")
+            return FMOD_OUTPUTTYPE_OHAUDIO;
+        return FMOD_OUTPUTTYPE_UNKNOWN;
+    }
+
     static inline const char* output_type_to_str(FMOD_OUTPUTTYPE type) {
         if (type == FMOD_OUTPUTTYPE_UNKNOWN)
             return "unknown";
@@ -543,7 +588,7 @@ namespace audio {
             return "phase";
         else if (type == FMOD_OUTPUTTYPE_OHAUDIO)
             return "ohaudio";
-        return "nosound";
+        return "unknown";
     }
 
     struct FMODApi {
@@ -558,6 +603,7 @@ namespace audio {
         FMOD_RESULT (F_API *FMOD_System_PlaySound)(FMOD_SYSTEM*, FMOD_SOUND*, FMOD_CHANNELGROUP*, FMOD_BOOL, FMOD_CHANNEL**);
         FMOD_RESULT (F_API *FMOD_System_GetChannel)(FMOD_SYSTEM*, int, FMOD_CHANNEL**);
         FMOD_RESULT (F_API *FMOD_System_GetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE*);
+        FMOD_RESULT (F_API *FMOD_System_SetOutput)(FMOD_SYSTEM*, FMOD_OUTPUTTYPE);
         FMOD_RESULT (F_API *FMOD_Sound_Release)(FMOD_SOUND*);
         FMOD_RESULT (F_API *FMOD_Sound_GetLength)(FMOD_SOUND*, unsigned int*, FMOD_TIMEUNIT);
         FMOD_RESULT (F_API *FMOD_Sound_GetFormat)(FMOD_SOUND*, FMOD_SOUND_TYPE*, FMOD_SOUND_FORMAT*, int*, int*);
@@ -624,6 +670,7 @@ namespace audio {
             FMOD_LOAD_FUNC(FMOD_System_PlaySound);
             FMOD_LOAD_FUNC(FMOD_System_GetChannel);
             FMOD_LOAD_FUNC(FMOD_System_GetOutput);
+            FMOD_LOAD_FUNC(FMOD_System_SetOutput);
             FMOD_LOAD_FUNC(FMOD_Sound_Release);
             FMOD_LOAD_FUNC(FMOD_Sound_GetLength);
             FMOD_LOAD_FUNC(FMOD_Sound_GetFormat);
@@ -660,15 +707,22 @@ namespace audio {
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
+            tf::str need_driver;
+            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
+                toml::value tab = conf::get().at("fmod");
+                need_driver = toml::find_or<tf::str>(tab, "driver", "");
+            }
             // TODO: brute force version/read from config
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, 0x00020308))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
+            if (need_driver.size() > 0 && FMOD_HAS_ERROR(err = fmod.FMOD_System_SetOutput(sys, output_type_from_str(need_driver))))
+                TF_WARN(<< "Failed to set FMOD output driver (" << FMOD_ErrorString(err) << ")");
             FMOD_OUTPUTTYPE out_type;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetOutput(sys, &out_type))) {
-                TF_WARN(<< "Failed to get FMOD output type (" << FMOD_ErrorString(err) << ")");
+                TF_WARN(<< "Failed to get FMOD output driver (" << FMOD_ErrorString(err) << ")");
                 out_type = FMOD_OUTPUTTYPE_NOSOUND;
             }
             TF_INFO(<< "FMOD inited successfully with " << output_type_to_str(out_type) << " driver");
