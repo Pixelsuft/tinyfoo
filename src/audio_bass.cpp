@@ -7,6 +7,7 @@
 #include <break.hpp>
 #include <playlist.hpp>
 #include <stl.hpp>
+#include <conf.hpp>
 #include <SDL3/SDL.h>
 #if 1
 #if IS_WIN
@@ -372,7 +373,6 @@ namespace audio {
         }
 
         bool dev_open() {
-            // TODO: device, conf
             void* hwnd = nullptr;
 #if IS_WIN
             SDL_PropertiesID props = SDL_GetWindowProperties((SDL_Window*)app::win_handle);
@@ -383,7 +383,27 @@ namespace audio {
             else
                 TF_WARN(<< "Failed to get window props (" << SDL_GetError() << ")");
 #endif
-            if (!bass.BASS_Init(-1, 48000, BASS_DEVICE_DSOUND, hwnd, nullptr)) {
+            DWORD init_flags = 0;
+            int need_freq = 0;
+            if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
+                toml::value tab = conf::get().at("bass");
+                if (toml::find_or<bool>(tab, "force_16bits", false))
+                    init_flags |= BASS_DEVICE_16BITS;
+                if (toml::find_or<bool>(tab, "force_stereo", false))
+                    init_flags |= BASS_DEVICE_STEREO;
+                if (toml::find_or<bool>(tab, "force_dmix", false))
+                    init_flags |= BASS_DEVICE_DMIX;
+                if (toml::find_or<bool>(tab, "force_audiotrack", false))
+                    init_flags |= BASS_DEVICE_AUDIOTRACK;
+                if (toml::find_or<bool>(tab, "force_directsound", false))
+                    init_flags |= BASS_DEVICE_DSOUND;
+                if (toml::find_or<bool>(tab, "force_software", false))
+                    init_flags |= BASS_DEVICE_SOFTWARE;
+                need_freq = toml::find_or<int>(tab, "frequency", 0);
+            }
+            if (need_freq > 0)
+                init_flags |= BASS_DEVICE_FREQ;
+            if (!bass.BASS_Init(-1, (need_freq > 0) ? need_freq : 48000, init_flags, hwnd, nullptr)) {
                 TF_INFO(<< "Failed to create BASS device (" << BASS_GetError() << ")");
                 return false;
             }

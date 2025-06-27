@@ -44,6 +44,7 @@ namespace app {
         bool running;
     };
 
+    // TODO: global boolshit cleanup
     AppData* data;
     void* win_handle;
     Point drop_pos;

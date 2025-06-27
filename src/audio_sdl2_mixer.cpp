@@ -191,13 +191,13 @@ namespace audio {
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
                 drv_hint = toml::find_or<tf::str>(tab, "driver", "");
-                allow_flac = toml::find_or<bool>(tab, "allow_flac", false);
-                allow_mod = toml::find_or<bool>(tab, "allow_mod", false);
-                allow_mp3 = toml::find_or<bool>(tab, "allow_mp3", true);
-                allow_ogg = toml::find_or<bool>(tab, "allow_ogg", false);
-                allow_mid = toml::find_or<bool>(tab, "allow_mid", false);
-                allow_opus = toml::find_or<bool>(tab, "allow_opus", false);
-                allow_wavpack = toml::find_or<bool>(tab, "allow_wavpack", false);
+                allow_flac = toml::find_or<bool>(tab, "enable_flac", false);
+                allow_mod = toml::find_or<bool>(tab, "enable_mod", false);
+                allow_mp3 = toml::find_or<bool>(tab, "enable_mp3", true);
+                allow_ogg = toml::find_or<bool>(tab, "enable_ogg", false);
+                allow_mid = toml::find_or<bool>(tab, "enable_mid", false);
+                allow_opus = toml::find_or<bool>(tab, "enable_opus", false);
+                allow_wavpack = toml::find_or<bool>(tab, "enable_wavpack", false);
             }
             if (drv_hint.size() == 0)
                 SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
