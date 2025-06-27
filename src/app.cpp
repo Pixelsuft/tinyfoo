@@ -276,7 +276,8 @@ void app::run() {
         audio::au->update();
         pl::update_cache();
         ren::begin_frame();
-        ui::draw();
+        if (!(SDL_GetWindowFlags(data->win) & SDL_WINDOW_MINIMIZED))
+            ui::draw();
         if (data->should_play_sel_hack) {
             data->should_play_sel_hack = false;
             if (ui::get_last_pl(1)) {
