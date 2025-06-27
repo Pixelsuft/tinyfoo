@@ -278,6 +278,8 @@ void app::run() {
         ren::begin_frame();
         if (!(SDL_GetWindowFlags(data->win) & SDL_WINDOW_MINIMIZED))
             ui::draw();
+        else
+            ui::do_extra_stuff(); // Hack
         if (data->should_play_sel_hack) {
             data->should_play_sel_hack = false;
             if (ui::get_last_pl(1)) {

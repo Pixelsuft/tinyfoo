@@ -134,29 +134,29 @@ namespace ui {
             SDL_snprintf(buf, 32, "%id %i:%02i:%02i", (int)(rounded_dur / 86400), (int)((rounded_dur % 86400) / 3600), (int)(((rounded_dur % 86400) % 3600) / 60), (int)(rounded_dur % 60));
     }
 
-    static inline void do_extra_stuff() {
-#if WIN_TITLE_PATCH
-        tf::str new_cap;
-        // TODO: when not stopped
-        if (audio::au->cur_mus) {
-            char pos_buf[32];
-            char dur_buf[32];
-            fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
-            fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
-            new_cap = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "] [tinyfoo]";
-        }
-        else
-            new_cap = "tinyfoo";
-        if (new_cap != data->last_cap) {
-            data->last_cap = new_cap;
-            SDL_SetWindowTitle((SDL_Window*)app::win_handle, new_cap.c_str());
-        }
-#endif
-    }
-
     void fix_selected_pl() {
         data->sel_pl = data->last_pl;
     }
+}
+
+void ui::do_extra_stuff() {
+#if WIN_TITLE_PATCH
+    tf::str new_cap;
+    // TODO: when not stopped
+    if (audio::au->cur_mus) {
+        char pos_buf[32];
+        char dur_buf[32];
+        fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
+        fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
+        new_cap = audio::au->cur_mus->fn + " [" + pos_buf + "/" + dur_buf + "] [tinyfoo]";
+    }
+    else
+        new_cap = "tinyfoo";
+    if (new_cap != data->last_cap) {
+        data->last_cap = new_cap;
+        SDL_SetWindowTitle((SDL_Window*)app::win_handle, new_cap.c_str());
+    }
+#endif
 }
 
 bool ui::init() {
