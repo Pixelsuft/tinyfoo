@@ -802,6 +802,14 @@ namespace audio {
                 TF_ERROR(<< "Failed to close FMOD system (" << FMOD_ErrorString(err) << ")");
         }
 
+        void dev_fill_arr(tf::vec<tf::str>& arr) {
+            // TODO
+            arr.push_back("Default");
+            arr.push_back("Shit test 1");
+            arr.push_back("Shit test 2");
+            arr.push_back("Shit test 3");
+        }
+
         void force_play_cache() {
             FMOD_RESULT err;
             if (cache.size() == 0)

@@ -451,6 +451,10 @@ namespace audio {
             dev_opened = false;
         }
 
+        void dev_fill_arr(tf::vec<tf::str>& arr) {
+            // TODO
+        }
+
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;

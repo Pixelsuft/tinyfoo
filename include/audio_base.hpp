@@ -23,6 +23,7 @@ namespace audio {
         virtual ~AudioBase();
         virtual bool dev_open();
         virtual void dev_close();
+        virtual void dev_fill_arr(tf::vec<tf::str>& arr);
         virtual void update_volume();
         virtual void update();
         virtual void force_play_cache();

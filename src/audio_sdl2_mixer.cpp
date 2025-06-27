@@ -294,6 +294,11 @@ namespace audio {
             dev_opened = false;
         }
 
+        void dev_fill_arr(tf::vec<tf::str>& arr) {
+            // TODO
+            arr.push_back("Default");
+        }
+
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1) {
 #if !IS_RELEASE

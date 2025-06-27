@@ -28,6 +28,7 @@ namespace app {
 namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
+        tf::vec<tf::str> conf_dev_names;
         tf::str meta_fn;
         tf::str meta_fmt;
 #if WIN_TITLE_PATCH
@@ -53,6 +54,8 @@ namespace ui {
         void* icon_rng;
         Point size;
         float img_scale;
+        int conf_dev_id;
+        bool show_app_conf;
         bool show_about;
         bool show_logs;
         bool show_playlist_conf;
@@ -62,7 +65,7 @@ namespace ui {
     UiData* data;
 
     pl::Playlist* get_last_pl(int hacky) {
-        if (hacky == 1 && (data->show_about || data->show_logs || data->show_playlist_conf))
+        if (hacky == 1 && (data->show_about || data->show_logs || data->show_playlist_conf || data->show_app_conf))
             return nullptr;
         if (hacky == 2)
             return data->sel_pl ? data->sel_pl : data->last_pl;
@@ -85,6 +88,7 @@ namespace ui {
     void draw_about();
     void draw_logs();
     void draw_playlist_conf();
+    void draw_settings();
     void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
@@ -166,6 +170,7 @@ bool ui::init() {
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    data->show_app_conf = false;
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
     data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
@@ -246,7 +251,13 @@ void ui::draw_menubar() {
         if (ImGui::MenuItem("Save playlist", nullptr, nullptr, data->last_pl != nullptr))
             pl::save(data->last_pl);
         ImGui::Separator();
-        if (ImGui::MenuItem("Settings", nullptr, nullptr)) {} // TODO: settings
+        if (ImGui::MenuItem("Settings", nullptr, nullptr)) {
+            data->show_app_conf = true;
+            data->conf_dev_names.clear();
+            audio::au->dev_fill_arr(data->conf_dev_names);
+            // TODO: set conf_dev_id from need_dev
+            data->conf_dev_id = 0;
+        }
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
             app::stop(true);
@@ -617,9 +628,17 @@ void ui::draw() {
     }
     ImGui::End();
     ImGui::PopStyleVar();
-    if (data->show_playlist_conf) {
+    if (data->show_app_conf) {
+        ImGui::SetNextWindowSize({ 640.f, 400.f }, ImGuiCond_Appearing);
         ImGui::SetNextWindowFocus();
+        if (ImGui::Begin("Settings", &data->show_app_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
+            draw_settings();
+        ImGui::End();
+    }
+    if (data->show_playlist_conf) {
         ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
+        // TODO: fix combo box with that one
+        ImGui::SetNextWindowFocus();
         if (ImGui::Begin("Configure playlist", &data->show_playlist_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
             draw_playlist_conf();
         ImGui::End();
@@ -637,6 +656,20 @@ void ui::draw() {
         ImGui::End();
     }
     ImGui::PopFont();
+}
+
+void ui::draw_settings() {
+    // Assuming that 'default' device always exists
+    if (ImGui::BeginCombo("Devices", data->conf_dev_names[data->conf_dev_id].c_str())) {
+        for (int i = 0; i < (int)data->conf_dev_names.size(); i++) {
+            bool is_selected = i == data->conf_dev_id;
+            if (ImGui::Selectable(data->conf_dev_names[i].c_str(), &is_selected))
+                data->conf_dev_id = i;
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
 }
 
 void ui::draw_playlist_conf() {
@@ -727,6 +760,7 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
 }
 
 void ui::handle_esc() {
+    data->show_app_conf = false;
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
