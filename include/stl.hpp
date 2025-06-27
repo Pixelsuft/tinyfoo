@@ -10,4 +10,8 @@ namespace tf {
         return std::min(std::max(v, lo), hi);
 #endif
     }
+
+    constexpr const char* nfstr(const char* str_may_null) {
+        return str_may_null ? str_may_null : "nullptr";
+    }
 }

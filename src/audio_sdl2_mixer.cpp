@@ -99,23 +99,7 @@ namespace audio {
     }
 
     const char* fmt_to_str(SDL_AudioFormat fmt) {
-        if (fmt == SDL_AUDIO_U8)
-            return "SDL_AUDIO_U8";
-        else if (fmt == SDL_AUDIO_S8)
-            return "SDL_AUDIO_S8";
-        else if (fmt == SDL_AUDIO_S16LE)
-            return "SDL_AUDIO_S16LE";
-        else if (fmt == SDL_AUDIO_S16BE)
-            return "SDL_AUDIO_S16BE";
-        else if (fmt == SDL_AUDIO_S32LE)
-            return "SDL_AUDIO_S32LE";
-        else if (fmt == SDL_AUDIO_S32BE)
-            return "SDL_AUDIO_S32BE";
-        else if (fmt == SDL_AUDIO_F32LE)
-            return "SDL_AUDIO_F32LE";
-        else if (fmt == SDL_AUDIO_F32BE)
-            return "SDL_AUDIO_F32BE";
-        return "SDL_AUDIO_UNKNOWN";
+        return SDL_GetAudioFormatName(fmt);
     }
 
     struct SDL2MixerApi {
@@ -237,15 +221,38 @@ namespace audio {
             }
             if (ret_flags < init_flags)
                 TF_WARN(<< "Failed to init some " << lib_name << "formats (" << SDL_GetError() << ")");
-            const char* drv_name = SDL_GetCurrentAudioDriver();
-            if (!drv_name)
-                drv_name = "unknown";
-            TF_INFO(<< lib_name << " inited successfully with " << drv_name << " driver");
+            TF_INFO(<< lib_name << " inited successfully with " << tf::nfstr(SDL_GetCurrentAudioDriver()) << " driver");
             inited = true;
         }
 
         bool dev_open() {
-            // TODO: more conf
+            SDL_AudioDeviceID dev_id = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+            tf::str need_dev;
+            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
+                toml::value tab = conf::get().at("sdl2_mixer");
+                need_dev = toml::find_or<tf::str>(tab, "device", "");
+            }
+            const char* dev_name = nullptr;
+            int dev_count;
+            SDL_AudioDeviceID* dev_arr = SDL_GetAudioPlaybackDevices(&dev_count);
+            if (dev_arr) {
+                for (int i = 0; i < dev_count; i++) {
+                    const char* cur_name = SDL_GetAudioDeviceName(dev_arr[i]);
+                    if (!cur_name) {
+                        TF_ERROR(<< "Failed to get audio device name (" << SDL_GetError() << ")");
+                        continue;
+                    }
+                    if (!SDL_strcmp(need_dev.c_str(), cur_name)) {
+                        dev_name = cur_name;
+                        dev_id = dev_arr[i];
+                        break;
+                    }
+                    // TF_INFO(<< "Found audio device: " << cur_name);
+                }
+                SDL_free(dev_arr);
+            }
+            else
+                TF_ERROR(<< "Failed to get playback devices (" << SDL_GetError() << ")");
             SDL_AudioSpec spec;
             int sample_frames;
             if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &sample_frames)) {
@@ -277,7 +284,7 @@ namespace audio {
             int num_ch = 0;
             mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
             mix.Mix_AllocateChannels(0);
-            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels, "
+            TF_INFO(<< "Audio device \"" << tf::nfstr(dev_name) << "\" opened (" << num_fr << "Hz freq, " << num_ch << " channels, "
                 << fmt_to_str((SDL_AudioFormat)num_fmt) << " format, " << sample_frames << " chunksize)");
             dev_opened = true;
             return true;

@@ -101,7 +101,7 @@ if app.stage == 'conf':
 '''
     )
     app.save_conf()
-    app.info('Configured!')
+    app.info(f'Configured at "{os.path.join(app.b_path, "lbs", "lbs.hpp")}"!')
     sys.exit(0)
 
 if app.stage == 'gen_res':
