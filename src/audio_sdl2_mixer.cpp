@@ -48,9 +48,6 @@ typedef struct _Mix_Music Mix_Music;
 #define MIX_CHANNELS    8
 #endif
 
-#define MIX_DEFAULT_FREQUENCY   44100
-#define MIX_DEFAULT_FORMAT      SDL_AUDIO_S16
-#define MIX_DEFAULT_CHANNELS    2
 #define MIX_MAX_VOLUME          128
 
 #define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
@@ -74,6 +71,53 @@ typedef struct _Mix_Music Mix_Music;
 void SDLCALL sdl2_music_finish_cb(void);
 
 namespace audio {
+    SDL_AudioFormat fmt_from_str(const tf::str& fmt) {
+        if (fmt == "SDL_AUDIO_U8")
+            return SDL_AUDIO_U8;
+        else if (fmt == "SDL_AUDIO_S8")
+            return SDL_AUDIO_S8;
+        else if (fmt == "SDL_AUDIO_S16LE")
+            return SDL_AUDIO_S16LE;
+        else if (fmt == "SDL_AUDIO_S16BE")
+            return SDL_AUDIO_S16BE;
+        else if (fmt == "SDL_AUDIO_S32LE")
+            return SDL_AUDIO_S32LE;
+        else if (fmt == "SDL_AUDIO_S32BE")
+            return SDL_AUDIO_S32BE;
+        else if (fmt == "SDL_AUDIO_F32LE")
+            return SDL_AUDIO_F32LE;
+        else if (fmt == "SDL_AUDIO_F32BE")
+            return SDL_AUDIO_F32BE;
+        else if (fmt == "SDL_AUDIO_S16")
+            return SDL_AUDIO_S16;
+        else if (fmt == "SDL_AUDIO_S32")
+            return SDL_AUDIO_S32;
+        else if (fmt == "SDL_AUDIO_F32")
+            return SDL_AUDIO_F32;
+        TF_WARN(<< "Unknown audio format, using SDL_AUDIO_S16");
+        return SDL_AUDIO_S16;
+    }
+
+    const char* fmt_to_str(SDL_AudioFormat fmt) {
+        if (fmt == SDL_AUDIO_U8)
+            return "SDL_AUDIO_U8";
+        else if (fmt == SDL_AUDIO_S8)
+            return "SDL_AUDIO_S8";
+        else if (fmt == SDL_AUDIO_S16LE)
+            return "SDL_AUDIO_S16LE";
+        else if (fmt == SDL_AUDIO_S16BE)
+            return "SDL_AUDIO_S16BE";
+        else if (fmt == SDL_AUDIO_S32LE)
+            return "SDL_AUDIO_S32LE";
+        else if (fmt == SDL_AUDIO_S32BE)
+            return "SDL_AUDIO_S32BE";
+        else if (fmt == SDL_AUDIO_F32LE)
+            return "SDL_AUDIO_F32LE";
+        else if (fmt == SDL_AUDIO_F32BE)
+            return "SDL_AUDIO_F32BE";
+        return "SDL_AUDIO_UNKNOWN";
+    }
+
     struct SDL2MixerApi {
         SDL_SharedObject* handle;
         int (SDLCALL *Mix_Init)(int);
@@ -218,9 +262,10 @@ namespace audio {
                     spec.channels = b_channels;
                 if (b_freq > 0)
                     spec.freq = b_freq;
+                spec.format = fmt_from_str(toml::find_or<tf::str>(tab, "format", "SDL_AUDIO_S16"));
             }
             // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
-            if (mix.Mix_OpenAudioDevice(spec.freq, spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
+            if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
             }
@@ -229,7 +274,7 @@ namespace audio {
             int num_ch = 0;
             mix.Mix_QuerySpec(&num_fr, &num_fmt, &num_ch);
             mix.Mix_AllocateChannels(0);
-            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels)");
+            TF_INFO(<< "Audio device opened (" << num_fr << "Hz freq, " << num_ch << " channels, " << fmt_to_str((SDL_AudioFormat)num_fmt) << " format)");
             dev_opened = true;
             return true;
         }
