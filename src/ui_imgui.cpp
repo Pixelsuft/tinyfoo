@@ -8,6 +8,7 @@
 #include <vec.hpp>
 #include <ren.hpp>
 #include <res.hpp>
+#include <stl.hpp>
 #include <audio_base.hpp>
 #include <set.hpp>
 #include <imgui.h>
@@ -54,6 +55,7 @@ namespace ui {
         void* icon_rng;
         Point size;
         float img_scale;
+        float conf_vol;
         int conf_dev_id;
         bool show_app_conf;
         bool show_about;
@@ -253,6 +255,7 @@ void ui::draw_menubar() {
         ImGui::Separator();
         if (ImGui::MenuItem("Settings", nullptr, nullptr)) {
             data->show_app_conf = true;
+            data->conf_vol = audio::au->volume * 100.f;
             data->conf_dev_names.clear();
             audio::au->dev_fill_arr(data->conf_dev_names);
             auto need_it = std::find(data->conf_dev_names.begin(), data->conf_dev_names.end(), audio::au->need_dev);
@@ -662,8 +665,11 @@ void ui::draw() {
 void ui::draw_settings() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         ImGui::SetWindowFocus("Settings");
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
+    ImGui::PopFont();
     // Assuming that 'default' device always exists
-    if (ImGui::BeginCombo("Devices", data->conf_dev_names[data->conf_dev_id].c_str())) {
+    if (ImGui::BeginCombo("Device", data->conf_dev_names[data->conf_dev_id].c_str())) {
         for (int i = 0; i < (int)data->conf_dev_names.size(); i++) {
             bool is_selected = i == data->conf_dev_id;
             if (ImGui::Selectable(data->conf_dev_names[i].c_str(), &is_selected))
@@ -673,6 +679,8 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
+    if (ImGui::InputFloat("Volume", &data->conf_vol))
+        data->conf_vol = tf::clamp(data->conf_vol, 0.f, audio::au->max_volume * 100.f);
 }
 
 void ui::draw_playlist_conf() {

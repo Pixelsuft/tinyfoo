@@ -15,7 +15,7 @@ AudioBase::AudioBase() {
     inited = false;
     dev_opened = false;
     fade_stop_time = fade_pause_time = fade_resume_time = 0.f;
-    volume = 1.f;
+    volume = 0.25f;
     max_volume = 1.f;
     cur_mus = nullptr;
     cache_opened_cnt = 8;
@@ -28,6 +28,8 @@ AudioBase::AudioBase() {
     if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
         toml::value tab = conf::get().at("audio");
         need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+        volume = (float)toml::find_or<int>(tab, "volume", 25) / 100.f;
+        volume = toml::find_or<float>(tab, "volume", volume) / 100.f;
     }
 }
 
