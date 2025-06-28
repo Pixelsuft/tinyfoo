@@ -48,7 +48,7 @@ void AudioBase::dev_close() {
 }
 
 void AudioBase::dev_fill_arr(tf::vec<tf::str>& arr) {
-    (void)arr;
+    arr.push_back("Default");
 }
 
 bool AudioBase::mus_open_fp(Music* mus, const char* fp) {

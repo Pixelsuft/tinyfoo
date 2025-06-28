@@ -9,6 +9,7 @@
 #include <ren.hpp>
 #include <res.hpp>
 #include <stl.hpp>
+#include <conf.hpp>
 #include <audio_base.hpp>
 #include <set.hpp>
 #include <imgui.h>
@@ -30,6 +31,8 @@ namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
         tf::vec<tf::str> conf_dev_names;
+        tf::str conf_sdl2_drv;
+        tf::str conf_fmod_drv;
         tf::str meta_fn;
         tf::str meta_fmt;
 #if WIN_TITLE_PATCH
@@ -263,6 +266,14 @@ void ui::draw_menubar() {
                 data->conf_dev_id = 0;
             else
                 data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
+            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
+                toml::value tab = conf::get().at("sdl2_mixer");
+                data->conf_sdl2_drv = toml::find_or<tf::str>(tab, "driver", "dummy");
+            }
+            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
+                toml::value tab = conf::get().at("fmod");
+                data->conf_fmod_drv = toml::find_or<tf::str>(tab, "driver", "nosound");
+            }
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
@@ -681,6 +692,37 @@ void ui::draw_settings() {
     }
     if (ImGui::InputFloat("Volume", &data->conf_vol))
         data->conf_vol = tf::clamp(data->conf_vol, 0.f, audio::au->max_volume * 100.f);
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "SDL2_mixer");
+    ImGui::PopFont();
+    static const char* sdl2_drv[] = { "pulseaudio", "pipewire", "alsa", "sndio", "netbsd", "wasapi", "directsound", "haiku", "coreaudio", "aaudio", "opensles", "ps2", "psp", "vita", "n3ds", "ngage", "emscripten", "jack", "oss", "qnx", "disk", "dummy" };
+    if (ImGui::BeginCombo("SDL2_mixer driver", data->conf_sdl2_drv.c_str())) {
+        for (int i = 0; i < SDL_arraysize(sdl2_drv); i++) {
+            bool is_selected = data->conf_sdl2_drv == sdl2_drv[i];
+            if (ImGui::Selectable(sdl2_drv[i], &is_selected))
+                data->conf_sdl2_drv = sdl2_drv[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "FMOD");
+    ImGui::PopFont();
+    static const char* fmod_drv[] = { "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
+    if (ImGui::BeginCombo("FMOD driver", data->conf_fmod_drv.c_str())) {
+        for (int i = 0; i < SDL_arraysize(fmod_drv); i++) {
+            bool is_selected = data->conf_fmod_drv == fmod_drv[i];
+            if (ImGui::Selectable(fmod_drv[i], &is_selected))
+                data->conf_fmod_drv = fmod_drv[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "BASS");
+    ImGui::PopFont();
 }
 
 void ui::draw_playlist_conf() {
