@@ -803,11 +803,21 @@ namespace audio {
         }
 
         void dev_fill_arr(tf::vec<tf::str>& arr) {
-            // TODO
+            FMOD_RESULT err;
             arr.push_back("Default");
-            arr.push_back("Shit test 1");
-            arr.push_back("Shit test 2");
-            arr.push_back("Shit test 3");
+            int num_dev;
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {
+                TF_ERROR(<< "Failed to get number of audio devices (" << FMOD_ErrorString(err) << ")");
+                return;
+            }
+            for (int i = 0; i < num_dev; i++) {
+                char name_buf[512];
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetDriverInfo(sys, i, name_buf, 512, nullptr, nullptr, nullptr, nullptr))) {
+                    TF_ERROR(<< "Failed to get device info (" << FMOD_ErrorString(err) << ")");
+                    continue;
+                }
+                arr.push_back(name_buf);
+            }
         }
 
         void force_play_cache() {

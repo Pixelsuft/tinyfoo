@@ -255,8 +255,11 @@ void ui::draw_menubar() {
             data->show_app_conf = true;
             data->conf_dev_names.clear();
             audio::au->dev_fill_arr(data->conf_dev_names);
-            // TODO: set conf_dev_id from need_dev
-            data->conf_dev_id = 0;
+            auto need_it = std::find(data->conf_dev_names.begin(), data->conf_dev_names.end(), audio::au->need_dev);
+            if (need_it == data->conf_dev_names.end())
+                data->conf_dev_id = 0;
+            else
+                data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
