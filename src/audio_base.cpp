@@ -19,6 +19,7 @@ AudioBase::AudioBase() {
     max_volume = 1.f;
     cur_mus = nullptr;
     cache_opened_cnt = 8;
+    temp_cache_cnt = 0;
     // TODO: change it
     volume = 0.05f;
     fade_resume_time = 0.2f;

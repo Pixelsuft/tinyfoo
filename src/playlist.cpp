@@ -341,6 +341,7 @@ void pl::play_selected(Playlist* p) {
     cached.reserve(audio::au->cache.size()); // ???
     // Maybe clear cache after started playing???
     audio_clear_cache(cached, ui::get_last_pl(3) == nullptr);
+    audio::au->temp_cache_cnt = (int)cached.size();
     audio::Music* mus = p->mus[p->selected[0]];
     // Should I handle open errors here?
     mus_open_file(mus);
@@ -365,6 +366,7 @@ void pl::play_selected(Playlist* p) {
             continue;
         audio::au->cache.push_back(*it);
     }
+    audio::au->temp_cache_cnt = 0;
 }
 
 void pl::check_music_mod(audio::Music* mus) {
@@ -452,7 +454,7 @@ void pl::fill_cache() {
         return;
     if (p->mus.size() < 4)
         return;
-    while (audio::au->cache.size() < 1) { // Enough?
+    while (((int)audio::au->cache.size() + audio::au->temp_cache_cnt) < 1) { // Enough?
         audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
         if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
             continue;

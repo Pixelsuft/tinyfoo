@@ -496,13 +496,13 @@ namespace audio {
                 return;
             bool from_rep = false;
             if (cache[0] == cur_mus) {
-                cache.erase(cache.begin());
                 if (stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED) {
                     cur_mus = nullptr;
                     force_play_cache();
                     pl::fill_cache();
                     return;
                 }
+                cache.erase(cache.begin());
                 if (paused || bass.BASS_ChannelIsActive(cur_h) != BASS_ACTIVE_STOPPED) {
                     paused = false;
                     fading = false;

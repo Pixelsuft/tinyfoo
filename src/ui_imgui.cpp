@@ -130,7 +130,7 @@ namespace ui {
     }
 
     static inline void fmt_duration(char* buf, double dur) {
-        if (dur <= 0.0) {
+        if (dur < 0.0) {
             SDL_memcpy(buf, "???", 4);
             return;
         }
@@ -151,8 +151,7 @@ namespace ui {
 void ui::do_extra_stuff() {
 #if WIN_TITLE_PATCH
     tf::str new_cap;
-    // TODO: when not stopped
-    if (audio::au->cur_mus) {
+    if (audio::au->cur_mus && !audio::au->cur_stopped()) {
         char pos_buf[32];
         char dur_buf[32];
         fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
@@ -432,12 +431,17 @@ void ui::draw_meta() {
         ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
         if (audio::au->cur_mus)
             ImGui::Text("Current: %s", audio::au->cur_mus->fn.c_str());
-        ImGui::Text("Opened:");
+        int op_cnt = 0;
+        for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
+            if (audio::au->mus_opened(*it))
+                op_cnt++;
+        }
+        ImGui::Text("Opened (%i):", op_cnt);
         for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
             if (audio::au->mus_opened(*it))
                 ImGui::Text("%s", (*it)->fn.c_str());
         }
-        ImGui::Text("Cache:");
+        ImGui::Text("Cache (%i):", (int)audio::au->cache.size());
         for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++) {
             ImGui::Text("%s", (*it)->fn.c_str());
         }

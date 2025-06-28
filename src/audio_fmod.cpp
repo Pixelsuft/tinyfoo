@@ -826,7 +826,6 @@ namespace audio {
                 return;
             bool from_rep = false;
             if (cache[0] == cur_mus) {
-                cache.erase(cache.begin());
                 if (stopped || was_finished) {
                     // Hack
                     cur_mus = nullptr;
@@ -834,6 +833,7 @@ namespace audio {
                     pl::fill_cache();
                     return;
                 }
+                cache.erase(cache.begin());
                 if (ch) {
                     paused = false;
                     if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetPosition(ch, 0, FMOD_TIMEUNIT_MS)))

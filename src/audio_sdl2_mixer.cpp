@@ -341,7 +341,6 @@ namespace audio {
                 return;
             bool from_rep = false;
             if (cache[0] == cur_mus) {
-                cache.erase(cache.begin());
                 if (stopped || was_finished) {
                     // Hack
                     cur_mus = nullptr;
@@ -349,6 +348,7 @@ namespace audio {
                     pl::fill_cache();
                     return;
                 }
+                cache.erase(cache.begin());
                 if (mix.Mix_PlayingMusic()) {
                     cur_set_pos(0.f);
                     pl::fill_cache();
