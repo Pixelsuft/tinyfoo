@@ -41,6 +41,7 @@ namespace ui {
         size_t meta_mod;
         double meta_dur;
         char pl_name_buf[64];
+        bool conf_bools[16];
         size_t meta_sz;
         char* pl_path_buf;
         ImFont* font1;
@@ -265,13 +266,37 @@ void ui::draw_menubar() {
                 data->conf_dev_id = 0;
             else
                 data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
+            SDL_zero(data->conf_bools);
+            data->conf_sdl2_drv = "dummy";
+            data->conf_fmod_drv = "nosound";
+            data->conf_bools[0] = true;
+            if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
+                toml::value tab = conf::get().at("renderer");
+                data->conf_bools[0] = toml::find_or<bool>(tab, "vsync", true);
+            }
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
                 data->conf_sdl2_drv = toml::find_or<tf::str>(tab, "driver", "dummy");
+                data->conf_bools[1] = toml::find_or<bool>(tab, "enable_flac", false);
+                data->conf_bools[2] = toml::find_or<bool>(tab, "enable_mod", false);
+                data->conf_bools[3] = toml::find_or<bool>(tab, "enable_mp3", false);
+                data->conf_bools[4] = toml::find_or<bool>(tab, "enable_ogg", false);
+                data->conf_bools[5] = toml::find_or<bool>(tab, "enable_mid", false);
+                data->conf_bools[6] = toml::find_or<bool>(tab, "enable_opus", false);
+                data->conf_bools[7] = toml::find_or<bool>(tab, "enable_wavpack", false);
             }
             if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
                 data->conf_fmod_drv = toml::find_or<tf::str>(tab, "driver", "nosound");
+            }
+            if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
+                toml::value tab = conf::get().at("bass");
+                data->conf_bools[8] = toml::find_or<bool>(tab, "force_16bits", false);
+                data->conf_bools[9] = toml::find_or<bool>(tab, "force_stereo", false);
+                data->conf_bools[10] = toml::find_or<bool>(tab, "force_dmix", false);
+                data->conf_bools[11] = toml::find_or<bool>(tab, "force_audiotrack", false);
+                data->conf_bools[12] = toml::find_or<bool>(tab, "force_directsound", false);
+                data->conf_bools[13] = toml::find_or<bool>(tab, "force_software", false);
             }
         }
         ImGui::Separator();
@@ -681,6 +706,10 @@ void ui::draw_settings() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         ImGui::SetWindowFocus("Settings");
     ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Renderer");
+    ImGui::PopFont();
+    ImGui::Checkbox("VSync", &data->conf_bools[0]);
+    ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
     ImGui::PopFont();
     // Assuming that 'default' device always exists
@@ -710,6 +739,18 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
+    ImGui::Checkbox("FLAC", &data->conf_bools[1]);
+    ImGui::SameLine();
+    ImGui::Checkbox("MOD", &data->conf_bools[2]);
+    ImGui::SameLine();
+    ImGui::Checkbox("MP3", &data->conf_bools[3]);
+    ImGui::SameLine();
+    ImGui::Checkbox("OGG", &data->conf_bools[4]);
+    ImGui::Checkbox("MID", &data->conf_bools[5]);
+    ImGui::SameLine();
+    ImGui::Checkbox("OPUS", &data->conf_bools[6]);
+    ImGui::SameLine();
+    ImGui::Checkbox("WAVPACK", &data->conf_bools[7]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "FMOD");
     ImGui::PopFont();
@@ -727,6 +768,22 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "BASS");
     ImGui::PopFont();
+    ImGui::Checkbox("Force 16-Bit", &data->conf_bools[8]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Force Stereo", &data->conf_bools[9]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Force DMix", &data->conf_bools[10]);
+    ImGui::Checkbox("Force AudioTrack", &data->conf_bools[11]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Force DSound", &data->conf_bools[12]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Force Software", &data->conf_bools[13]);
+    if (ImGui::Button("Save and Close")) {
+        data->show_app_conf = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel"))
+        data->show_app_conf = false;
 }
 
 void ui::draw_playlist_conf() {
