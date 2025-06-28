@@ -295,8 +295,22 @@ namespace audio {
         }
 
         void dev_fill_arr(tf::vec<tf::str>& arr) {
-            // TODO
             arr.push_back("Default");
+            int dev_count;
+            SDL_AudioDeviceID* dev_arr = SDL_GetAudioPlaybackDevices(&dev_count);
+            if (!dev_arr) {
+                TF_ERROR(<< "Failed to get playback devices (" << SDL_GetError() << ")");
+                return;
+            }
+            for (int i = 0; i < dev_count; i++) {
+                const char* cur_name = SDL_GetAudioDeviceName(dev_arr[i]);
+                if (!cur_name) {
+                    TF_ERROR(<< "Failed to get audio device name (" << SDL_GetError() << ")");
+                    continue;
+                }
+                arr.push_back(cur_name);
+            }
+            SDL_free(dev_arr);
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {

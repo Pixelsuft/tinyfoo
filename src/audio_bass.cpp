@@ -452,7 +452,17 @@ namespace audio {
         }
 
         void dev_fill_arr(tf::vec<tf::str>& arr) {
-            // TODO
+            BASS_DEVICEINFO d_info;
+            arr.push_back("Default");
+            for (int i = 2; bass.BASS_GetDeviceInfo(i, &d_info); i++) {
+                if (!(d_info.flags & BASS_DEVICE_ENABLED))
+                    continue;
+#if BASS_LIKES_WCHAR
+                // TODO
+#else
+                arr.push_back(d_info.name);
+#endif
+            }
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {
