@@ -30,6 +30,7 @@ namespace ui {
     struct UiData {
         tf::vec<tf::str> log_cache;
         tf::vec<tf::str> conf_dev_names;
+        tf::str conf_style;
         tf::str conf_sdl2_drv;
         tf::str conf_sdl2_fmt;
         tf::str conf_fmod_drv;
@@ -123,31 +124,38 @@ namespace ui {
             style_adobe();
         else if (style_pref == "vgui")
             style_vgui();
-        else if (style_pref == "deusex")
-            style_deusex();
-        else if (style_pref == "sewer56")
-            style_sewer56();
+        else if (style_pref == "gold")
+            style_gold();
+        else if (style_pref == "sonic_riders")
+            style_sonic_riders();
         else if (style_pref == "visualstudio")
             style_visualstudio();
-        else if (style_pref == "imfontstudio")
-            style_imfontstudio();
-        else if (style_pref == "imfontstudio_red")
-            style_imfontstudio_red();
+        else if (style_pref == "green_font")
+            style_green_font();
+        else if (style_pref == "red_font")
+            style_red_font();
         else if (style_pref == "janekb04")
             style_janekb04();
-        else if (style_pref == "bootstrap_dark")
-            style_bootstrap_dark();
         else if (style_pref == "mediacy")
             style_mediacy();
         else if (style_pref == "duck_red")
             style_duck_red();
         else if (style_pref == "ruda")
             style_ruda();
-        else if (style_pref == "custom") {
-            TF_WARN(<< "TODO: custom style");
+        else if (style_pref == "darky")
+            style_darky();
+        else if (style_pref == "discord")
+            style_discord();
+        else if (style_pref == "enemymouse")
+            style_enemymouse();
+        else if (style_pref == "material_flat")
+            style_material_flat();
+        else if (style_pref == "windark")
+            style_windark();
+        else {
+            TF_WARN(<< "Unknown imgui style \"" << style_pref << "\"");
+            ImGui::StyleColorsDark();
         }
-        else
-            TF_WARN(<< "Unknown imgui style");
     }
 
     static inline void fmt_file_size(char* buf, size_t sz) {
@@ -331,6 +339,10 @@ void ui::draw_menubar() {
             data->conf_sdl2_fmt = "SDL_AUDIO_S16";
             data->conf_fmod_drv = "nosound";
             data->conf_bools[0] = data->conf_bools[3] = true;
+            if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
+                toml::value tab = conf::get().at("imgui");
+                data->conf_style = toml::find_or<tf::str>(tab, "style", "dark");
+            }
             if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
                 toml::value tab = conf::get().at("renderer");
                 data->conf_ren_drv = toml::find_or<tf::str>(tab, "driver", "auto");
@@ -776,6 +788,24 @@ void ui::draw() {
 void ui::draw_settings() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         ImGui::SetWindowFocus("Settings");
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
+    ImGui::PopFont();
+    // TODO
+    static const char* style_list[] = { "dark", "light", "windark" };
+    if (ImGui::BeginCombo("Style", data->conf_style.c_str())) {
+        for (int i = 0; i < SDL_arraysize(style_list); i++) {
+            bool is_selected = (data->conf_style == style_list[i]);
+            if (ImGui::Selectable(style_list[i], &is_selected))
+                data->conf_style = style_list[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Test"))
+        apply_theme(data->conf_style);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Renderer");
     ImGui::PopFont();
