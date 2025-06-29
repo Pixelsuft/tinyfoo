@@ -120,8 +120,6 @@ namespace ui {
             ImGui::StyleColorsLight();
         else if (style == "classic")
             ImGui::StyleColorsClassic();
-        else if (style == "raikiri")
-            style_raikiri();
         else if (style == "gpulib")
             style_gpulib();
         else if (style == "dracula")
@@ -862,7 +860,7 @@ void ui::draw_settings() {
     static const char* style_list[] = {
         "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
         "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",
-        "material_flat", "mediacy", "photoshop", "raikiri", "red_font", "ruda", "sonic_riders", "ue4",
+        "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
         "vgui", "visual_studio", "windark"
     };
     if (ImGui::BeginCombo("Style", data->conf_style.c_str())) {
@@ -875,9 +873,7 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Test"))
-        apply_theme(data->conf_style);
+    apply_theme(data->conf_style);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
     ImGui::PopFont();
