@@ -271,15 +271,29 @@ bool ui::init() {
             font2_size = toml::find_or<float>(tab, "font2_size", 24.f);
         tf::str font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
         if (font1_path.size() > 0) {
-            data->font1 = io.Fonts->AddFontFromFileTTF(font1_path.c_str(), font1_size);
+            ImFontConfig font_cfg;
+            font_cfg.FontDataOwnedByAtlas = false;
+            size_t sz_buf;
+            void* font_data = SDL_LoadFile(font1_path.c_str(), &sz_buf);
+            if (font_data) {
+                data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font1_size, &font_cfg);
+                SDL_free(font_data);
+            }
             if (!data->font1)
-                TF_WARN(<< "Failed to load custom font 1");
+                TF_WARN(<< "Failed to load custom font 1 (" << SDL_GetError() << ")");
         }
         tf::str font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
         if (font2_path.size() > 0) {
-            data->font2 = io.Fonts->AddFontFromFileTTF(font2_path.c_str(), font2_size);
+            ImFontConfig font_cfg;
+            font_cfg.FontDataOwnedByAtlas = false;
+            size_t sz_buf;
+            void* font_data = SDL_LoadFile(font2_path.c_str(), &sz_buf);
+            if (font_data) {
+                data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font2_size, &font_cfg);
+                SDL_free(font_data);
+            }
             if (!data->font2)
-                TF_WARN(<< "Failed to load custom font 2");
+                TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
         }
         tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
         data->img_scale = (float)toml::find_or<int>(tab, "img_scale", 0);
