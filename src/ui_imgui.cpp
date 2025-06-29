@@ -32,8 +32,10 @@ namespace ui {
         tf::vec<tf::str> log_cache;
         tf::vec<tf::str> conf_dev_names;
         tf::str conf_sdl2_drv;
+        tf::str conf_sdl2_fmt;
         tf::str conf_fmod_drv;
         tf::str conf_ren_drv;
+        tf::str conf_au_bk;
         tf::str meta_fn;
         tf::str meta_fmt;
 #if WIN_TITLE_PATCH
@@ -43,6 +45,7 @@ namespace ui {
         double meta_dur;
         char pl_name_buf[64];
         bool conf_bools[16];
+        int conf_ints[4];
         size_t meta_sz;
         char* pl_path_buf;
         ImFont* font1;
@@ -268,17 +271,24 @@ void ui::draw_menubar() {
             else
                 data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
             SDL_zero(data->conf_bools);
+            SDL_zero(data->conf_ints);
             data->conf_sdl2_drv = "dummy";
+            data->conf_sdl2_fmt = "SDL_AUDIO_S16";
             data->conf_fmod_drv = "nosound";
-            data->conf_bools[0] = true;
+            data->conf_bools[0] = data->conf_bools[3] = true;
             if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
                 toml::value tab = conf::get().at("renderer");
                 data->conf_ren_drv = toml::find_or<tf::str>(tab, "driver", "auto");
                 data->conf_bools[0] = toml::find_or<bool>(tab, "vsync", true);
             }
+            if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
+                toml::value tab = conf::get().at("audio");
+                data->conf_au_bk = toml::find_or<tf::str>(tab, "backend", "dummy");
+            }
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
                 data->conf_sdl2_drv = toml::find_or<tf::str>(tab, "driver", "dummy");
+                data->conf_sdl2_fmt = toml::find_or<tf::str>(tab, "format", "SDL_AUDIO_S16");
                 data->conf_bools[1] = toml::find_or<bool>(tab, "enable_flac", false);
                 data->conf_bools[2] = toml::find_or<bool>(tab, "enable_mod", false);
                 data->conf_bools[3] = toml::find_or<bool>(tab, "enable_mp3", false);
@@ -286,6 +296,9 @@ void ui::draw_menubar() {
                 data->conf_bools[5] = toml::find_or<bool>(tab, "enable_mid", false);
                 data->conf_bools[6] = toml::find_or<bool>(tab, "enable_opus", false);
                 data->conf_bools[7] = toml::find_or<bool>(tab, "enable_wavpack", false);
+                data->conf_ints[0] = toml::find_or<int>(tab, "channels", 0);
+                data->conf_ints[1] = toml::find_or<int>(tab, "frequency", 0);
+                data->conf_ints[2] = toml::find_or<int>(tab, "chunksize", 0);
             }
             if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
@@ -299,6 +312,8 @@ void ui::draw_menubar() {
                 data->conf_bools[11] = toml::find_or<bool>(tab, "force_audiotrack", false);
                 data->conf_bools[12] = toml::find_or<bool>(tab, "force_directsound", false);
                 data->conf_bools[13] = toml::find_or<bool>(tab, "force_software", false);
+                data->conf_ints[3] = toml::find_or<int>(tab, "frequency", 0);
+                // TF_INFO(<< data->conf_ints[3]);
             }
         }
         ImGui::Separator();
@@ -725,6 +740,17 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
     ImGui::PopFont();
+    static const char* au_bk[] = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass" };
+    if (ImGui::BeginCombo("Backend", data->conf_au_bk.c_str())) {
+        for (int i = 0; i < SDL_arraysize(au_bk); i++) {
+            bool is_selected = (data->conf_au_bk == au_bk[i]) || (i == 0 && data->conf_au_bk.size() == 0);
+            if (ImGui::Selectable(au_bk[i], &is_selected))
+                data->conf_au_bk = au_bk[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
     // Assuming that 'default' device always exists
     if (ImGui::BeginCombo("Device", data->conf_dev_names[data->conf_dev_id].c_str())) {
         for (int i = 0; i < (int)data->conf_dev_names.size(); i++) {
@@ -752,6 +778,23 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
+    static const char* sdl2_fmt[] = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
+    if (ImGui::BeginCombo("Format##sdl2", data->conf_sdl2_fmt.c_str())) {
+        for (int i = 0; i < SDL_arraysize(sdl2_fmt); i++) {
+            bool is_selected = data->conf_sdl2_fmt == sdl2_fmt[i];
+            if (ImGui::Selectable(sdl2_fmt[i], &is_selected))
+                data->conf_sdl2_fmt = sdl2_fmt[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGui::InputInt("Channels", &data->conf_ints[0]))
+        data->conf_ints[0] = tf::clamp(data->conf_ints[0], 0, 64);
+    if (ImGui::InputInt("Frequency##sdl2", &data->conf_ints[1], 100, 10000))
+        data->conf_ints[1] = tf::clamp(data->conf_ints[1], 0, 96000);
+    if (ImGui::InputInt("Chunk Size", &data->conf_ints[2], 32, 256))
+        data->conf_ints[2] = tf::clamp(data->conf_ints[2], 0, 1024 * 1024);
     ImGui::Checkbox("FLAC", &data->conf_bools[1]);
     ImGui::SameLine();
     ImGui::Checkbox("MOD", &data->conf_bools[2]);
@@ -781,6 +824,8 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "BASS");
     ImGui::PopFont();
+    if (ImGui::InputInt("Frequency##bass", &data->conf_ints[3], 100, 10000))
+        data->conf_ints[3] = tf::clamp(data->conf_ints[3], 0, 96000);
     ImGui::Checkbox("Force 16-Bit", &data->conf_bools[8]);
     ImGui::SameLine();
     ImGui::Checkbox("Force Stereo", &data->conf_bools[9]);
