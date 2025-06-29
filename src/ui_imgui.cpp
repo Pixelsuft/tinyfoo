@@ -828,6 +828,22 @@ void ui::draw_settings() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         ImGui::SetWindowFocus("Settings");
     ImGui::PushFont(data->font2);
+    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Renderer");
+    ImGui::PopFont();
+    static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
+    if (ImGui::BeginCombo("Driver##ren", data->conf_ren_drv.c_str())) {
+        for (int i = 0; i < SDL_arraysize(ren_drv); i++) {
+            bool is_selected = (data->conf_ren_drv == ren_drv[i]) || (i == 0 && data->conf_ren_drv.size() == 0);
+            if (ImGui::Selectable(ren_drv[i], &is_selected))
+                data->conf_ren_drv = ren_drv[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::Checkbox("VSync", &data->conf_bools[0]);
+    
+    ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
     ImGui::PopFont();
     static const char* style_list[] = {
@@ -849,21 +865,6 @@ void ui::draw_settings() {
     ImGui::SameLine();
     if (ImGui::Button("Test"))
         apply_theme(data->conf_style);
-    ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Renderer");
-    ImGui::PopFont();
-    static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
-    if (ImGui::BeginCombo("Driver##ren", data->conf_ren_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(ren_drv); i++) {
-            bool is_selected = (data->conf_ren_drv == ren_drv[i]) || (i == 0 && data->conf_ren_drv.size() == 0);
-            if (ImGui::Selectable(ren_drv[i], &is_selected))
-                data->conf_ren_drv = ren_drv[i];
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-    }
-    ImGui::Checkbox("VSync", &data->conf_bools[0]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
     ImGui::PopFont();
