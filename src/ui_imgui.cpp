@@ -266,7 +266,7 @@ bool ui::init() {
         toml::value tab = conf::get().at("imgui");
         font1_size = conf::read_float(tab, "font1_size", 16.f);
         font2_size = conf::read_float(tab, "font2_size", 24.f);
-        tf::str font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
+        tf::str font1_path = conf::read_str(tab, "font1_path", "");
         if (font1_path.size() > 0) {
             ImFontConfig font_cfg;
             font_cfg.FontDataOwnedByAtlas = false;
@@ -279,7 +279,7 @@ bool ui::init() {
             if (!data->font1)
                 TF_WARN(<< "Failed to load custom font 1 (" << SDL_GetError() << ")");
         }
-        tf::str font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
+        tf::str font2_path = conf::read_str(tab, "font2_path", "");
         if (font2_path.size() > 0) {
             ImFontConfig font_cfg;
             font_cfg.FontDataOwnedByAtlas = false;
@@ -292,7 +292,7 @@ bool ui::init() {
             if (!data->font2)
                 TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
         }
-        tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
+        tf::str style_pref = conf::read_str(tab, "style", "dark");
         data->img_scale = conf::read_float(tab, "img_scale", 1.f);
         apply_theme(style_pref);
     }
@@ -380,50 +380,50 @@ void ui::draw_menubar() {
             data->conf_floats[3] = audio::au->volume * 100.f;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
-                data->conf_style = toml::find_or<tf::str>(tab, "style", "dark");
-                data->conf_font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
-                data->conf_font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
+                data->conf_style = conf::read_str(tab, "style", "dark");
+                data->conf_font1_path = conf::read_str(tab, "font1_path", "");
+                data->conf_font2_path = conf::read_str(tab, "font2_path", "");
                 data->conf_floats[0] = conf::read_float(tab, "font1_size", 16.f);
                 data->conf_floats[1] = conf::read_float(tab, "font2_size", 24.f);
                 data->conf_floats[2] = conf::read_float(tab, "img_scale", 1.f);
             }
             if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
                 toml::value tab = conf::get().at("renderer");
-                data->conf_ren_drv = toml::find_or<tf::str>(tab, "driver", "auto");
-                data->conf_bools[0] = toml::find_or<bool>(tab, "vsync", true);
+                data->conf_ren_drv = conf::read_str(tab, "driver", "auto");
+                data->conf_bools[0] = conf::read_bool(tab, "vsync", true);
             }
             if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
                 toml::value tab = conf::get().at("audio");
-                data->conf_au_bk = toml::find_or<tf::str>(tab, "backend", "dummy");
+                data->conf_au_bk = conf::read_str(tab, "backend", "dummy");
             }
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
-                data->conf_sdl2_drv = toml::find_or<tf::str>(tab, "driver", "dummy");
-                data->conf_sdl2_fmt = toml::find_or<tf::str>(tab, "format", "SDL_AUDIO_S16");
-                data->conf_bools[1] = toml::find_or<bool>(tab, "enable_flac", false);
-                data->conf_bools[2] = toml::find_or<bool>(tab, "enable_mod", false);
-                data->conf_bools[3] = toml::find_or<bool>(tab, "enable_mp3", true);
-                data->conf_bools[4] = toml::find_or<bool>(tab, "enable_ogg", false);
-                data->conf_bools[5] = toml::find_or<bool>(tab, "enable_mid", false);
-                data->conf_bools[6] = toml::find_or<bool>(tab, "enable_opus", false);
-                data->conf_bools[7] = toml::find_or<bool>(tab, "enable_wavpack", false);
-                data->conf_ints[0] = toml::find_or<int>(tab, "channels", 0);
-                data->conf_ints[1] = toml::find_or<int>(tab, "frequency", 0);
-                data->conf_ints[2] = toml::find_or<int>(tab, "chunksize", 0);
+                data->conf_sdl2_drv = conf::read_str(tab, "driver", "dummy");
+                data->conf_sdl2_fmt = conf::read_str(tab, "format", "SDL_AUDIO_S16");
+                data->conf_bools[1] = conf::read_bool(tab, "enable_flac", false);
+                data->conf_bools[2] = conf::read_bool(tab, "enable_mod", false);
+                data->conf_bools[3] = conf::read_bool(tab, "enable_mp3", true);
+                data->conf_bools[4] = conf::read_bool(tab, "enable_ogg", false);
+                data->conf_bools[5] = conf::read_bool(tab, "enable_mid", false);
+                data->conf_bools[6] = conf::read_bool(tab, "enable_opus", false);
+                data->conf_bools[7] = conf::read_bool(tab, "enable_wavpack", false);
+                data->conf_ints[0] = conf::read_int(tab, "channels", 0);
+                data->conf_ints[1] = conf::read_int(tab, "frequency", 0);
+                data->conf_ints[2] = conf::read_int(tab, "chunksize", 0);
             }
             if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
-                data->conf_fmod_drv = toml::find_or<tf::str>(tab, "driver", "nosound");
+                data->conf_fmod_drv = conf::read_str(tab, "driver", "nosound");
             }
             if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
                 toml::value tab = conf::get().at("bass");
-                data->conf_bools[8] = toml::find_or<bool>(tab, "force_16bits", false);
-                data->conf_bools[9] = toml::find_or<bool>(tab, "force_stereo", false);
-                data->conf_bools[10] = toml::find_or<bool>(tab, "force_dmix", false);
-                data->conf_bools[11] = toml::find_or<bool>(tab, "force_audiotrack", false);
-                data->conf_bools[12] = toml::find_or<bool>(tab, "force_directsound", false);
-                data->conf_bools[13] = toml::find_or<bool>(tab, "force_software", false);
-                data->conf_ints[3] = toml::find_or<int>(tab, "frequency", 0);
+                data->conf_bools[8] = conf::read_bool(tab, "force_16bits", false);
+                data->conf_bools[9] = conf::read_bool(tab, "force_stereo", false);
+                data->conf_bools[10] = conf::read_bool(tab, "force_dmix", false);
+                data->conf_bools[11] = conf::read_bool(tab, "force_audiotrack", false);
+                data->conf_bools[12] = conf::read_bool(tab, "force_directsound", false);
+                data->conf_bools[13] = conf::read_bool(tab, "force_software", false);
+                data->conf_ints[3] = conf::read_int(tab, "frequency", 0);
             }
         }
         ImGui::Separator();

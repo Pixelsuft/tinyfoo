@@ -190,14 +190,14 @@ namespace audio {
             bool allow_wavpack = false;
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
-                drv_hint = toml::find_or<tf::str>(tab, "driver", "");
-                allow_flac = toml::find_or<bool>(tab, "enable_flac", false);
-                allow_mod = toml::find_or<bool>(tab, "enable_mod", false);
-                allow_mp3 = toml::find_or<bool>(tab, "enable_mp3", true);
-                allow_ogg = toml::find_or<bool>(tab, "enable_ogg", false);
-                allow_mid = toml::find_or<bool>(tab, "enable_mid", false);
-                allow_opus = toml::find_or<bool>(tab, "enable_opus", false);
-                allow_wavpack = toml::find_or<bool>(tab, "enable_wavpack", false);
+                drv_hint = conf::read_str(tab, "driver", "");
+                allow_flac = conf::read_bool(tab, "enable_flac", false);
+                allow_mod = conf::read_bool(tab, "enable_mod", false);
+                allow_mp3 = conf::read_bool(tab, "enable_mp3", true);
+                allow_ogg = conf::read_bool(tab, "enable_ogg", false);
+                allow_mid = conf::read_bool(tab, "enable_mid", false);
+                allow_opus = conf::read_bool(tab, "enable_opus", false);
+                allow_wavpack = conf::read_bool(tab, "enable_wavpack", false);
             }
             if (drv_hint.size() == 0)
                 SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
@@ -229,7 +229,7 @@ namespace audio {
             SDL_AudioDeviceID dev_id = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
             if (0 && conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
-                need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+                need_dev = conf::read_str(tab, "device", need_dev);
             }
             const char* dev_name = nullptr;
             int dev_count;
@@ -262,10 +262,10 @@ namespace audio {
             }
             if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
-                spec.format = fmt_from_str(toml::find_or<tf::str>(tab, "format", fmt_to_str(spec.format)));
-                int b_channels = toml::find_or<int>(tab, "channel", 0);
-                int b_freq = toml::find_or<int>(tab, "frequency", 0);
-                int b_samples = toml::find_or<int>(tab, "chunksize", 0);
+                spec.format = fmt_from_str(conf::read_str(tab, "format", fmt_to_str(spec.format)));
+                int b_channels = conf::read_int(tab, "channel", 0);
+                int b_freq = conf::read_int(tab, "frequency", 0);
+                int b_samples = conf::read_int(tab, "chunksize", 0);
                 if (b_channels > 0)
                     spec.channels = b_channels;
                 if (b_freq > 0)

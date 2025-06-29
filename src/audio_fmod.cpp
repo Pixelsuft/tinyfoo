@@ -732,7 +732,7 @@ namespace audio {
             tf::str need_driver;
             if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
-                need_driver = toml::find_or<tf::str>(tab, "driver", "");
+                need_driver = conf::read_str(tab, "driver", "");
             }
             // TODO: brute force version/read from config
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, 0x00020308))) {
@@ -755,7 +755,7 @@ namespace audio {
             FMOD_RESULT err;
             if (0 && conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
-                need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+                need_dev = conf::read_str(tab, "device", need_dev);
             }
             int num_dev;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {

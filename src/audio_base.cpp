@@ -27,7 +27,7 @@ AudioBase::AudioBase() {
     fade_next_time = 0.2f;
     if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
         toml::value tab = conf::get().at("audio");
-        need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+        need_dev = conf::read_str(tab, "device", need_dev);
         volume = conf::read_float(tab, "volume", 25.f) / 100.f;
     }
 }

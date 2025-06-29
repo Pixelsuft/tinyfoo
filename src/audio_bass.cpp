@@ -392,20 +392,20 @@ namespace audio {
             if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
                 toml::value tab = conf::get().at("bass");
                 if (0)
-                    need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
-                if (toml::find_or<bool>(tab, "force_16bits", false))
+                    need_dev = conf::read_str(tab, "device", need_dev);
+                if (conf::read_bool(tab, "force_16bits", false))
                     init_flags |= BASS_DEVICE_16BITS;
-                if (toml::find_or<bool>(tab, "force_stereo", false))
+                if (conf::read_bool(tab, "force_stereo", false))
                     init_flags |= BASS_DEVICE_STEREO;
-                if (toml::find_or<bool>(tab, "force_dmix", false))
+                if (conf::read_bool(tab, "force_dmix", false))
                     init_flags |= BASS_DEVICE_DMIX;
-                if (toml::find_or<bool>(tab, "force_audiotrack", false))
+                if (conf::read_bool(tab, "force_audiotrack", false))
                     init_flags |= BASS_DEVICE_AUDIOTRACK;
-                if (toml::find_or<bool>(tab, "force_directsound", false))
+                if (conf::read_bool(tab, "force_directsound", false))
                     init_flags |= BASS_DEVICE_DSOUND;
-                if (toml::find_or<bool>(tab, "force_software", false))
+                if (conf::read_bool(tab, "force_software", false))
                     init_flags |= BASS_DEVICE_SOFTWARE;
-                need_freq = toml::find_or<int>(tab, "frequency", 0);
+                need_freq = conf::read_int(tab, "frequency", 0);
             }
             if (need_freq > 0)
                 init_flags |= BASS_DEVICE_FREQ;

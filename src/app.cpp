@@ -149,7 +149,7 @@ bool app::init() {
     audio::au = nullptr;
     if (data->conf.contains("audio") && data->conf.at("audio").is_table()) {
         toml::value au_tab = data->conf.at("audio");
-        auto backend_s = toml::find_or<tf::str>(au_tab, "backend", "");
+        auto backend_s = conf::read_str(au_tab, "backend", "");
         if (0) {}
 #if ENABLE_SDL2_MIXER
         else if (backend_s == "sdl2_mixer_ext")
@@ -333,7 +333,7 @@ void app::read_config() {
         TF_WARN(<< "Failed to read config file (" << SDL_GetError() << ")");
     auto result = toml::try_parse_str(content ? content : "");
     if (result.is_err()) {
-        auto errs = result.as_err();
+        auto& errs = result.as_err();
         TF_ERROR(<< "Failed to parse config");
         for (auto it = errs.begin(); it != errs.end(); it++)
             TF_INFO(<< "Details - " << (*it).title());

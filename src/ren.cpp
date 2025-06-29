@@ -39,14 +39,14 @@ bool ren::init(void* win) {
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
     if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
         toml::value tab = conf::get().at("renderer");
-        auto ren_str = toml::find_or<tf::str>(tab, "driver", "");
+        auto ren_str = conf::read_str(tab, "driver", "");
         if (ren_str.size() == 0) {
             display_available_drivers();
         }
         else if (ren_str != "auto") {
             SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, ren_str.c_str());
         }
-        auto vsync_b = toml::find_or<bool>(tab, "vsync", true);
+        auto vsync_b = conf::read_bool(tab, "vsync", true);
         SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, vsync_b ? 1 : 0);
     }
     else {
