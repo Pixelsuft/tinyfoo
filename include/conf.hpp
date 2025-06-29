@@ -7,4 +7,5 @@
 
 namespace conf {
     toml::value& get();
+    bool save_to_file();
 }

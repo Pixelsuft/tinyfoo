@@ -793,6 +793,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force Software", &data->conf_bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
+        conf::save_to_file();
     }
     ImGui::SameLine();
     if (ImGui::Button("Cancel"))

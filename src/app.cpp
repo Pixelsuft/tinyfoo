@@ -36,6 +36,7 @@ namespace app {
         tf::vec<pl::Playlist*> playlists_vec;
         tf::str base_path;
         tf::str data_path;
+        tf::str conf_path;
         SDL_Window* win;
         Uint8* orig_bump;
         int stage;
@@ -319,9 +320,9 @@ void app::destroy() {
 
 void app::read_config() {
     // TODO: search config in other paths
-    tf::str fp = data->data_path + "config.toml";
+    data->conf_path = data->data_path + "config.toml";
     size_t sz;
-    const char* content = (const char*)SDL_LoadFile(fp.c_str(), &sz);
+    const char* content = (const char*)SDL_LoadFile(data->conf_path.c_str(), &sz);
     if (!content)
         TF_WARN(<< "Failed to read config file (" << SDL_GetError() << ")");
     auto result = toml::try_parse_str(content ? content : "");
@@ -340,4 +341,13 @@ void app::read_config() {
 
 toml::value& conf::get() {
     return app::data->conf;
+}
+
+bool conf::save_to_file() {
+    auto data = toml::format(app::data->conf);
+    if (!SDL_SaveFile(app::data->conf_path.c_str(), data.data(), data.size())) {
+        TF_ERROR(<< "Failed to save config (" << SDL_GetError() << ")");
+        return false;
+    }
+    return true;
 }
