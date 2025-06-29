@@ -107,10 +107,11 @@ namespace ui {
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
     static inline float toml_read_float(toml::value& tab, const char* prop, float def_val) {
-        float ret = (float)toml::find_or<int>(tab, prop, 0);
-        if (ret <= 0.f)
-            ret = toml::find_or<float>(tab, prop, def_val);
-        return ret;
+        if (tab[prop].is_integer())
+            return (float)tab[prop].as_integer();
+        if (tab[prop].is_floating())
+            return (float)tab[prop].as_floating();
+        return def_val;
     }
 
     static inline void apply_theme(const tf::str& style) {

@@ -753,7 +753,7 @@ namespace audio {
 
         bool dev_open() {
             FMOD_RESULT err;
-            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
+            if (0 && conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
                 toml::value tab = conf::get().at("fmod");
                 need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
             }

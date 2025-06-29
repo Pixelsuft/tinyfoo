@@ -227,7 +227,7 @@ namespace audio {
 
         bool dev_open() {
             SDL_AudioDeviceID dev_id = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
+            if (0 && conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
                 toml::value tab = conf::get().at("sdl2_mixer");
                 need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
             }

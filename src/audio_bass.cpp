@@ -391,7 +391,8 @@ namespace audio {
             int need_freq = 0;
             if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
                 toml::value tab = conf::get().at("bass");
-                need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
+                if (0)
+                    need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
                 if (toml::find_or<bool>(tab, "force_16bits", false))
                     init_flags |= BASS_DEVICE_16BITS;
                 if (toml::find_or<bool>(tab, "force_stereo", false))
