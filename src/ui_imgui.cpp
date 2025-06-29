@@ -13,6 +13,7 @@
 #include <audio_base.hpp>
 #include <set.hpp>
 #include <imgui.h>
+#include <imgui_styles.hpp>
 #include <algorithm>
 #include <SDL3/SDL.h>
 
@@ -99,6 +100,41 @@ namespace ui {
     void draw_settings();
     void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
+
+    static inline void apply_theme(const tf::str& style_pref) {
+        // ImGui::StyleColorsDark();
+        if (style_pref == "dark")
+            ImGui::StyleColorsDark();
+        else if (style_pref == "light")
+            ImGui::StyleColorsLight();
+        else if (style_pref == "classic")
+            ImGui::StyleColorsClassic();
+        else if (style_pref == "raikiri")
+            style_raikiri();
+        else if (style_pref == "gpulib")
+            style_gpulib();
+        else if (style_pref == "dracula")
+            style_dracula();
+        else if (style_pref == "ue4")
+            style_ue4();
+        else if (style_pref == "cherry")
+            style_cherry();
+        else if (style_pref == "photoshop")
+            style_photoshop();
+        else if (style_pref == "vgui")
+            style_vgui();
+        else if (style_pref == "deusex")
+            style_deusex();
+        else if (style_pref == "sewer56")
+            style_sewer56();
+        else if (style_pref == "visualstudio")
+            style_visualstudio();
+        else if (style_pref == "custom") {
+            TF_WARN(<< "TODO: custom style");
+        }
+        else
+            TF_WARN(<< "Unknown imgui style");
+    }
 
     static inline void fmt_file_size(char* buf, size_t sz) {
         // TODO: maybe rounding?
@@ -203,17 +239,7 @@ bool ui::init() {
         toml::value tab = conf::get().at("imgui");
         // TODO: read fonts
         tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
-        if (style_pref == "dark")
-            ImGui::StyleColorsDark();
-        else if (style_pref == "light")
-            ImGui::StyleColorsLight();
-        else if (style_pref == "classic")
-            ImGui::StyleColorsClassic();
-        else if (style_pref == "custom") {
-            // TODO: custom color scheme
-        }
-        else
-            TF_WARN(<< "Unknown imgui style");
+        apply_theme(style_pref);
     }
     else
         ImGui::StyleColorsDark();
