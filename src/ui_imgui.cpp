@@ -101,6 +101,7 @@ namespace ui {
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
     static inline void fmt_file_size(char* buf, size_t sz) {
+        // TODO: maybe rounding?
         if (sz < 1024u) {
             SDL_itoa((int)sz, buf, 10);
             SDL_strlcat(buf, " B", 32);
@@ -835,6 +836,48 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force Software", &data->conf_bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
+        conf::get()["renderer"] = toml::table{
+            {"driver", data->conf_ren_drv},
+            {"vsync", data->conf_bools[0]},
+        };
+        conf::get()["audio"] = toml::table{
+            {"backend", data->conf_au_bk},
+            {"device", data->conf_dev_names[data->conf_dev_id]},
+            {"volume", data->conf_vol },
+        };
+        conf::get()["sdl2_mixer"] = toml::table{
+            {"driver", data->conf_sdl2_drv},
+            {"format", data->conf_sdl2_fmt},
+            {"channels", data->conf_ints[0]},
+            {"frequency", data->conf_ints[1]},
+            {"chunksize", data->conf_ints[2]},
+            {"enable_flac", data->conf_bools[1]},
+            {"enable_mod", data->conf_bools[2]},
+            {"enable_mp3", data->conf_bools[3]},
+            {"enable_ogg", data->conf_bools[4]},
+            {"enable_mid", data->conf_bools[5]},
+            {"enable_opus", data->conf_bools[6]},
+            {"enable_wavpack", data->conf_bools[7]}
+        };
+        conf::get()["fmod"] = toml::table{
+            {"driver", data->conf_fmod_drv}
+        };
+        conf::get()["bass"] = toml::table{
+            {"frequency", data->conf_ints[3]},
+            {"force_16bits", data->conf_bools[8]},
+            {"force_stereo", data->conf_bools[9]},
+            {"force_dmix", data->conf_bools[10]},
+            {"force_audiotrack", data->conf_bools[11]},
+            {"force_directsound", data->conf_bools[12]},
+            {"force_software", data->conf_bools[13]}
+        };
+        tf::vec<tf::str> pl_files;
+        pl_files.reserve(pl::pls->size());
+        for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
+            pl_files.push_back((*it)->path);
+        conf::get()["playlists"] = toml::table{
+            {"files", pl_files}
+        };
         conf::request_save();
     }
     ImGui::SameLine();

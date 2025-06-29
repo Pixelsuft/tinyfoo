@@ -302,9 +302,9 @@ void app::stop(bool rage) {
 void app::destroy() {
     data->running = false;
     if (data->stage > 3) {
-        pl::unload_playlists(data->rage_quit);
         if (!data->rage_quit && data->should_save_conf)
             conf::save_to_file();
+        pl::unload_playlists(data->rage_quit);
         audio::free_audio(audio::au);
         ui::destroy();
     }
