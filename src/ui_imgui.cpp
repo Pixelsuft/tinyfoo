@@ -31,6 +31,8 @@ namespace ui {
         tf::vec<tf::str> log_cache;
         tf::vec<tf::str> conf_dev_names;
         tf::str conf_style;
+        tf::str conf_font1_path;
+        tf::str conf_font2_path;
         tf::str conf_sdl2_drv;
         tf::str conf_sdl2_fmt;
         tf::str conf_fmod_drv;
@@ -45,6 +47,7 @@ namespace ui {
         double meta_dur;
         char pl_name_buf[64];
         bool conf_bools[16];
+        float conf_floats[4];
         int conf_ints[4];
         size_t meta_sz;
         char* pl_path_buf;
@@ -101,6 +104,13 @@ namespace ui {
     void draw_settings();
     void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
+
+    static inline float toml_read_float(toml::value& tab, const char* prop, float def_val) {
+        float ret = (float)toml::find_or<int>(tab, prop, 0);
+        if (ret <= 0.f)
+            ret = toml::find_or<float>(tab, prop, def_val);
+        return ret;
+    }
 
     static inline void apply_theme(const tf::str& style) {
         style_reset();
@@ -263,12 +273,8 @@ bool ui::init() {
     data->font2 = nullptr;
     if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
         toml::value tab = conf::get().at("imgui");
-        font1_size = (float)toml::find_or<int>(tab, "font1_size", 0);
-        if (font1_size <= 0.f)
-            font1_size = toml::find_or<float>(tab, "font1_size", 16.f);
-        font2_size = (float)toml::find_or<int>(tab, "font2_size", 0);
-        if (font2_size <= 0.f)
-            font2_size = toml::find_or<float>(tab, "font2_size", 24.f);
+        font1_size = toml_read_float(tab, "font1_size", 16.f);
+        font2_size = toml_read_float(tab, "font2_size", 24.f);
         tf::str font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
         if (font1_path.size() > 0) {
             ImFontConfig font_cfg;
@@ -296,9 +302,7 @@ bool ui::init() {
                 TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
         }
         tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
-        data->img_scale = (float)toml::find_or<int>(tab, "img_scale", 0);
-        if (data->img_scale <= 0.f)
-            data->img_scale = toml::find_or<float>(tab, "img_scale", 1.f);
+        data->img_scale = toml_read_float(tab, "img_scale", 1.f);
         apply_theme(style_pref);
     }
     else
@@ -373,14 +377,24 @@ void ui::draw_menubar() {
                 data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
             SDL_zero(data->conf_bools);
             SDL_zero(data->conf_ints);
+            SDL_zero(data->conf_floats);
             data->conf_sdl2_drv = "dummy";
             data->conf_sdl2_fmt = "SDL_AUDIO_S16";
             data->conf_fmod_drv = "nosound";
             data->conf_style = "dark";
+            data->conf_font1_path = data->conf_font2_path = "";
             data->conf_bools[0] = data->conf_bools[3] = true;
+            data->conf_floats[0] = 16.f;
+            data->conf_floats[1] = 24.f;
+            data->conf_floats[2] = 1.f;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
                 data->conf_style = toml::find_or<tf::str>(tab, "style", "dark");
+                data->conf_font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
+                data->conf_font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
+                data->conf_floats[0] = toml_read_float(tab, "font1_size", 16.f);
+                data->conf_floats[1] = toml_read_float(tab, "font2_size", 24.f);
+                data->conf_floats[2] = toml_read_float(tab, "img_scale", 1.f);
             }
             if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
                 toml::value tab = conf::get().at("renderer");
@@ -842,7 +856,6 @@ void ui::draw_settings() {
         ImGui::EndCombo();
     }
     ImGui::Checkbox("VSync", &data->conf_bools[0]);
-    
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
     ImGui::PopFont();
@@ -969,6 +982,14 @@ void ui::draw_settings() {
         conf::get()["renderer"] = toml::table{
             {"driver", data->conf_ren_drv},
             {"vsync", data->conf_bools[0]},
+        };
+        conf::get()["imgui"] = toml::table{
+            {"style", data->conf_style},
+            {"img_scale", data->conf_floats[2]},
+            {"font1_path", data->conf_font1_path},
+            {"font1_size", data->conf_floats[0]},
+            {"font2_path", data->conf_font2_path},
+            {"font2_size", data->conf_floats[1]},
         };
         conf::get()["audio"] = toml::table{
             {"backend", data->conf_au_bk},
