@@ -67,7 +67,6 @@ namespace ui {
         void* icon_rng;
         Point size;
         float img_scale;
-        float conf_vol;
         int conf_dev_id;
         bool show_app_conf;
         bool show_about;
@@ -359,7 +358,6 @@ void ui::draw_menubar() {
         ImGui::Separator();
         if (ImGui::MenuItem("Settings", nullptr, nullptr)) {
             data->show_app_conf = true;
-            data->conf_vol = audio::au->volume * 100.f;
             data->conf_dev_names.clear();
             audio::au->dev_fill_arr(data->conf_dev_names);
             auto need_it = std::find(data->conf_dev_names.begin(), data->conf_dev_names.end(), audio::au->need_dev);
@@ -379,6 +377,7 @@ void ui::draw_menubar() {
             data->conf_floats[0] = 16.f;
             data->conf_floats[1] = 24.f;
             data->conf_floats[2] = 1.f;
+            data->conf_floats[3] = audio::au->volume * 100.f;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
                 data->conf_style = toml::find_or<tf::str>(tab, "style", "dark");
@@ -893,8 +892,8 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
-    if (ImGui::InputFloat("Volume", &data->conf_vol))
-        data->conf_vol = tf::clamp(data->conf_vol, 0.f, audio::au->max_volume * 100.f);
+    if (ImGui::InputFloat("Volume", &data->conf_floats[3]))
+        data->conf_floats[3] = tf::clamp(data->conf_floats[3], 0.f, audio::au->max_volume * 100.f);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
@@ -969,6 +968,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force Software", &data->conf_bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
+        audio::au->volume = data->conf_floats[3];
         conf::get()["renderer"] = toml::table{
             {"driver", data->conf_ren_drv},
             {"vsync", data->conf_bools[0]},
@@ -984,7 +984,7 @@ void ui::draw_settings() {
         conf::get()["audio"] = toml::table{
             {"backend", data->conf_au_bk},
             {"device", data->conf_dev_names[data->conf_dev_id]},
-            {"volume", data->conf_vol },
+            {"volume", data->conf_floats[3] },
         };
         conf::get()["sdl2_mixer"] = toml::table{
             {"driver", data->conf_sdl2_drv},

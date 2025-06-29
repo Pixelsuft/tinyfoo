@@ -28,10 +28,7 @@ AudioBase::AudioBase() {
     if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
         toml::value tab = conf::get().at("audio");
         need_dev = toml::find_or<tf::str>(tab, "device", need_dev);
-        if (tab["volume"].is_integer())
-            volume = (float)toml::find_or<int>(tab, "volume", 25) / 100.f;
-        if (tab["volume"].is_floating())
-            volume = toml::find_or<float>(tab, "volume", volume * 100.f) / 100.f;
+        volume = conf::read_float(tab, "volume", 25.f) / 100.f;
     }
 }
 
