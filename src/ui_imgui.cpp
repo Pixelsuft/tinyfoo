@@ -291,7 +291,7 @@ void ui::draw_menubar() {
                 data->conf_sdl2_fmt = toml::find_or<tf::str>(tab, "format", "SDL_AUDIO_S16");
                 data->conf_bools[1] = toml::find_or<bool>(tab, "enable_flac", false);
                 data->conf_bools[2] = toml::find_or<bool>(tab, "enable_mod", false);
-                data->conf_bools[3] = toml::find_or<bool>(tab, "enable_mp3", false);
+                data->conf_bools[3] = toml::find_or<bool>(tab, "enable_mp3", true);
                 data->conf_bools[4] = toml::find_or<bool>(tab, "enable_ogg", false);
                 data->conf_bools[5] = toml::find_or<bool>(tab, "enable_mid", false);
                 data->conf_bools[6] = toml::find_or<bool>(tab, "enable_opus", false);
@@ -313,7 +313,6 @@ void ui::draw_menubar() {
                 data->conf_bools[12] = toml::find_or<bool>(tab, "force_directsound", false);
                 data->conf_bools[13] = toml::find_or<bool>(tab, "force_software", false);
                 data->conf_ints[3] = toml::find_or<int>(tab, "frequency", 0);
-                // TF_INFO(<< data->conf_ints[3]);
             }
         }
         ImGui::Separator();
