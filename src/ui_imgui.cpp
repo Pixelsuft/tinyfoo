@@ -196,10 +196,27 @@ bool ui::init() {
         tf::dl(data);
         return false;
     }
+    // TODO: more fonts for different shit
     data->font1 = nullptr;
     data->font2 = nullptr;
-    // TODO: read font from config
-    // TODO: more fonts for different shit
+    if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
+        toml::value tab = conf::get().at("imgui");
+        // TODO: read fonts
+        tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
+        if (style_pref == "dark")
+            ImGui::StyleColorsDark();
+        else if (style_pref == "light")
+            ImGui::StyleColorsLight();
+        else if (style_pref == "classic")
+            ImGui::StyleColorsClassic();
+        else if (style_pref == "custom") {
+            // TODO: custom color scheme
+        }
+        else
+            TF_WARN(<< "Unknown imgui style");
+    }
+    else
+        ImGui::StyleColorsDark();
     if (!data->font1) {
         ImFontConfig font_cfg;
         font_cfg.FontDataOwnedByAtlas = false;
@@ -226,7 +243,6 @@ bool ui::init() {
         }
         res::free_asset_data(font_data);
     }
-    ImGui::StyleColorsDark();
     data->log_cache.reserve(LOG_CACHE_COUNT);
     return true;
 }
