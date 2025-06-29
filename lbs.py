@@ -79,14 +79,15 @@ if app.stage == 'conf':
         conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define IS_IMGUI 1\n')
-    conf_header.write(f'#define ENABLE_UPNG 1\n')
-    conf_header.write(f'#define ENABLE_GDIPLUS 0\n')
+    conf_header.write(f'#define ENABLE_UPNG {int(not app.conf["msvc"])}\n')
+    conf_header.write(f'#define ENABLE_GDIPLUS {int(app.conf["msvc"])}\n')
     conf_header.write(f'#define ENABLE_SDL2_MIXER 1\n')
     conf_header.write(f'#define ENABLE_FMOD 1\n')
     conf_header.write(f'#define ENABLE_BASS 1\n')
     conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')
     conf_header.write(f'#define LOG_CACHE_COUNT 1024\n')
-    conf_header.write('#define BUMP_SIZE 4096\n')
+    conf_header.write(f'#define WIN_TITLE_PATCH 1\n')
+    conf_header.write(f'#define BUMP_SIZE 4096\n')
     conf_header.close()
     open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(
 '''#pragma once
@@ -101,7 +102,7 @@ if app.stage == 'conf':
 '''
     )
     app.save_conf()
-    app.info(f'Configured at "{os.path.join(app.b_path, "lbs", "lbs.hpp")}"!')
+    app.info(f'Configured at "{os.path.join(app.b_path, "lbs", "lbs.hpp")}"')
     sys.exit(0)
 
 if app.stage == 'gen_res':

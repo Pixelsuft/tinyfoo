@@ -15,8 +15,6 @@
 #include <imgui.h>
 #include <algorithm>
 #include <SDL3/SDL.h>
-// TODO: conf in lbs
-#define WIN_TITLE_PATCH 1
 
 namespace app {
     extern void* win_handle;
