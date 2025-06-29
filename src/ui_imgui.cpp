@@ -119,8 +119,8 @@ namespace ui {
             style_ue4();
         else if (style_pref == "cherry")
             style_cherry();
-        else if (style_pref == "photoshop")
-            style_photoshop();
+        else if (style_pref == "adobe")
+            style_adobe();
         else if (style_pref == "vgui")
             style_vgui();
         else if (style_pref == "deusex")
@@ -129,6 +129,12 @@ namespace ui {
             style_sewer56();
         else if (style_pref == "visualstudio")
             style_visualstudio();
+        else if (style_pref == "imfontstudio")
+            style_imfontstudio();
+        else if (style_pref == "imfontstudio_red")
+            style_imfontstudio_red();
+        else if (style_pref == "janekb04")
+            style_janekb04();
         else if (style_pref == "custom") {
             TF_WARN(<< "TODO: custom style");
         }
