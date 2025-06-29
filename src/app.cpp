@@ -40,6 +40,7 @@ namespace app {
         SDL_Window* win;
         Uint8* orig_bump;
         int stage;
+        bool should_save_conf;
         bool should_play_sel_hack;
         bool rage_quit;
         bool running;
@@ -73,6 +74,7 @@ bool app::init() {
     data->orig_bump = temp_bump;
     data->stage = 0;
     data->should_play_sel_hack = false;
+    data->should_save_conf = false;
     data->rage_quit = false;
     data->running = false;
     pl::pls = &data->playlists_vec;
@@ -301,6 +303,8 @@ void app::destroy() {
     data->running = false;
     if (data->stage > 3) {
         pl::unload_playlists(data->rage_quit);
+        if (!data->rage_quit && data->should_save_conf)
+            conf::save_to_file();
         audio::free_audio(audio::au);
         ui::destroy();
     }
@@ -341,6 +345,10 @@ void app::read_config() {
 
 toml::value& conf::get() {
     return app::data->conf;
+}
+
+void conf::request_save() {
+    app::data->should_save_conf = true;
 }
 
 bool conf::save_to_file() {
