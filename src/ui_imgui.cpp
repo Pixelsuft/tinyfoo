@@ -102,60 +102,60 @@ namespace ui {
     void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
-    static inline void apply_theme(const tf::str& style_pref) {
+    static inline void apply_theme(const tf::str& style) {
         style_reset();
-        if (style_pref == "dark")
+        if (style == "dark")
             ImGui::StyleColorsDark();
-        else if (style_pref == "light")
+        else if (style == "light")
             ImGui::StyleColorsLight();
-        else if (style_pref == "classic")
+        else if (style == "classic")
             ImGui::StyleColorsClassic();
-        else if (style_pref == "raikiri")
+        else if (style == "raikiri")
             style_raikiri();
-        else if (style_pref == "gpulib")
+        else if (style == "gpulib")
             style_gpulib();
-        else if (style_pref == "dracula")
+        else if (style == "dracula")
             style_dracula();
-        else if (style_pref == "ue4")
+        else if (style == "ue4")
             style_ue4();
-        else if (style_pref == "cherry")
+        else if (style == "cherry")
             style_cherry();
-        else if (style_pref == "adobe")
+        else if (style == "adobe")
             style_adobe();
-        else if (style_pref == "vgui")
+        else if (style == "vgui")
             style_vgui();
-        else if (style_pref == "gold")
+        else if (style == "gold")
             style_gold();
-        else if (style_pref == "sonic_riders")
+        else if (style == "sonic_riders")
             style_sonic_riders();
-        else if (style_pref == "visual_studio")
+        else if (style == "visual_studio")
             style_visual_studio();
-        else if (style_pref == "green_font")
+        else if (style == "green_font")
             style_green_font();
-        else if (style_pref == "red_font")
+        else if (style == "red_font")
             style_red_font();
-        else if (style_pref == "deep_dark")
+        else if (style == "deep_dark")
             style_deep_dark();
-        else if (style_pref == "mediacy")
+        else if (style == "mediacy")
             style_mediacy();
-        else if (style_pref == "duck_red")
+        else if (style == "duck_red")
             style_duck_red();
-        else if (style_pref == "ruda")
+        else if (style == "ruda")
             style_ruda();
-        else if (style_pref == "darky")
+        else if (style == "darky")
             style_darky();
-        else if (style_pref == "discord")
+        else if (style == "discord")
             style_discord();
-        else if (style_pref == "enemymouse")
+        else if (style == "enemymouse")
             style_enemymouse();
-        else if (style_pref == "material_flat")
+        else if (style == "material_flat")
             style_material_flat();
-        else if (style_pref == "windark")
+        else if (style == "windark")
             style_windark();
-        else if (style_pref == "photoshop")
+        else if (style == "photoshop")
             style_photoshop();
         else {
-            TF_WARN(<< "Unknown imgui style \"" << style_pref << "\"");
+            TF_WARN(<< "Unknown imgui style \"" << style << "\"");
             ImGui::StyleColorsDark();
         }
     }
@@ -257,12 +257,34 @@ bool ui::init() {
         return false;
     }
     // TODO: more fonts for different shit
+    float font1_size = 16.f;
+    float font2_size = 24.f;
     data->font1 = nullptr;
     data->font2 = nullptr;
     if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
         toml::value tab = conf::get().at("imgui");
-        // TODO: read fonts
+        font1_size = (float)toml::find_or<int>(tab, "font1_size", 0);
+        if (font1_size <= 0.f)
+            font1_size = toml::find_or<float>(tab, "font1_size", 16.f);
+        font2_size = (float)toml::find_or<int>(tab, "font2_size", 0);
+        if (font2_size <= 0.f)
+            font2_size = toml::find_or<float>(tab, "font2_size", 24.f);
+        tf::str font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
+        if (font1_path.size() > 0) {
+            data->font1 = io.Fonts->AddFontFromFileTTF(font1_path.c_str(), font1_size);
+            if (!data->font1)
+                TF_WARN(<< "Failed to load custom font 1");
+        }
+        tf::str font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
+        if (font2_path.size() > 0) {
+            data->font2 = io.Fonts->AddFontFromFileTTF(font2_path.c_str(), font2_size);
+            if (!data->font2)
+                TF_WARN(<< "Failed to load custom font 2");
+        }
         tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
+        data->img_scale = (float)toml::find_or<int>(tab, "img_scale", 0);
+        if (data->img_scale <= 0.f)
+            data->img_scale = toml::find_or<float>(tab, "img_scale", 1.f);
         apply_theme(style_pref);
     }
     else
@@ -273,7 +295,7 @@ bool ui::init() {
         int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
         if (font_data)
-            data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 16.f, &font_cfg);
+            data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, font1_size, &font_cfg);
         if (!data->font1) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font1 = io.Fonts->AddFontDefault();
@@ -286,7 +308,7 @@ bool ui::init() {
         int sz_buf;
         void* font_data = res::read_asset_data("Roboto-Regular.ttf", sz_buf);
         if (font_data)
-            data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, 24.f, &font_cfg);
+            data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, sz_buf, font2_size, &font_cfg);
         if (!data->font2) {
             TF_ERROR(<< "WTF failed to load default font");
             data->font2 = io.Fonts->AddFontDefault();
