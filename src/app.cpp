@@ -191,6 +191,8 @@ void app::process_event(const SDL_Event& ev) {
 #endif
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
+            if (ui::handle_esc())
+                break;
             data->running = false;
             break;
         }

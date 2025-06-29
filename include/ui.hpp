@@ -6,6 +6,6 @@ namespace ui {
     void draw();
     void destroy();
     void do_extra_stuff();
-    void handle_esc();
+    bool handle_esc();
     void update_size(const Point& size);
 }

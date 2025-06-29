@@ -16,6 +16,7 @@
 #include <imgui_styles.hpp>
 #include <algorithm>
 #include <SDL3/SDL.h>
+#define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 
 namespace app {
     extern void* win_handle;
@@ -584,7 +585,7 @@ void ui::draw_playlist_tabs() {
 void ui::draw_meta() {
     if (data->show_meta_debug) {
         ImGui::PushFont(data->font2);
-        ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Debug");
+        ImGui::TextColored(COOL_CYAN, "Debug");
         ImGui::PopFont();
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Text("FPS: %f", 1.f / io.DeltaTime);
@@ -608,7 +609,7 @@ void ui::draw_meta() {
     // TODO: improve
     char temp_buf[64];
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Location");
+    ImGui::TextColored(COOL_CYAN, "Location");
     ImGui::PopFont();
     ImGui::Text("File names: %s", data->meta_fn.c_str());
     fmt_file_size(temp_buf, data->meta_sz);
@@ -616,7 +617,7 @@ void ui::draw_meta() {
     fmt_last_mod(temp_buf, data->meta_mod);
     ImGui::Text("Last modified: %s", temp_buf);
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "General");
+    ImGui::TextColored(COOL_CYAN, "General");
     ImGui::PopFont();
     ImGui::Text("Items selected: %i", (int)data->last_pl->selected.size());
     fmt_duration(temp_buf, data->meta_dur);
@@ -840,7 +841,7 @@ void ui::draw_settings() {
     if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         ImGui::SetWindowFocus("Settings");
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Renderer");
+    ImGui::TextColored(COOL_CYAN, "Renderer");
     ImGui::PopFont();
     static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
     if (ImGui::BeginCombo("Driver##ren", data->conf_ren_drv.c_str())) {
@@ -855,7 +856,7 @@ void ui::draw_settings() {
     }
     ImGui::Checkbox("VSync", &data->conf_bools[0]);
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
+    ImGui::TextColored(COOL_CYAN, "ImGui");
     ImGui::PopFont();
     static const char* style_list[] = {
         "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
@@ -875,7 +876,7 @@ void ui::draw_settings() {
     }
     apply_theme(data->conf_style);
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "Audio");
+    ImGui::TextColored(COOL_CYAN, "Audio");
     ImGui::PopFont();
     static const char* au_bk[] = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass" };
     if (ImGui::BeginCombo("Backend", data->conf_au_bk.c_str())) {
@@ -902,7 +903,7 @@ void ui::draw_settings() {
     if (ImGui::InputFloat("Volume", &data->conf_vol))
         data->conf_vol = tf::clamp(data->conf_vol, 0.f, audio::au->max_volume * 100.f);
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "SDL2_mixer");
+    ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
     static const char* sdl2_drv[] = { "pulseaudio", "pipewire", "alsa", "sndio", "netbsd", "wasapi", "directsound", "haiku", "coreaudio", "aaudio", "opensles", "ps2", "psp", "vita", "n3ds", "ngage", "emscripten", "jack", "oss", "qnx", "disk", "dummy" };
     if (ImGui::BeginCombo("Driver##sdl2", data->conf_sdl2_drv.c_str())) {
@@ -945,7 +946,7 @@ void ui::draw_settings() {
     ImGui::SameLine();
     ImGui::Checkbox("WAVPACK", &data->conf_bools[7]);
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "FMOD");
+    ImGui::TextColored(COOL_CYAN, "FMOD");
     ImGui::PopFont();
     static const char* fmod_drv[] = { "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
     if (ImGui::BeginCombo("Driver##fmod", data->conf_fmod_drv.c_str())) {
@@ -959,7 +960,7 @@ void ui::draw_settings() {
         ImGui::EndCombo();
     }
     ImGui::PushFont(data->font2);
-    ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "BASS");
+    ImGui::TextColored(COOL_CYAN, "BASS");
     ImGui::PopFont();
     if (ImGui::InputInt("Frequency##bass", &data->conf_ints[3], 100, 10000))
         data->conf_ints[3] = tf::clamp(data->conf_ints[3], 0, 96000);
@@ -1119,11 +1120,13 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
     data->log_cache.push_back(tf::str(msg));
 }
 
-void ui::handle_esc() {
+bool ui::handle_esc() {
+    bool ret = data->show_app_conf | data->show_about | data->show_logs | data->show_playlist_conf;
     data->show_app_conf = false;
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    return ret;
 }
 
 void ui::draw_logs() {
