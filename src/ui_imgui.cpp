@@ -102,7 +102,7 @@ namespace ui {
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
     static inline void apply_theme(const tf::str& style_pref) {
-        // ImGui::StyleColorsDark();
+        style_reset();
         if (style_pref == "dark")
             ImGui::StyleColorsDark();
         else if (style_pref == "light")
@@ -135,6 +135,14 @@ namespace ui {
             style_imfontstudio_red();
         else if (style_pref == "janekb04")
             style_janekb04();
+        else if (style_pref == "bootstrap_dark")
+            style_bootstrap_dark();
+        else if (style_pref == "mediacy")
+            style_mediacy();
+        else if (style_pref == "duck_red")
+            style_duck_red();
+        else if (style_pref == "ruda")
+            style_ruda();
         else if (style_pref == "custom") {
             TF_WARN(<< "TODO: custom style");
         }
