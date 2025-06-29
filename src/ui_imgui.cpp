@@ -128,8 +128,8 @@ namespace ui {
             style_gold();
         else if (style_pref == "sonic_riders")
             style_sonic_riders();
-        else if (style_pref == "visualstudio")
-            style_visualstudio();
+        else if (style_pref == "visual_studio")
+            style_visual_studio();
         else if (style_pref == "green_font")
             style_green_font();
         else if (style_pref == "red_font")
@@ -152,6 +152,8 @@ namespace ui {
             style_material_flat();
         else if (style_pref == "windark")
             style_windark();
+        else if (style_pref == "photoshop")
+            style_photoshop();
         else {
             TF_WARN(<< "Unknown imgui style \"" << style_pref << "\"");
             ImGui::StyleColorsDark();
@@ -338,6 +340,7 @@ void ui::draw_menubar() {
             data->conf_sdl2_drv = "dummy";
             data->conf_sdl2_fmt = "SDL_AUDIO_S16";
             data->conf_fmod_drv = "nosound";
+            data->conf_style = "dark";
             data->conf_bools[0] = data->conf_bools[3] = true;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
@@ -791,8 +794,12 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
     ImGui::PopFont();
-    // TODO
-    static const char* style_list[] = { "dark", "light", "windark" };
+    static const char* style_list[] = {
+        "dark", "light", "classic", "adobe", "cherry", "darky", "discord",
+        "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font", "janekb04",
+        "material_flat", "mediacy", "photoshop", "raikiri", "red_font", "ruda", "sonic_riders", "ue4",
+        "vgui", "visual_studio", "windark"
+    };
     if (ImGui::BeginCombo("Style", data->conf_style.c_str())) {
         for (int i = 0; i < SDL_arraysize(style_list); i++) {
             bool is_selected = (data->conf_style == style_list[i]);
