@@ -968,6 +968,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force Software", &data->conf_bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
+        audio::au->need_dev = data->conf_dev_names[data->conf_dev_id];
         audio::au->volume = data->conf_floats[3];
         conf::get()["renderer"] = toml::table{
             {"driver", data->conf_ren_drv},
@@ -983,7 +984,7 @@ void ui::draw_settings() {
         };
         conf::get()["audio"] = toml::table{
             {"backend", data->conf_au_bk},
-            {"device", data->conf_dev_names[data->conf_dev_id]},
+            {"device", audio::au->need_dev},
             {"volume", data->conf_floats[3] },
         };
         conf::get()["sdl2_mixer"] = toml::table{
