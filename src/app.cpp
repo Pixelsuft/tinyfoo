@@ -337,6 +337,7 @@ void app::read_config() {
         TF_ERROR(<< "Failed to parse config");
         for (auto it = errs.begin(); it != errs.end(); it++)
             TF_INFO(<< "Details - " << (*it).title());
+        result = toml::try_parse_str(""); // Hopefully this doesn't fail
     }
     if (result.is_ok()) {
         data->conf = result.as_ok();

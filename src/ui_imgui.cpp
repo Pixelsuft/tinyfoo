@@ -106,14 +106,6 @@ namespace ui {
     void update_meta_info();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
-    static inline float toml_read_float(toml::value& tab, const char* prop, float def_val) {
-        if (tab[prop].is_integer())
-            return (float)tab[prop].as_integer();
-        if (tab[prop].is_floating())
-            return (float)tab[prop].as_floating();
-        return def_val;
-    }
-
     static inline void apply_theme(const tf::str& style) {
         style_reset();
         if (style == "dark")
@@ -273,8 +265,8 @@ bool ui::init() {
     data->font2 = nullptr;
     if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
         toml::value tab = conf::get().at("imgui");
-        font1_size = toml_read_float(tab, "font1_size", 16.f);
-        font2_size = toml_read_float(tab, "font2_size", 24.f);
+        font1_size = conf::read_float(tab, "font1_size", 16.f);
+        font2_size = conf::read_float(tab, "font2_size", 24.f);
         tf::str font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
         if (font1_path.size() > 0) {
             ImFontConfig font_cfg;
@@ -302,7 +294,7 @@ bool ui::init() {
                 TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
         }
         tf::str style_pref = toml::find_or<tf::str>(tab, "style", "dark");
-        data->img_scale = toml_read_float(tab, "img_scale", 1.f);
+        data->img_scale = conf::read_float(tab, "img_scale", 1.f);
         apply_theme(style_pref);
     }
     else
@@ -392,9 +384,9 @@ void ui::draw_menubar() {
                 data->conf_style = toml::find_or<tf::str>(tab, "style", "dark");
                 data->conf_font1_path = toml::find_or<tf::str>(tab, "font1_path", "");
                 data->conf_font2_path = toml::find_or<tf::str>(tab, "font2_path", "");
-                data->conf_floats[0] = toml_read_float(tab, "font1_size", 16.f);
-                data->conf_floats[1] = toml_read_float(tab, "font2_size", 24.f);
-                data->conf_floats[2] = toml_read_float(tab, "img_scale", 1.f);
+                data->conf_floats[0] = conf::read_float(tab, "font1_size", 16.f);
+                data->conf_floats[1] = conf::read_float(tab, "font2_size", 24.f);
+                data->conf_floats[2] = conf::read_float(tab, "img_scale", 1.f);
             }
             if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
                 toml::value tab = conf::get().at("renderer");
