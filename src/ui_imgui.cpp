@@ -134,8 +134,8 @@ namespace ui {
             style_green_font();
         else if (style_pref == "red_font")
             style_red_font();
-        else if (style_pref == "janekb04")
-            style_janekb04();
+        else if (style_pref == "deep_dark")
+            style_deep_dark();
         else if (style_pref == "mediacy")
             style_mediacy();
         else if (style_pref == "duck_red")
@@ -795,8 +795,8 @@ void ui::draw_settings() {
     ImGui::TextColored(ImVec4(0.f, 162.f, 232.f, 255.f), "ImGui");
     ImGui::PopFont();
     static const char* style_list[] = {
-        "dark", "light", "classic", "adobe", "cherry", "darky", "discord",
-        "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font", "janekb04",
+        "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
+        "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",
         "material_flat", "mediacy", "photoshop", "raikiri", "red_font", "ruda", "sonic_riders", "ue4",
         "vgui", "visual_studio", "windark"
     };
