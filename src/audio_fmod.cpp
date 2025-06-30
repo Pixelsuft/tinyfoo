@@ -740,7 +740,7 @@ namespace audio {
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
-            if (need_driver.size() > 0 && FMOD_HAS_ERROR(err = fmod.FMOD_System_SetOutput(sys, output_type_from_str(need_driver))))
+            if (need_driver.size() > 0 && need_driver != "default" && FMOD_HAS_ERROR(err = fmod.FMOD_System_SetOutput(sys, output_type_from_str(need_driver))))
                 TF_WARN(<< "Failed to set FMOD output driver (" << FMOD_ErrorString(err) << ")");
             FMOD_OUTPUTTYPE out_type;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetOutput(sys, &out_type))) {

@@ -960,7 +960,7 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "FMOD");
     ImGui::PopFont();
-    static const char* fmod_drv[] = { "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
+    static const char* fmod_drv[] = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
     if (ImGui::BeginCombo("Driver##fmod", data->conf_fmod_drv.c_str())) {
         for (int i = 0; i < SDL_arraysize(fmod_drv); i++) {
             bool is_selected = data->conf_fmod_drv == fmod_drv[i];
@@ -988,6 +988,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force Software", &data->conf_bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
+        data->conf_def_style = data->conf_style;
         audio::au->need_dev = data->conf_dev_names[data->conf_dev_id];
         audio::au->volume = data->conf_floats[3] / 100.f;
         audio::au->update_volume();
@@ -1052,10 +1053,8 @@ void ui::draw_settings() {
         conf::request_save();
     }
     ImGui::SameLine();
-    if (ImGui::Button("Cancel")) {
-        apply_theme(data->conf_def_style);
+    if (ImGui::Button("Cancel"))
         data->show_app_conf = false;
-    }
 }
 
 void ui::draw_playlist_conf() {
