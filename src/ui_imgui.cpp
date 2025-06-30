@@ -32,6 +32,7 @@ namespace ui {
         tf::vec<tf::str> log_cache;
         tf::vec<tf::str> conf_dev_names;
         tf::str conf_style;
+        tf::str conf_def_style;
         tf::str conf_font1_path;
         tf::str conf_font2_path;
         tf::str conf_sdl2_drv;
@@ -371,7 +372,7 @@ void ui::draw_menubar() {
             data->conf_sdl2_drv = "dummy";
             data->conf_sdl2_fmt = "SDL_AUDIO_S16";
             data->conf_fmod_drv = "nosound";
-            data->conf_style = "dark";
+            data->conf_style = data->conf_def_style = "dark";
             data->conf_font1_path = data->conf_font2_path = "";
             data->conf_bools[0] = data->conf_bools[3] = true;
             data->conf_floats[0] = 16.f;
@@ -380,7 +381,7 @@ void ui::draw_menubar() {
             data->conf_floats[3] = audio::au->volume * 100.f;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
-                data->conf_style = conf::read_str(tab, "style", "dark");
+                data->conf_style = data->conf_def_style = conf::read_str(tab, "style", "dark");
                 data->conf_font1_path = conf::read_str(tab, "font1_path", "");
                 data->conf_font2_path = conf::read_str(tab, "font2_path", "");
                 data->conf_floats[0] = conf::read_float(tab, "font1_size", 16.f);
@@ -803,9 +804,12 @@ void ui::draw() {
     ImGui::PopStyleVar();
     if (data->show_app_conf) {
         ImGui::SetNextWindowSize({ 640.f, 400.f }, ImGuiCond_Appearing);
+        bool prev_show = data->show_app_conf;
         if (ImGui::Begin("Settings", &data->show_app_conf, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
             draw_settings();
         ImGui::End();
+        if (prev_show && !data->show_app_conf)
+            apply_theme(data->conf_def_style);
     }
     if (data->show_playlist_conf) {
         ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
@@ -1023,8 +1027,10 @@ void ui::draw_settings() {
         conf::request_save();
     }
     ImGui::SameLine();
-    if (ImGui::Button("Cancel"))
+    if (ImGui::Button("Cancel")) {
+        apply_theme(data->conf_def_style);
         data->show_app_conf = false;
+    }
 }
 
 void ui::draw_playlist_conf() {
@@ -1116,6 +1122,8 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
 
 bool ui::handle_esc() {
     bool ret = data->show_app_conf | data->show_about | data->show_logs | data->show_playlist_conf;
+    if (data->show_app_conf)
+        apply_theme(data->conf_def_style);
     data->show_app_conf = false;
     data->show_about = false;
     data->show_logs = false;
