@@ -18,6 +18,10 @@
 #include <SDL3/SDL.h>
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 
+/*
+TODO: config load/save functions in a different file maybe?
+*/
+
 namespace app {
     extern void* win_handle;
     extern Point drop_pos;
@@ -49,7 +53,7 @@ namespace ui {
         double meta_dur;
         char pl_name_buf[64];
         bool conf_bools[16];
-        float conf_floats[4];
+        float conf_floats[8];
         int conf_ints[4];
         size_t meta_sz;
         char* pl_path_buf;
@@ -379,6 +383,10 @@ void ui::draw_menubar() {
             data->conf_floats[1] = 24.f;
             data->conf_floats[2] = 1.f;
             data->conf_floats[3] = audio::au->volume * 100.f;
+            data->conf_floats[4] = audio::au->fade_next_time * 1000.f;
+            data->conf_floats[5] = audio::au->fade_stop_time * 1000.f;
+            data->conf_floats[6] = audio::au->fade_pause_time * 1000.f;
+            data->conf_floats[7] = audio::au->fade_resume_time * 1000.f;
             if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
                 toml::value tab = conf::get().at("imgui");
                 data->conf_style = data->conf_def_style = conf::read_str(tab, "style", "dark");
@@ -896,8 +904,16 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
-    if (ImGui::InputFloat("Volume", &data->conf_floats[3]))
+    if (ImGui::InputFloat("Volume (%)", &data->conf_floats[3]))
         data->conf_floats[3] = tf::clamp(data->conf_floats[3], 0.f, audio::au->max_volume * 100.f);
+    if (ImGui::InputFloat("Next Fading Time (ms)", &data->conf_floats[4]))
+        data->conf_floats[4] = tf::clamp(data->conf_floats[4], 0.f, 10000.f);
+    if (ImGui::InputFloat("Stop Fading Time (ms)", &data->conf_floats[5]))
+        data->conf_floats[5] = tf::clamp(data->conf_floats[5], 0.f, 10000.f);
+    if (ImGui::InputFloat("Pause Fading Time (ms)", &data->conf_floats[6]))
+        data->conf_floats[6] = tf::clamp(data->conf_floats[6], 0.f, 10000.f);
+    if (ImGui::InputFloat("Resume Fading Time (ms)", &data->conf_floats[7]))
+        data->conf_floats[7] = tf::clamp(data->conf_floats[7], 0.f, 10000.f);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
@@ -973,7 +989,12 @@ void ui::draw_settings() {
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
         audio::au->need_dev = data->conf_dev_names[data->conf_dev_id];
-        audio::au->volume = data->conf_floats[3];
+        audio::au->volume = data->conf_floats[3] / 100.f;
+        audio::au->update_volume();
+        audio::au->fade_next_time = data->conf_floats[4] / 1000.f;
+        audio::au->fade_stop_time = data->conf_floats[5] / 1000.f;
+        audio::au->fade_pause_time = data->conf_floats[6] / 1000.f;
+        audio::au->fade_resume_time = data->conf_floats[7] / 1000.f;
         conf::get()["renderer"] = toml::table{
             {"driver", data->conf_ren_drv},
             {"vsync", data->conf_bools[0]},
@@ -989,7 +1010,11 @@ void ui::draw_settings() {
         conf::get()["audio"] = toml::table{
             {"backend", data->conf_au_bk},
             {"device", audio::au->need_dev},
-            {"volume", data->conf_floats[3] },
+            {"volume", data->conf_floats[3]},
+            {"fade_next_time", data->conf_floats[4]},
+            {"fade_stop_time", data->conf_floats[5]},
+            {"fade_pause_time", data->conf_floats[6]},
+            {"fade_resume_time", data->conf_floats[7]}
         };
         conf::get()["sdl2_mixer"] = toml::table{
             {"driver", data->conf_sdl2_drv},

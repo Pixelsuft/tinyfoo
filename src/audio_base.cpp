@@ -14,21 +14,23 @@ AudioBase::AudioBase() {
     cache.reserve(256); // Why not lul
     inited = false;
     dev_opened = false;
-    fade_stop_time = fade_pause_time = fade_resume_time = 0.f;
     volume = 0.25f;
     max_volume = 1.f;
     cur_mus = nullptr;
     cache_opened_cnt = 8;
     temp_cache_cnt = 0;
-    // TODO: change it
-    fade_resume_time = 0.2f;
-    fade_pause_time = 0.2f;
-    fade_stop_time = 0.2f;
-    fade_next_time = 0.2f;
+    fade_next_time = 0.1f;
+    fade_pause_time = 0.1f;
+    fade_stop_time = 0.1f;
+    fade_resume_time = 0.1f;
     if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
         toml::value tab = conf::get().at("audio");
         need_dev = conf::read_str(tab, "device", need_dev);
         volume = conf::read_float(tab, "volume", 25.f) / 100.f;
+        fade_next_time = conf::read_float(tab, "fade_next_time", 100.f) / 1000.f;
+        fade_pause_time = conf::read_float(tab, "fade_pause_time", 100.f) / 1000.f;
+        fade_stop_time = conf::read_float(tab, "fade_stop_time", 100.f) / 1000.f;
+        fade_resume_time = conf::read_float(tab, "fade_resume_time", 100.f) / 1000.f;
     }
 }
 
