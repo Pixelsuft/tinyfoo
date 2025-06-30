@@ -7,11 +7,11 @@ Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are 
  - [FMOD](https://www.fmod.com/)
  - [BASS](https://www.un4seen.com/)
 ## External dependencies
+All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
  - [SDL3](https://github.com/libsdl-org/SDL)
  - [nlohmann json](https://github.com/nlohmann/json)
  - [toml11](https://github.com/ToruNiina/toml11)
- - [ImGui](https://github.com/ocornut/imgui) <br />
-All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
+ - [ImGui](https://github.com/ocornut/imgui)
 ## Building (Visual Studio)
 ```sh
 python lbs.py msvc init --msvc
