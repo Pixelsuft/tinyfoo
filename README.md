@@ -1,6 +1,6 @@
 # tinyfoo
 Simple music player written in C++ with SDL3 and ImGui <br />
-[!logo](assets/icon.png)
+![logo](assets/icon.png)
 ## Suppored audio backends
 Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are required to make them working. <br />
  - [SDL2_mixer](https://wiki.libsdl.org/SDL3_mixer/FrontPage)/[SDL-Mixer-X](https://github.com/WohlSoft/SDL-Mixer-X) via [SDL2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable SDL3_mixer release yet)
