@@ -1,16 +1,16 @@
 # tinyfoo
 Simple music player written in C++ with SDL3 and ImGui <br />
-![logo](assets/icon.png)
+![Logo](assets/icon.png)
 ## Suppored audio backends
 Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are required to make them working. <br />
- - [SDL2_mixer](https://wiki.libsdl.org/SDL3_mixer/FrontPage)/[SDL-Mixer-X](https://github.com/WohlSoft/SDL-Mixer-X) via [SDL2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable SDL3_mixer release yet)
+ - [SDL2_mixer](https://wiki.libsdl.org/SDL2_mixer/FrontPage)/[SDL-Mixer-X](https://wohlsoft.github.io/SDL-Mixer-X/) via [sdl2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable [SDL3_mixer](https://github.com/libsdl-org/SDL_mixer) release yet)
  - [FMOD](https://www.fmod.com/)
  - [BASS](https://www.un4seen.com/)
 ## External dependencies
  - [SDL3](https://github.com/libsdl-org/SDL)
  - [nlohmann json](https://github.com/nlohmann/json)
  - [toml11](https://github.com/ToruNiina/toml11)
- - [ImGui](https://github.com/ocornut/imgui)
+ - [ImGui](https://github.com/ocornut/imgui) <br />
 All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
 ## Building (Visual Studio)
 ```sh
