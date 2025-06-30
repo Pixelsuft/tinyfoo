@@ -450,11 +450,9 @@ void pl::update_cache() {
 void pl::fill_cache() {
     // TODO: improve
     Playlist* p = ui::get_last_pl(2);
-    if (!p)
+    if (!p || p->mus.size() < 3)
         return;
-    if (p->mus.size() < 4)
-        return;
-    while (((int)audio::au->cache.size() + audio::au->temp_cache_cnt) < 1) { // Enough?
+    while (((int)audio::au->cache.size() + audio::au->temp_cache_cnt) < 1) {
         audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
         if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
             continue;
