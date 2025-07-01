@@ -489,6 +489,45 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Playback")) {
+        // TODO
+        if (ImGui::MenuItem("Stop", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Pause", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Play", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Previous", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Next", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Random", nullptr, nullptr)) {}
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Order", data->last_pl != nullptr)) {
+            bool need_order = audio::au->order_mode == 0;
+            bool changed = false;
+            if (ImGui::MenuItem("None", nullptr, &need_order) && need_order) {
+                audio::au->order_mode = 0;
+                changed = true;
+            }
+            need_order = audio::au->order_mode == 1;
+            if (ImGui::MenuItem("Default", nullptr, &need_order) && need_order) {
+                audio::au->order_mode = 1;
+                changed = true;
+            }
+            need_order = audio::au->order_mode == 2;
+            if (ImGui::MenuItem("Random", nullptr, &need_order) && need_order) {
+                audio::au->order_mode = 2;
+                changed = true;
+            }
+            if (changed) {
+                for (auto it = audio::au->cache.rbegin(); it != audio::au->cache.rend(); it++) {
+                    if ((*it)->cached) {
+                        (*it)->cached = false;
+                        audio::au->mus_close(*it);
+                        audio::au->cache.erase((it + 1).base());
+                        // TODO: FIXME iterator becomes invalid but I don't care cuz max cache count is 1
+                        break;
+                    }
+                }
+                pl::fill_cache();
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Help")) {

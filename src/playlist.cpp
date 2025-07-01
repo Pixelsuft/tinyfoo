@@ -453,12 +453,12 @@ void pl::fill_cache() {
     if (!p || p->mus.size() < 3)
         return;
     while (((int)audio::au->cache.size() + audio::au->temp_cache_cnt) < 1) {
-        if (audio::au->play_mode == 0)
+        if (audio::au->order_mode == 0)
             break;
-        else if (audio::au->play_mode == 1) {
+        else if (audio::au->order_mode == 1) {
             // TODO: normal playback
         }
-        else if (audio::au->play_mode == 2) {
+        else if (audio::au->order_mode == 2) {
             // Default RNG
             audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())

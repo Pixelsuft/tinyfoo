@@ -18,7 +18,7 @@ namespace audio {
         float max_volume;
         int cache_opened_cnt;
         int temp_cache_cnt;
-        int play_mode;
+        int order_mode;
         bool inited;
         bool dev_opened;
         AudioBase();
