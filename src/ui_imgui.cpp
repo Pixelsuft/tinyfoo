@@ -1,8 +1,9 @@
+#include <lbs.hpp>
+#if IS_IMGUI
 #include <ui.hpp>
 #include <app.hpp>
 #include <new.hpp>
 #include <log.hpp>
-#include <lbs.hpp>
 #include <playlist.hpp>
 #include <util.hpp>
 #include <vec.hpp>
@@ -1209,3 +1210,4 @@ void ui::draw_logs() {
     }
     ImGui::SetScrollHereY(1.0f);
 }
+#endif

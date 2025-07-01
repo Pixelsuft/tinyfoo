@@ -78,6 +78,7 @@ if app.stage == 'conf':
     else:
         conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
+    # TODO: maybe ENABLE_IMGUI?
     conf_header.write(f'#define IS_IMGUI 1\n')
     conf_header.write(f'#define ENABLE_UPNG {int(not app.conf["msvc"])}\n')
     conf_header.write(f'#define ENABLE_GDIPLUS {int(app.conf["msvc"])}\n')
