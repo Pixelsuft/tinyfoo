@@ -21,6 +21,7 @@ python lbs.py msvc gen_res
 ```
 Then open VS project and build in Debug/Release mode
 ## Building (CMake)
+Note: when using in debug mode, assets folder must be in cwd
 ```sh
 python lbs.py build init
 python lbs.py build fetch
@@ -31,4 +32,13 @@ cd build
 cmake ..
 make
 ```
-Note: when using in debug mode, assets folder must be in cwd
+## Example building using MinGW64 in release mode
+```sh
+python lbs.py release init --mingw
+python lbs.py release fetch
+python lbs.py release conf --release
+python lbs.py release gen_res
+python lbs.py release join_code
+cd release
+g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3
+```
