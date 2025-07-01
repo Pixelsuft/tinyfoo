@@ -32,21 +32,21 @@ if app.stage == 'fetch':
         app.download_sdl_lib('', '-mingw.zip', 3, os.path.join(app.b_path, 'SDL'))
     else:
         pass
+    ig_branch = 'master'
     app.download_imgui_files(os.path.join(app.b_path, 'imgui'), (
-        # 'https://github.com/ocornut/imgui/raw/refs/heads/master/imconfig.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_draw.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_internal.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_tables.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imgui_widgets.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_rectpack.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_textedit.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/imstb_truetype.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdl3.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdl3.h',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.cpp',
-        'https://github.com/ocornut/imgui/raw/refs/heads/master/backends/imgui_impl_sdlrenderer3.h'
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui_draw.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui_internal.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui_tables.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imgui_widgets.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imstb_rectpack.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imstb_textedit.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/imstb_truetype.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdl3.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdl3.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.h'
     ))
     if not os.path.isdir(os.path.join(app.b_path, 'toml11')):
         os.mkdir(os.path.join(app.b_path, 'toml11'))

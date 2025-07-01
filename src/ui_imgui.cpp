@@ -443,6 +443,15 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("Clear", nullptr, nullptr, data->last_pl != nullptr))
+            pl::clear_selected(data->last_pl);
+        if (ImGui::MenuItem("Select all", nullptr, nullptr, data->last_pl != nullptr))
+            pl::select_all(data->last_pl);
+        if (ImGui::BeginMenu("Selection", data->last_pl != nullptr)) {
+            if (ImGui::MenuItem("Remove", nullptr, nullptr, data->last_pl->selected.size() > 0))
+                pl::remove_selected(data->last_pl);
+            ImGui::EndMenu();
+        }
         if (ImGui::BeginMenu("Sort", data->last_pl != nullptr)) {
             if (ImGui::MenuItem("None", nullptr, nullptr)) {
                 // data->last_pl->reserve_sorting = false;
