@@ -515,13 +515,12 @@ void ui::draw_menubar() {
                 changed = true;
             }
             if (changed) {
-                for (auto it = audio::au->cache.rbegin(); it != audio::au->cache.rend(); it++) {
-                    if ((*it)->cached) {
-                        (*it)->cached = false;
-                        audio::au->mus_close(*it);
-                        audio::au->cache.erase((it + 1).base());
-                        // TODO: FIXME iterator becomes invalid but I don't care cuz max cache count is 1
-                        break;
+                for (auto i = audio::au->cache.size(); i > 0; i--) {
+                    audio::Music* m = audio::au->cache[i - 1];
+                    if (m->cached) {
+                        m->cached = false;
+                        audio::au->mus_close(m);
+                        audio::au->cache.erase(audio::au->cache.begin() + i - 1);
                     }
                 }
                 pl::fill_cache();
