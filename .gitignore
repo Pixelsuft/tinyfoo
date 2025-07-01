@@ -20,6 +20,8 @@ mingw64
 external
 build
 build_x86
+debug
+release
 Release
 Debug
 x64

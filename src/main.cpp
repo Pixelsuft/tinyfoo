@@ -1,4 +1,5 @@
 #ifdef LBS_GO_JOIN_UR_CODE
+// Hacky
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 #include <SDL3/SDL.h>

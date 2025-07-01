@@ -130,9 +130,12 @@ if app.stage == 'gen_res':
 if app.stage == 'join_code':
     f = open(os.path.join(app.b_path, 'tinyfoo.cpp'), 'w', encoding='utf-8')
     f.write(app.join_code(
-        sorted(app.cool_list_dir(app.cwd, '.cpp') + app.cool_list_dir(os.path.join(app.cwd, 'src'), '.cpp') +
-        app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.cpp'), key=lambda x: ('' if x.endswith("main.cpp") else x)),
-        []
+        sorted(app.cool_list_dir(os.path.join(app.cwd, 'src'), '.cpp'), key=lambda x: ('' if x.endswith('main.cpp') else x)) +
+        app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.cpp'),
+        app.cool_list_dir(os.path.join(app.cwd, 'include'), '.hpp') +
+        # app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.h') +
+        app.cool_list_dir(os.path.join(app.b_path, 'lbs'), '.hpp') + app.cool_list_dir(os.path.join(app.b_path, 'nlohmann'), '.hpp') +
+        app.cool_list_dir(os.path.join(app.b_path, 'toml11'), '.hpp')
     ))
     f.close()
     app.info('Code joined!')
