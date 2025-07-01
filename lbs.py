@@ -126,3 +126,14 @@ if app.stage == 'gen_res':
     f.close()
     app.info('Generated resources for release!')
     sys.exit(0)
+
+if app.stage == 'join_code':
+    f = open(os.path.join(app.b_path, 'tinyfoo.cpp'), 'w', encoding='utf-8')
+    f.write(app.join_code(
+        sorted(app.cool_list_dir(app.cwd, '.cpp') + app.cool_list_dir(os.path.join(app.cwd, 'src'), '.cpp') +
+        app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.cpp'), key=lambda x: ('' if x.endswith("main.cpp") else x)),
+        []
+    ))
+    f.close()
+    app.info('Code joined!')
+    sys.exit(0)

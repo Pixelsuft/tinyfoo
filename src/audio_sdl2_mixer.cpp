@@ -65,6 +65,12 @@ typedef struct _Mix_Music Mix_Music;
     } \
 } while (0)
 #endif
+#ifdef mus_h
+#undef mus_h
+#endif
+#ifdef cur_h
+#undef cur_h
+#endif
 #define mus_h ((Mix_Music*)mus->h1)
 #define cur_h ((Mix_Music*)cur_mus->h1)
 

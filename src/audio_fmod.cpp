@@ -488,6 +488,12 @@ static const char* FMOD_ErrorString(FMOD_RESULT errcode) {
     } \
 } while (0)
 #endif
+#ifdef mus_h
+#undef mus_h
+#endif
+#ifdef cur_h
+#undef cur_h
+#endif
 #define FMOD_HAS_ERROR(res) ((res) != FMOD_OK)
 #define mus_h ((FMOD_SOUND*)mus->h1)
 #define cur_h ((FMOD_SOUND*)cur_mus->h1)
