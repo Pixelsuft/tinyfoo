@@ -1084,6 +1084,7 @@ void ui::draw_settings() {
             {"force_directsound", data->conf_bools[12]},
             {"force_software", data->conf_bools[13]}
         };
+        // TODO: support tab order saving, but IDK how to do that easily
         tf::vec<tf::str> pl_files;
         pl_files.reserve(pl::pls->size());
         for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
