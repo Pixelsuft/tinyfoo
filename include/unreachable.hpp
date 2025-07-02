@@ -1,6 +1,6 @@
 #pragma once
 
-#if (defined(_MSC_LANG) && _MSC_LANG >= 202302L) || __cplusplus >= 202302L
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202302L
 #include <utility>
 
 #define TF_UNREACHABLE() std::unreachable()
