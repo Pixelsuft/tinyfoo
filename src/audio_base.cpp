@@ -18,7 +18,7 @@ AudioBase::AudioBase() {
     max_volume = 1.f;
     cur_mus = nullptr;
     cache_opened_cnt = 8;
-    order_mode = 2; // TODO: read from conf
+    order_mode = 1; // TODO: read from conf
     temp_cache_cnt = 0;
     fade_next_time = 0.1f;
     fade_pause_time = 0.1f;

@@ -36,5 +36,6 @@ namespace pl {
     void sort_by(Playlist* p, const char* what);
     bool mus_open_file(audio::Music* mus);
     void fill_cache();
+    void reload_cache(int mode);
     void update_cache();
 }

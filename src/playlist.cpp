@@ -366,6 +366,7 @@ void pl::play_selected(Playlist* p) {
             continue;
         audio::au->cache.push_back(*it);
     }
+    reload_cache(2);
     audio::au->temp_cache_cnt = 0;
 }
 
@@ -393,7 +394,7 @@ void pl::remove_selected(Playlist* p) {
     SDL_qsort(p->selected.data(), p->selected.size(), sizeof(int), (SDL_CompareCallback)id_compare_by_val_for_del);
     for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
         audio::Music* m = p->mus[*it];
-        // TODO: actually support zombies
+        // TODO: actually support zombies maybe?
         if (audio::au->cur_mus == m) {
             audio::au->cur_stop();
             audio::au->cur_mus = nullptr;
@@ -444,7 +445,29 @@ void pl::unremember_selected(Playlist* p) {
 }
 
 void pl::update_cache() {
+    // Frame update
+}
 
+void pl::reload_cache(int mode) {
+    /*
+    Modes:
+    0 - changed order
+    1 - sorted
+    2 - playing selected
+    */
+    if (mode == 1 && audio::au->order_mode != 1)
+        return;
+    if (mode == 2 && audio::au->order_mode != 1)
+        return;
+    for (auto i = audio::au->cache.size(); i > 0; i--) {
+        audio::Music* m = audio::au->cache[i - 1];
+        if (m->cached) {
+            m->cached = false;
+            audio::au->mus_close(m);
+            audio::au->cache.erase(audio::au->cache.begin() + i - 1);
+        }
+    }
+    fill_cache();
 }
 
 void pl::fill_cache() {
@@ -453,21 +476,36 @@ void pl::fill_cache() {
     if (!p || p->mus.size() < 3)
         return;
     while (((int)audio::au->cache.size() + audio::au->temp_cache_cnt) < 1) {
+        audio::Music* m = nullptr;
         if (audio::au->order_mode == 0)
             break;
         else if (audio::au->order_mode == 1) {
-            // TODO: normal playback
+            // Normal playback
+            audio::Music* prev;
+            if (audio::au->cache.size() > 0)
+                prev = audio::au->cache[audio::au->cache.size() - 1];
+            else
+                prev = audio::au->cur_mus;
+            if (prev) {
+                auto it = std::find(p->mus.begin(), p->mus.end(), prev);
+                // Should I actually go back to the first when the last is played?
+                m = (it == p->mus.end() || (++it) == p->mus.end()) ? p->mus[0] : *it;
+            }
+            else
+                m = p->mus[0];
         }
         else if (audio::au->order_mode == 2) {
             // Default RNG
-            audio::Music* m = p->mus[SDL_rand((Sint32)p->mus.size())];
+            m = p->mus[SDL_rand((Sint32)p->mus.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
-            mus_open_file(m);
-            m->cached = true;
-            check_music_mod(m);
-            audio::au->cache.push_back(m);
         }
+        if (!m)
+            TF_UNREACHABLE();
+        mus_open_file(m);
+        m->cached = true;
+        check_music_mod(m);
+        audio::au->cache.push_back(m);
     }
 }
 

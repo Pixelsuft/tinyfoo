@@ -457,6 +457,7 @@ void ui::draw_menubar() {
             if (ImGui::MenuItem("None", nullptr, nullptr)) {
                 // data->last_pl->reserve_sorting = false;
                 data->last_pl->sorting = "none";
+                pl::reload_cache(1);
             }
             if (ImGui::MenuItem("Sort by file name", nullptr, nullptr)) {
                 pl::remember_selected(data->last_pl);
@@ -464,6 +465,7 @@ void ui::draw_menubar() {
                 pl::unremember_selected(data->last_pl);
                 data->last_pl->sorting = "fn";
                 data->last_pl->reserve_sorting = false;
+                pl::reload_cache(1);
             }
             if (ImGui::MenuItem("Sort by duration", nullptr, nullptr)) {
                 pl::remember_selected(data->last_pl);
@@ -471,6 +473,7 @@ void ui::draw_menubar() {
                 pl::unremember_selected(data->last_pl);
                 data->last_pl->sorting = "dur";
                 data->last_pl->reserve_sorting = false;
+                pl::reload_cache(1);
             }
             if (ImGui::MenuItem("Sort by last modified", nullptr, nullptr)) {
                 pl::remember_selected(data->last_pl);
@@ -478,12 +481,14 @@ void ui::draw_menubar() {
                 pl::unremember_selected(data->last_pl);
                 data->last_pl->sorting = "mod_time";
                 data->last_pl->reserve_sorting = false;
+                pl::reload_cache(1);
             }
             if (ImGui::MenuItem("Reverse", nullptr, nullptr)) {
                 pl::remember_selected(data->last_pl);
                 pl::sort_by(data->last_pl, "reverse");
                 pl::unremember_selected(data->last_pl);
                 data->last_pl->reserve_sorting = !data->last_pl->reserve_sorting;
+                pl::reload_cache(1);
             }
             ImGui::EndMenu();
         }
@@ -500,31 +505,19 @@ void ui::draw_menubar() {
         ImGui::Separator();
         if (ImGui::BeginMenu("Order", data->last_pl != nullptr)) {
             bool need_order = audio::au->order_mode == 0;
-            bool changed = false;
             if (ImGui::MenuItem("None", nullptr, &need_order) && need_order) {
                 audio::au->order_mode = 0;
-                changed = true;
+                pl::reload_cache(0);
             }
             need_order = audio::au->order_mode == 1;
             if (ImGui::MenuItem("Default", nullptr, &need_order) && need_order) {
                 audio::au->order_mode = 1;
-                changed = true;
+                pl::reload_cache(0);
             }
             need_order = audio::au->order_mode == 2;
             if (ImGui::MenuItem("Random", nullptr, &need_order) && need_order) {
                 audio::au->order_mode = 2;
-                changed = true;
-            }
-            if (changed) {
-                for (auto i = audio::au->cache.size(); i > 0; i--) {
-                    audio::Music* m = audio::au->cache[i - 1];
-                    if (m->cached) {
-                        m->cached = false;
-                        audio::au->mus_close(m);
-                        audio::au->cache.erase(audio::au->cache.begin() + i - 1);
-                    }
-                }
-                pl::fill_cache();
+                pl::reload_cache(0);
             }
             ImGui::EndMenu();
         }
