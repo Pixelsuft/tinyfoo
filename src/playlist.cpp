@@ -366,8 +366,8 @@ void pl::play_selected(Playlist* p) {
             continue;
         audio::au->cache.push_back(*it);
     }
-    reload_cache(2);
     audio::au->temp_cache_cnt = 0;
+    reload_cache(2);
 }
 
 void pl::check_music_mod(audio::Music* mus) {
