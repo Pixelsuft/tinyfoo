@@ -496,6 +496,7 @@ void pl::fill_cache() {
         }
         else if (audio::au->order_mode == 2) {
             // Default RNG
+            // TODO: don't repeat until X tracks
             m = p->mus[SDL_rand((Sint32)p->mus.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
