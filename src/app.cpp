@@ -147,25 +147,22 @@ bool app::init() {
     img::destroy(); // Hack: we don't need it anymore actually
     data->stage = 4;
     audio::au = nullptr;
-    if (data->conf.contains("audio") && data->conf.at("audio").is_table()) {
-        toml::value au_tab = data->conf.at("audio");
-        auto backend_s = conf::read_str(au_tab, "backend", "");
-        if (0) {}
+    auto backend_au = conf::read_str("audio", "backend", "");
+    if (0) {}
 #if ENABLE_SDL2_MIXER
-        else if (backend_s == "sdl2_mixer_ext")
-            audio::au = audio::create_sdl2_mixer(true);
-        else if (backend_s == "sdl2_mixer")
-            audio::au = audio::create_sdl2_mixer(false);
+    else if (backend_au == "sdl2_mixer_ext")
+        audio::au = audio::create_sdl2_mixer(true);
+    else if (backend_au == "sdl2_mixer")
+        audio::au = audio::create_sdl2_mixer(false);
 #endif
 #if ENABLE_FMOD
-        else if (backend_s == "fmod")
-            audio::au = audio::create_fmod();
+    else if (backend_au == "fmod")
+        audio::au = audio::create_fmod();
 #endif
 #if ENABLE_BASS
-        else if (backend_s == "bass")
-            audio::au = audio::create_bass();
+    else if (backend_au == "bass")
+        audio::au = audio::create_bass();
 #endif
-    }
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)
             audio::free_audio(audio::au);

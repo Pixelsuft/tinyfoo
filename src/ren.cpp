@@ -37,21 +37,13 @@ bool ren::init(void* win) {
     // Should I handle props errors?
     SDL_PropertiesID props = SDL_CreateProperties();
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
-    if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
-        toml::value tab = conf::get().at("renderer");
-        auto ren_str = conf::read_str(tab, "driver", "");
-        if (ren_str.size() == 0) {
-            display_available_drivers();
-        }
-        else if (ren_str != "auto") {
-            SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, ren_str.c_str());
-        }
-        auto vsync_b = conf::read_bool(tab, "vsync", true);
-        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, vsync_b ? 1 : 0);
-    }
-    else {
-        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1);
-    }
+    auto ren_str = conf::read_str("renderer", "driver", "");
+    if (ren_str.size() == 0)
+        display_available_drivers();
+    else if (ren_str != "auto")
+        SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, ren_str.c_str());
+    auto vsync_b = conf::read_bool("renderer", "vsync", true);
+    SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, vsync_b ? 1 : 0);
     data->ren = SDL_CreateRendererWithProperties(props);
     if (!data->ren) {
         TF_FATAL(<< "Failed to create SDL renderer (" << SDL_GetError() << ")");

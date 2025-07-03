@@ -14,25 +14,17 @@ AudioBase::AudioBase() {
     cache.reserve(256); // Why not lul
     inited = false;
     dev_opened = false;
-    volume = 0.25f;
-    max_volume = 1.f;
+    max_volume = 1.f; // TODO: maybe read from conf?
     cur_mus = nullptr;
     cache_opened_cnt = 8;
     order_mode = 1; // TODO: read from conf
     temp_cache_cnt = 0;
-    fade_next_time = 0.1f;
-    fade_pause_time = 0.1f;
-    fade_stop_time = 0.1f;
-    fade_resume_time = 0.1f;
-    if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
-        toml::value tab = conf::get().at("audio");
-        need_dev = conf::read_str(tab, "device", need_dev);
-        volume = conf::read_float(tab, "volume", 25.f) / 100.f;
-        fade_next_time = conf::read_float(tab, "fade_next_time", 100.f) / 1000.f;
-        fade_pause_time = conf::read_float(tab, "fade_pause_time", 100.f) / 1000.f;
-        fade_stop_time = conf::read_float(tab, "fade_stop_time", 100.f) / 1000.f;
-        fade_resume_time = conf::read_float(tab, "fade_resume_time", 100.f) / 1000.f;
-    }
+    need_dev = conf::read_str("audio", "device", need_dev);
+    volume = conf::read_float("audio", "volume", 25.f) / 100.f;
+    fade_next_time = conf::read_float("audio", "fade_next_time", 100.f) / 1000.f;
+    fade_pause_time = conf::read_float("audio", "fade_pause_time", 100.f) / 1000.f;
+    fade_stop_time = conf::read_float("audio", "fade_stop_time", 100.f) / 1000.f;
+    fade_resume_time = conf::read_float("audio", "fade_resume_time", 100.f) / 1000.f;
 }
 
 AudioBase::~AudioBase() {

@@ -395,24 +395,19 @@ namespace audio {
 #endif
             DWORD init_flags = 0;
             int need_freq = 0;
-            if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
-                toml::value tab = conf::get().at("bass");
-                if (0)
-                    need_dev = conf::read_str(tab, "device", need_dev);
-                if (conf::read_bool(tab, "force_16bits", false))
-                    init_flags |= BASS_DEVICE_16BITS;
-                if (conf::read_bool(tab, "force_stereo", false))
-                    init_flags |= BASS_DEVICE_STEREO;
-                if (conf::read_bool(tab, "force_dmix", false))
-                    init_flags |= BASS_DEVICE_DMIX;
-                if (conf::read_bool(tab, "force_audiotrack", false))
-                    init_flags |= BASS_DEVICE_AUDIOTRACK;
-                if (conf::read_bool(tab, "force_directsound", false))
-                    init_flags |= BASS_DEVICE_DSOUND;
-                if (conf::read_bool(tab, "force_software", false))
-                    init_flags |= BASS_DEVICE_SOFTWARE;
-                need_freq = conf::read_int(tab, "frequency", 0);
-            }
+            if (conf::read_bool("bass", "force_16bits", false))
+                init_flags |= BASS_DEVICE_16BITS;
+            if (conf::read_bool("bass", "force_stereo", false))
+                init_flags |= BASS_DEVICE_STEREO;
+            if (conf::read_bool("bass", "force_dmix", false))
+                init_flags |= BASS_DEVICE_DMIX;
+            if (conf::read_bool("bass", "force_audiotrack", false))
+                init_flags |= BASS_DEVICE_AUDIOTRACK;
+            if (conf::read_bool("bass", "force_directsound", false))
+                init_flags |= BASS_DEVICE_DSOUND;
+            if (conf::read_bool("bass", "force_software", false))
+                init_flags |= BASS_DEVICE_SOFTWARE;
+            need_freq = conf::read_int("bass", "frequency", 0);
             if (need_freq > 0)
                 init_flags |= BASS_DEVICE_FREQ;
             int dev_id = -1;

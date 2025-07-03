@@ -50,7 +50,7 @@ if app.stage == 'fetch':
     ))
     if not os.path.isdir(os.path.join(app.b_path, 'toml11')):
         os.mkdir(os.path.join(app.b_path, 'toml11'))
-    app.download_toml11_lib(os.path.join(app.b_path, 'toml11', 'toml.hpp'))
+    app.download_toml11_lib(os.path.join(app.b_path, 'toml11', 'toml11.hpp'))
     if not os.path.isdir(os.path.join(app.b_path, 'nlohmann')):
         os.mkdir(os.path.join(app.b_path, 'nlohmann'))
     app.download_nlohmann_json_lib(os.path.join(app.b_path, 'nlohmann', 'json.hpp'), fwd=True)

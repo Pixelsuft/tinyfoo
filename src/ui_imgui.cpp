@@ -268,42 +268,37 @@ bool ui::init() {
     float font2_size = 24.f;
     data->font1 = nullptr;
     data->font2 = nullptr;
-    if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
-        toml::value tab = conf::get().at("imgui");
-        font1_size = conf::read_float(tab, "font1_size", 16.f);
-        font2_size = conf::read_float(tab, "font2_size", 24.f);
-        tf::str font1_path = conf::read_str(tab, "font1_path", "");
-        if (font1_path.size() > 0) {
-            ImFontConfig font_cfg;
-            font_cfg.FontDataOwnedByAtlas = false;
-            size_t sz_buf;
-            void* font_data = SDL_LoadFile(font1_path.c_str(), &sz_buf);
-            if (font_data) {
-                data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font1_size, &font_cfg);
-                SDL_free(font_data);
-            }
-            if (!data->font1)
-                TF_WARN(<< "Failed to load custom font 1 (" << SDL_GetError() << ")");
+    font1_size = conf::read_float("imgui", "font1_size", 16.f);
+    font2_size = conf::read_float("imgui", "font2_size", 24.f);
+    tf::str font1_path = conf::read_str("imgui", "font1_path", "");
+    if (font1_path.size() > 0) {
+        ImFontConfig font_cfg;
+        font_cfg.FontDataOwnedByAtlas = false;
+        size_t sz_buf;
+        void* font_data = SDL_LoadFile(font1_path.c_str(), &sz_buf);
+        if (font_data) {
+            data->font1 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font1_size, &font_cfg);
+            SDL_free(font_data);
         }
-        tf::str font2_path = conf::read_str(tab, "font2_path", "");
-        if (font2_path.size() > 0) {
-            ImFontConfig font_cfg;
-            font_cfg.FontDataOwnedByAtlas = false;
-            size_t sz_buf;
-            void* font_data = SDL_LoadFile(font2_path.c_str(), &sz_buf);
-            if (font_data) {
-                data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font2_size, &font_cfg);
-                SDL_free(font_data);
-            }
-            if (!data->font2)
-                TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
-        }
-        tf::str style_pref = conf::read_str(tab, "style", "dark");
-        data->img_scale = conf::read_float(tab, "img_scale", 1.f);
-        apply_theme(style_pref);
+        if (!data->font1)
+            TF_WARN(<< "Failed to load custom font 1 (" << SDL_GetError() << ")");
     }
-    else
-        ImGui::StyleColorsDark();
+    tf::str font2_path = conf::read_str("imgui", "font2_path", "");
+    if (font2_path.size() > 0) {
+        ImFontConfig font_cfg;
+        font_cfg.FontDataOwnedByAtlas = false;
+        size_t sz_buf;
+        void* font_data = SDL_LoadFile(font2_path.c_str(), &sz_buf);
+        if (font_data) {
+            data->font2 = io.Fonts->AddFontFromMemoryTTF(font_data, (int)sz_buf, font2_size, &font_cfg);
+            SDL_free(font_data);
+        }
+        if (!data->font2)
+            TF_WARN(<< "Failed to load custom font 2 (" << SDL_GetError() << ")");
+    }
+    tf::str style_pref = conf::read_str("imgui", "style", "dark");
+    data->img_scale = conf::read_float("imgui", "img_scale", 1.f);
+    apply_theme(style_pref);
     if (!data->font1) {
         ImFontConfig font_cfg;
         font_cfg.FontDataOwnedByAtlas = false;
@@ -371,70 +366,40 @@ void ui::draw_menubar() {
                 data->conf_dev_id = 0;
             else
                 data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
-            SDL_zero(data->conf_bools);
-            SDL_zero(data->conf_ints);
-            SDL_zero(data->conf_floats);
-            data->conf_sdl2_drv = "dummy";
-            data->conf_sdl2_fmt = "SDL_AUDIO_S16";
-            data->conf_fmod_drv = "nosound";
-            data->conf_style = data->conf_def_style = "dark";
-            data->conf_font1_path = data->conf_font2_path = "";
-            data->conf_bools[0] = data->conf_bools[3] = true;
-            data->conf_floats[0] = 16.f;
-            data->conf_floats[1] = 24.f;
-            data->conf_floats[2] = 1.f;
             data->conf_floats[3] = audio::au->volume * 100.f;
             data->conf_floats[4] = audio::au->fade_next_time * 1000.f;
             data->conf_floats[5] = audio::au->fade_stop_time * 1000.f;
             data->conf_floats[6] = audio::au->fade_pause_time * 1000.f;
             data->conf_floats[7] = audio::au->fade_resume_time * 1000.f;
-            if (conf::get().contains("imgui") && conf::get().at("imgui").is_table()) {
-                toml::value tab = conf::get().at("imgui");
-                data->conf_style = data->conf_def_style = conf::read_str(tab, "style", "dark");
-                data->conf_font1_path = conf::read_str(tab, "font1_path", "");
-                data->conf_font2_path = conf::read_str(tab, "font2_path", "");
-                data->conf_floats[0] = conf::read_float(tab, "font1_size", 16.f);
-                data->conf_floats[1] = conf::read_float(tab, "font2_size", 24.f);
-                data->conf_floats[2] = conf::read_float(tab, "img_scale", 1.f);
-            }
-            if (conf::get().contains("renderer") && conf::get().at("renderer").is_table()) {
-                toml::value tab = conf::get().at("renderer");
-                data->conf_ren_drv = conf::read_str(tab, "driver", "auto");
-                data->conf_bools[0] = conf::read_bool(tab, "vsync", true);
-            }
-            if (conf::get().contains("audio") && conf::get().at("audio").is_table()) {
-                toml::value tab = conf::get().at("audio");
-                data->conf_au_bk = conf::read_str(tab, "backend", "dummy");
-            }
-            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
-                toml::value tab = conf::get().at("sdl2_mixer");
-                data->conf_sdl2_drv = conf::read_str(tab, "driver", "dummy");
-                data->conf_sdl2_fmt = conf::read_str(tab, "format", "SDL_AUDIO_S16");
-                data->conf_bools[1] = conf::read_bool(tab, "enable_flac", false);
-                data->conf_bools[2] = conf::read_bool(tab, "enable_mod", false);
-                data->conf_bools[3] = conf::read_bool(tab, "enable_mp3", true);
-                data->conf_bools[4] = conf::read_bool(tab, "enable_ogg", false);
-                data->conf_bools[5] = conf::read_bool(tab, "enable_mid", false);
-                data->conf_bools[6] = conf::read_bool(tab, "enable_opus", false);
-                data->conf_bools[7] = conf::read_bool(tab, "enable_wavpack", false);
-                data->conf_ints[0] = conf::read_int(tab, "channels", 0);
-                data->conf_ints[1] = conf::read_int(tab, "frequency", 0);
-                data->conf_ints[2] = conf::read_int(tab, "chunksize", 0);
-            }
-            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
-                toml::value tab = conf::get().at("fmod");
-                data->conf_fmod_drv = conf::read_str(tab, "driver", "nosound");
-            }
-            if (conf::get().contains("bass") && conf::get().at("bass").is_table()) {
-                toml::value tab = conf::get().at("bass");
-                data->conf_bools[8] = conf::read_bool(tab, "force_16bits", false);
-                data->conf_bools[9] = conf::read_bool(tab, "force_stereo", false);
-                data->conf_bools[10] = conf::read_bool(tab, "force_dmix", false);
-                data->conf_bools[11] = conf::read_bool(tab, "force_audiotrack", false);
-                data->conf_bools[12] = conf::read_bool(tab, "force_directsound", false);
-                data->conf_bools[13] = conf::read_bool(tab, "force_software", false);
-                data->conf_ints[3] = conf::read_int(tab, "frequency", 0);
-            }
+            data->conf_style = data->conf_def_style = conf::read_str("imgui", "style", "dark");
+            data->conf_font1_path = conf::read_str("imgui", "font1_path", "");
+            data->conf_font2_path = conf::read_str("imgui", "font2_path", "");
+            data->conf_floats[0] = conf::read_float("imgui", "font1_size", 16.f);
+            data->conf_floats[1] = conf::read_float("imgui", "font2_size", 24.f);
+            data->conf_floats[2] = conf::read_float("imgui", "img_scale", 1.f);
+            data->conf_ren_drv = conf::read_str("renderer", "driver", "auto");
+            data->conf_bools[0] = conf::read_bool("renderer", "vsync", true);
+            data->conf_au_bk = conf::read_str("audio", "backend", "dummy");
+            data->conf_sdl2_drv = conf::read_str("sdl2_mixer", "driver", "dummy");
+            data->conf_sdl2_fmt = conf::read_str("sdl2_mixer", "format", "SDL_AUDIO_S16");
+            data->conf_bools[1] = conf::read_bool("sdl2_mixer", "enable_flac", false);
+            data->conf_bools[2] = conf::read_bool("sdl2_mixer", "enable_mod", false);
+            data->conf_bools[3] = conf::read_bool("sdl2_mixer", "enable_mp3", true);
+            data->conf_bools[4] = conf::read_bool("sdl2_mixer", "enable_ogg", false);
+            data->conf_bools[5] = conf::read_bool("sdl2_mixer", "enable_mid", false);
+            data->conf_bools[6] = conf::read_bool("sdl2_mixer", "enable_opus", false);
+            data->conf_bools[7] = conf::read_bool("sdl2_mixer", "enable_wavpack", false);
+            data->conf_ints[0] = conf::read_int("sdl2_mixer", "channels", 0);
+            data->conf_ints[1] = conf::read_int("sdl2_mixer", "frequency", 0);
+            data->conf_ints[2] = conf::read_int("sdl2_mixer", "chunksize", 0);
+            data->conf_fmod_drv = conf::read_str("fmod", "driver", "nosound");
+            data->conf_bools[8] = conf::read_bool("bass", "force_16bits", false);
+            data->conf_bools[9] = conf::read_bool("bass", "force_stereo", false);
+            data->conf_bools[10] = conf::read_bool("bass", "force_dmix", false);
+            data->conf_bools[11] = conf::read_bool("bass", "force_audiotrack", false);
+            data->conf_bools[12] = conf::read_bool("bass", "force_directsound", false);
+            data->conf_bools[13] = conf::read_bool("bass", "force_software", false);
+            data->conf_ints[3] = conf::read_int("bass", "frequency", 0);
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
@@ -1037,9 +1002,10 @@ void ui::draw_settings() {
         audio::au->fade_stop_time = data->conf_floats[5] / 1000.f;
         audio::au->fade_pause_time = data->conf_floats[6] / 1000.f;
         audio::au->fade_resume_time = data->conf_floats[7] / 1000.f;
+        // TODO: universal way?
         conf::get()["renderer"] = toml::table{
             {"driver", data->conf_ren_drv},
-            {"vsync", data->conf_bools[0]},
+            {"vsync", data->conf_bools[0]}
         };
         conf::get()["imgui"] = toml::table{
             {"style", data->conf_style},
@@ -1047,7 +1013,7 @@ void ui::draw_settings() {
             {"font1_path", data->conf_font1_path},
             {"font1_size", data->conf_floats[0]},
             {"font2_path", data->conf_font2_path},
-            {"font2_size", data->conf_floats[1]},
+            {"font2_size", data->conf_floats[1]}
         };
         conf::get()["audio"] = toml::table{
             {"backend", data->conf_au_bk},

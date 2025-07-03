@@ -194,17 +194,14 @@ namespace audio {
             bool allow_mid = false;
             bool allow_opus = false;
             bool allow_wavpack = false;
-            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
-                toml::value tab = conf::get().at("sdl2_mixer");
-                drv_hint = conf::read_str(tab, "driver", "");
-                allow_flac = conf::read_bool(tab, "enable_flac", false);
-                allow_mod = conf::read_bool(tab, "enable_mod", false);
-                allow_mp3 = conf::read_bool(tab, "enable_mp3", true);
-                allow_ogg = conf::read_bool(tab, "enable_ogg", false);
-                allow_mid = conf::read_bool(tab, "enable_mid", false);
-                allow_opus = conf::read_bool(tab, "enable_opus", false);
-                allow_wavpack = conf::read_bool(tab, "enable_wavpack", false);
-            }
+            drv_hint = conf::read_str("sdl2_mixer", "driver", "");
+            allow_flac = conf::read_bool("sdl2_mixer", "enable_flac", false);
+            allow_mod = conf::read_bool("sdl2_mixer", "enable_mod", false);
+            allow_mp3 = conf::read_bool("sdl2_mixer", "enable_mp3", true);
+            allow_ogg = conf::read_bool("sdl2_mixer", "enable_ogg", false);
+            allow_mid = conf::read_bool("sdl2_mixer", "enable_mid", false);
+            allow_opus = conf::read_bool("sdl2_mixer", "enable_opus", false);
+            allow_wavpack = conf::read_bool("sdl2_mixer", "enable_wavpack", false);
             if (drv_hint.size() == 0)
                 SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
             else if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, drv_hint.c_str()))
@@ -233,10 +230,6 @@ namespace audio {
 
         bool dev_open() {
             SDL_AudioDeviceID dev_id = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-            if (0 && conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
-                toml::value tab = conf::get().at("sdl2_mixer");
-                need_dev = conf::read_str(tab, "device", need_dev);
-            }
             const char* dev_name = nullptr;
             int dev_count;
             SDL_AudioDeviceID* dev_arr = SDL_GetAudioPlaybackDevices(&dev_count);
@@ -266,19 +259,16 @@ namespace audio {
                 spec.freq = 2;
                 spec.format = SDL_AUDIO_F32;
             }
-            if (conf::get().contains("sdl2_mixer") && conf::get().at("sdl2_mixer").is_table()) {
-                toml::value tab = conf::get().at("sdl2_mixer");
-                spec.format = fmt_from_str(conf::read_str(tab, "format", fmt_to_str(spec.format)));
-                int b_channels = conf::read_int(tab, "channel", 0);
-                int b_freq = conf::read_int(tab, "frequency", 0);
-                int b_samples = conf::read_int(tab, "chunksize", 0);
-                if (b_channels > 0)
-                    spec.channels = b_channels;
-                if (b_freq > 0)
-                    spec.freq = b_freq;
-                if (b_samples > 0)
-                    sample_frames = b_samples;
-            }
+            spec.format = fmt_from_str(conf::read_str("sdl2_mixer", "format", fmt_to_str(spec.format)));
+            int b_channels = conf::read_int("sdl2_mixer", "channel", 0);
+            int b_freq = conf::read_int("sdl2_mixer", "frequency", 0);
+            int b_samples = conf::read_int("sdl2_mixer", "chunksize", 0);
+            if (b_channels > 0)
+                spec.channels = b_channels;
+            if (b_freq > 0)
+                spec.freq = b_freq;
+            if (b_samples > 0)
+                sample_frames = b_samples;
             // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
             if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");

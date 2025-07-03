@@ -735,11 +735,7 @@ namespace audio {
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
-            tf::str need_driver;
-            if (conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
-                toml::value tab = conf::get().at("fmod");
-                need_driver = conf::read_str(tab, "driver", "");
-            }
+            tf::str need_driver = conf::read_str("fmod", "driver", "");
             // TODO: brute force version/read from config
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, 0x00020308))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
@@ -759,10 +755,6 @@ namespace audio {
 
         bool dev_open() {
             FMOD_RESULT err;
-            if (0 && conf::get().contains("fmod") && conf::get().at("fmod").is_table()) {
-                toml::value tab = conf::get().at("fmod");
-                need_dev = conf::read_str(tab, "device", need_dev);
-            }
             int num_dev;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_System_GetNumDrivers(sys, &num_dev))) {
                 TF_ERROR(<< "Failed to get number of audio devices (" << FMOD_ErrorString(err) << ")");
