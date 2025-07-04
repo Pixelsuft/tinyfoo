@@ -10,7 +10,7 @@
 #include <conf.hpp>
 #include <playlist.hpp>
 #include <SDL3/SDL.h>
-#if IS_IMGUI
+#if ENABLE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #endif
@@ -121,7 +121,7 @@ bool app::init() {
     data->stage = 2;
     if (!SDL_SetWindowMinimumSize(data->win, 640, 480))
         TF_WARN(<< "Failed to set window minimum size (" << SDL_GetError() << ")");
-#ifdef IS_IMGUI
+#ifdef ENABLE_IMGUI
     // Hacky
     ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)SDL_malloc, (ImGuiMemFreeFunc)SDL_free, nullptr);
 #endif
@@ -183,7 +183,7 @@ bool app::init() {
 }
 
 void app::process_event(const SDL_Event& ev) {
-#ifdef IS_IMGUI
+#ifdef ENABLE_IMGUI
     ImGui_ImplSDL3_ProcessEvent(&ev);
 #endif
     switch (ev.type) {

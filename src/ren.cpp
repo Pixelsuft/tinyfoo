@@ -5,7 +5,7 @@
 #include <conf.hpp>
 #include <image.hpp>
 #include <SDL3/SDL.h>
-#if IS_IMGUI
+#if ENABLE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
@@ -58,7 +58,7 @@ bool ren::init(void* win) {
         TF_INFO(<< "Renderer created with " << ren_name << " driver");
     else
         TF_WARN(<< "Failed to get renderer name (" << SDL_GetError() << ")");
-#if IS_IMGUI
+#if ENABLE_IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -73,7 +73,7 @@ bool ren::init(void* win) {
 void ren::begin_frame() {
     // SDL_SetRenderDrawColorFloat(data->ren, 32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
     // SDL_RenderClear(data->ren);
-#if IS_IMGUI
+#if ENABLE_IMGUI
     ImVec4 bg_col = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
     SDL_SetRenderDrawColorFloat(data->ren, bg_col.x, bg_col.y, bg_col.z, 1.f);
     SDL_RenderClear(data->ren);
@@ -84,7 +84,7 @@ void ren::begin_frame() {
 }
 
 void ren::end_frame() {
-#if IS_IMGUI
+#if ENABLE_IMGUI
     ImGuiIO& io = ImGui::GetIO();
     ImGui::Render();
     // SDL_SetRenderScale(data->ren, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
@@ -116,7 +116,7 @@ Point ren::point_win_to_ren(const Point& pos) {
 }
 
 void ren::destroy() {
-#if IS_IMGUI
+#if ENABLE_IMGUI
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();

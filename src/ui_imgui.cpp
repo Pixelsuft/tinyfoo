@@ -1,5 +1,5 @@
 #include <lbs.hpp>
-#if IS_IMGUI
+#if ENABLE_IMGUI
 #include <ui.hpp>
 #include <app.hpp>
 #include <new.hpp>
