@@ -47,5 +47,6 @@ g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-m
 ```
 ## TODO
  - Add support toml++ (it's C++17 but can work without exceptions)
+ - Support building to shared lib with minimal API
  - Other audio libs
  - Fix TODOs in code and code cleanup
