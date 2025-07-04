@@ -1,11 +1,32 @@
 #pragma once
+#include <lbs.hpp>
+#include <str.hpp>
+#include <vec.hpp>
 #ifndef TOML11_DISABLE_STD_FILESYSTEM
 #define TOML11_DISABLE_STD_FILESYSTEM
 #endif
 #include <toml11.hpp>
-#include <str.hpp>
 
 namespace conf {
+    struct ConfData {
+        tf::vec<tf::str> dev_names;
+        tf::str style;
+        tf::str def_style;
+        tf::str font1_path;
+        tf::str font2_path;
+        tf::str sdl2_drv;
+        tf::str sdl2_fmt;
+        tf::str fmod_drv;
+        tf::str ren_drv;
+        tf::str au_bk;
+        bool bools[16];
+        float floats[8];
+        int ints[4];
+        int dev_id;
+    };
+
+    void begin_editing(ConfData& data);
+    void end_editing(ConfData& data);
     toml::value& get();
     void request_save();
     bool save_to_file();

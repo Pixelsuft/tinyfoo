@@ -36,17 +36,8 @@ namespace app {
 
 namespace ui {
     struct UiData {
+        conf::ConfData conf;
         tf::vec<tf::str> log_cache;
-        tf::vec<tf::str> conf_dev_names;
-        tf::str conf_style;
-        tf::str conf_def_style;
-        tf::str conf_font1_path;
-        tf::str conf_font2_path;
-        tf::str conf_sdl2_drv;
-        tf::str conf_sdl2_fmt;
-        tf::str conf_fmod_drv;
-        tf::str conf_ren_drv;
-        tf::str conf_au_bk;
         tf::str meta_fn;
         tf::str meta_fmt;
 #if WIN_TITLE_PATCH
@@ -55,9 +46,6 @@ namespace ui {
         size_t meta_mod;
         double meta_dur;
         char pl_name_buf[64];
-        bool conf_bools[16];
-        float conf_floats[8];
-        int conf_ints[4];
         size_t meta_sz;
         char* pl_path_buf;
         ImFont* font1;
@@ -75,7 +63,6 @@ namespace ui {
         void* icon_rng;
         Point size;
         float img_scale;
-        int conf_dev_id;
         bool show_app_conf;
         bool show_about;
         bool show_logs;
@@ -361,47 +348,7 @@ void ui::draw_menubar() {
         ImGui::Separator();
         if (ImGui::MenuItem("Settings", nullptr, nullptr)) {
             data->show_app_conf = true;
-            data->conf_dev_names.clear();
-            audio::au->dev_fill_arr(data->conf_dev_names);
-            auto need_it = std::find(data->conf_dev_names.begin(), data->conf_dev_names.end(), audio::au->need_dev);
-            if (need_it == data->conf_dev_names.end())
-                data->conf_dev_id = 0;
-            else
-                data->conf_dev_id = (int)std::distance(data->conf_dev_names.begin(), need_it);
-            data->conf_floats[3] = audio::au->volume * 100.f;
-            data->conf_floats[4] = audio::au->fade_next_time * 1000.f;
-            data->conf_floats[5] = audio::au->fade_stop_time * 1000.f;
-            data->conf_floats[6] = audio::au->fade_pause_time * 1000.f;
-            data->conf_floats[7] = audio::au->fade_resume_time * 1000.f;
-            data->conf_style = data->conf_def_style = conf::read_str("imgui", "style", "dark");
-            data->conf_font1_path = conf::read_str("imgui", "font1_path", "");
-            data->conf_font2_path = conf::read_str("imgui", "font2_path", "");
-            data->conf_floats[0] = conf::read_float("imgui", "font1_size", 16.f);
-            data->conf_floats[1] = conf::read_float("imgui", "font2_size", 24.f);
-            data->conf_floats[2] = conf::read_float("imgui", "img_scale", 1.f);
-            data->conf_ren_drv = conf::read_str("renderer", "driver", "auto");
-            data->conf_bools[0] = conf::read_bool("renderer", "vsync", true);
-            data->conf_au_bk = conf::read_str("audio", "backend", "dummy");
-            data->conf_sdl2_drv = conf::read_str("sdl2_mixer", "driver", "dummy");
-            data->conf_sdl2_fmt = conf::read_str("sdl2_mixer", "format", "SDL_AUDIO_S16");
-            data->conf_bools[1] = conf::read_bool("sdl2_mixer", "enable_flac", false);
-            data->conf_bools[2] = conf::read_bool("sdl2_mixer", "enable_mod", false);
-            data->conf_bools[3] = conf::read_bool("sdl2_mixer", "enable_mp3", true);
-            data->conf_bools[4] = conf::read_bool("sdl2_mixer", "enable_ogg", false);
-            data->conf_bools[5] = conf::read_bool("sdl2_mixer", "enable_mid", false);
-            data->conf_bools[6] = conf::read_bool("sdl2_mixer", "enable_opus", false);
-            data->conf_bools[7] = conf::read_bool("sdl2_mixer", "enable_wavpack", false);
-            data->conf_ints[0] = conf::read_int("sdl2_mixer", "channels", 0);
-            data->conf_ints[1] = conf::read_int("sdl2_mixer", "frequency", 0);
-            data->conf_ints[2] = conf::read_int("sdl2_mixer", "chunksize", 0);
-            data->conf_fmod_drv = conf::read_str("fmod", "driver", "nosound");
-            data->conf_bools[8] = conf::read_bool("bass", "force_16bits", false);
-            data->conf_bools[9] = conf::read_bool("bass", "force_stereo", false);
-            data->conf_bools[10] = conf::read_bool("bass", "force_dmix", false);
-            data->conf_bools[11] = conf::read_bool("bass", "force_audiotrack", false);
-            data->conf_bools[12] = conf::read_bool("bass", "force_directsound", false);
-            data->conf_bools[13] = conf::read_bool("bass", "force_software", false);
-            data->conf_ints[3] = conf::read_int("bass", "frequency", 0);
+            conf::begin_editing(data->conf);
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Rage Quit", nullptr, nullptr))
@@ -816,7 +763,7 @@ void ui::draw() {
             draw_settings();
         ImGui::End();
         if (prev_show && !data->show_app_conf)
-            apply_theme(data->conf_def_style);
+            apply_theme(data->conf.def_style);
     }
     if (data->show_playlist_conf) {
         ImGui::SetNextWindowSize({ 500.f, 200.f }, ImGuiCond_Appearing);
@@ -847,17 +794,17 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "Renderer");
     ImGui::PopFont();
     static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
-    if (ImGui::BeginCombo("Driver##ren", data->conf_ren_drv.c_str())) {
+    if (ImGui::BeginCombo("Driver##ren", data->conf.ren_drv.c_str())) {
         for (int i = 0; i < SDL_arraysize(ren_drv); i++) {
-            bool is_selected = (data->conf_ren_drv == ren_drv[i]) || (i == 0 && data->conf_ren_drv.size() == 0);
+            bool is_selected = (data->conf.ren_drv == ren_drv[i]) || (i == 0 && data->conf.ren_drv.size() == 0);
             if (ImGui::Selectable(ren_drv[i], &is_selected))
-                data->conf_ren_drv = ren_drv[i];
+                data->conf.ren_drv = ren_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    ImGui::Checkbox("VSync", &data->conf_bools[0]);
+    ImGui::Checkbox("VSync", &data->conf.bools[0]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "ImGui");
     ImGui::PopFont();
@@ -867,104 +814,104 @@ void ui::draw_settings() {
         "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
         "vgui", "visual_studio", "windark"
     };
-    if (ImGui::BeginCombo("Style", data->conf_style.c_str())) {
+    if (ImGui::BeginCombo("Style", data->conf.style.c_str())) {
         for (int i = 0; i < SDL_arraysize(style_list); i++) {
-            bool is_selected = (data->conf_style == style_list[i]);
+            bool is_selected = (data->conf.style == style_list[i]);
             if (ImGui::Selectable(style_list[i], &is_selected))
-                data->conf_style = style_list[i];
+                data->conf.style = style_list[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    apply_theme(data->conf_style);
+    apply_theme(data->conf.style);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "Audio");
     ImGui::PopFont();
     static const char* au_bk[] = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass" };
-    if (ImGui::BeginCombo("Backend", data->conf_au_bk.c_str())) {
+    if (ImGui::BeginCombo("Backend", data->conf.au_bk.c_str())) {
         for (int i = 0; i < SDL_arraysize(au_bk); i++) {
-            bool is_selected = (data->conf_au_bk == au_bk[i]) || (i == 0 && data->conf_au_bk.size() == 0);
+            bool is_selected = (data->conf.au_bk == au_bk[i]) || (i == 0 && data->conf.au_bk.size() == 0);
             if (ImGui::Selectable(au_bk[i], &is_selected))
-                data->conf_au_bk = au_bk[i];
+                data->conf.au_bk = au_bk[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
     // Assuming that 'default' device always exists
-    if (ImGui::BeginCombo("Device", data->conf_dev_names[data->conf_dev_id].c_str())) {
-        for (int i = 0; i < (int)data->conf_dev_names.size(); i++) {
-            bool is_selected = i == data->conf_dev_id;
-            if (ImGui::Selectable(data->conf_dev_names[i].c_str(), &is_selected))
-                data->conf_dev_id = i;
+    if (ImGui::BeginCombo("Device", data->conf.dev_names[data->conf.dev_id].c_str())) {
+        for (int i = 0; i < (int)data->conf.dev_names.size(); i++) {
+            bool is_selected = i == data->conf.dev_id;
+            if (ImGui::Selectable(data->conf.dev_names[i].c_str(), &is_selected))
+                data->conf.dev_id = i;
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    if (ImGui::InputFloat("Volume (%)", &data->conf_floats[3]))
-        data->conf_floats[3] = tf::clamp(data->conf_floats[3], 0.f, audio::au->max_volume * 100.f);
-    if (ImGui::InputFloat("Next Fading Time (ms)", &data->conf_floats[4]))
-        data->conf_floats[4] = tf::clamp(data->conf_floats[4], 0.f, 10000.f);
-    if (ImGui::InputFloat("Stop Fading Time (ms)", &data->conf_floats[5]))
-        data->conf_floats[5] = tf::clamp(data->conf_floats[5], 0.f, 10000.f);
-    if (ImGui::InputFloat("Pause Fading Time (ms)", &data->conf_floats[6]))
-        data->conf_floats[6] = tf::clamp(data->conf_floats[6], 0.f, 10000.f);
-    if (ImGui::InputFloat("Resume Fading Time (ms)", &data->conf_floats[7]))
-        data->conf_floats[7] = tf::clamp(data->conf_floats[7], 0.f, 10000.f);
+    if (ImGui::InputFloat("Volume (%)", &data->conf.floats[3]))
+        data->conf.floats[3] = tf::clamp(data->conf.floats[3], 0.f, audio::au->max_volume * 100.f);
+    if (ImGui::InputFloat("Next Fading Time (ms)", &data->conf.floats[4]))
+        data->conf.floats[4] = tf::clamp(data->conf.floats[4], 0.f, 10000.f);
+    if (ImGui::InputFloat("Stop Fading Time (ms)", &data->conf.floats[5]))
+        data->conf.floats[5] = tf::clamp(data->conf.floats[5], 0.f, 10000.f);
+    if (ImGui::InputFloat("Pause Fading Time (ms)", &data->conf.floats[6]))
+        data->conf.floats[6] = tf::clamp(data->conf.floats[6], 0.f, 10000.f);
+    if (ImGui::InputFloat("Resume Fading Time (ms)", &data->conf.floats[7]))
+        data->conf.floats[7] = tf::clamp(data->conf.floats[7], 0.f, 10000.f);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
     static const char* sdl2_drv[] = { "pulseaudio", "pipewire", "alsa", "sndio", "netbsd", "wasapi", "directsound", "haiku", "coreaudio", "aaudio", "opensles", "ps2", "psp", "vita", "n3ds", "ngage", "emscripten", "jack", "oss", "qnx", "disk", "dummy" };
-    if (ImGui::BeginCombo("Driver##sdl2", data->conf_sdl2_drv.c_str())) {
+    if (ImGui::BeginCombo("Driver##sdl2", data->conf.sdl2_drv.c_str())) {
         for (int i = 0; i < SDL_arraysize(sdl2_drv); i++) {
-            bool is_selected = data->conf_sdl2_drv == sdl2_drv[i];
+            bool is_selected = data->conf.sdl2_drv == sdl2_drv[i];
             if (ImGui::Selectable(sdl2_drv[i], &is_selected))
-                data->conf_sdl2_drv = sdl2_drv[i];
+                data->conf.sdl2_drv = sdl2_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
     static const char* sdl2_fmt[] = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
-    if (ImGui::BeginCombo("Format##sdl2", data->conf_sdl2_fmt.c_str())) {
+    if (ImGui::BeginCombo("Format##sdl2", data->conf.sdl2_fmt.c_str())) {
         for (int i = 0; i < SDL_arraysize(sdl2_fmt); i++) {
-            bool is_selected = data->conf_sdl2_fmt == sdl2_fmt[i];
+            bool is_selected = data->conf.sdl2_fmt == sdl2_fmt[i];
             if (ImGui::Selectable(sdl2_fmt[i], &is_selected))
-                data->conf_sdl2_fmt = sdl2_fmt[i];
+                data->conf.sdl2_fmt = sdl2_fmt[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    if (ImGui::InputInt("Channels", &data->conf_ints[0]))
-        data->conf_ints[0] = tf::clamp(data->conf_ints[0], 0, 64);
-    if (ImGui::InputInt("Frequency##sdl2", &data->conf_ints[1], 100, 10000))
-        data->conf_ints[1] = tf::clamp(data->conf_ints[1], 0, 96000);
-    if (ImGui::InputInt("Chunk Size", &data->conf_ints[2], 32, 256))
-        data->conf_ints[2] = tf::clamp(data->conf_ints[2], 0, 1024 * 1024);
-    ImGui::Checkbox("FLAC", &data->conf_bools[1]);
+    if (ImGui::InputInt("Channels", &data->conf.ints[0]))
+        data->conf.ints[0] = tf::clamp(data->conf.ints[0], 0, 64);
+    if (ImGui::InputInt("Frequency##sdl2", &data->conf.ints[1], 100, 10000))
+        data->conf.ints[1] = tf::clamp(data->conf.ints[1], 0, 96000);
+    if (ImGui::InputInt("Chunk Size", &data->conf.ints[2], 32, 256))
+        data->conf.ints[2] = tf::clamp(data->conf.ints[2], 0, 1024 * 1024);
+    ImGui::Checkbox("FLAC", &data->conf.bools[1]);
     ImGui::SameLine();
-    ImGui::Checkbox("MOD", &data->conf_bools[2]);
+    ImGui::Checkbox("MOD", &data->conf.bools[2]);
     ImGui::SameLine();
-    ImGui::Checkbox("MP3", &data->conf_bools[3]);
+    ImGui::Checkbox("MP3", &data->conf.bools[3]);
     ImGui::SameLine();
-    ImGui::Checkbox("OGG", &data->conf_bools[4]);
-    ImGui::Checkbox("MID", &data->conf_bools[5]);
+    ImGui::Checkbox("OGG", &data->conf.bools[4]);
+    ImGui::Checkbox("MID", &data->conf.bools[5]);
     ImGui::SameLine();
-    ImGui::Checkbox("OPUS", &data->conf_bools[6]);
+    ImGui::Checkbox("OPUS", &data->conf.bools[6]);
     ImGui::SameLine();
-    ImGui::Checkbox("WAVPACK", &data->conf_bools[7]);
+    ImGui::Checkbox("WAVPACK", &data->conf.bools[7]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "FMOD");
     ImGui::PopFont();
     static const char* fmod_drv[] = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
-    if (ImGui::BeginCombo("Driver##fmod", data->conf_fmod_drv.c_str())) {
+    if (ImGui::BeginCombo("Driver##fmod", data->conf.fmod_drv.c_str())) {
         for (int i = 0; i < SDL_arraysize(fmod_drv); i++) {
-            bool is_selected = data->conf_fmod_drv == fmod_drv[i];
+            bool is_selected = data->conf.fmod_drv == fmod_drv[i];
             if (ImGui::Selectable(fmod_drv[i], &is_selected))
-                data->conf_fmod_drv = fmod_drv[i];
+                data->conf.fmod_drv = fmod_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
@@ -973,85 +920,21 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "BASS");
     ImGui::PopFont();
-    if (ImGui::InputInt("Frequency##bass", &data->conf_ints[3], 100, 10000))
-        data->conf_ints[3] = tf::clamp(data->conf_ints[3], 0, 96000);
-    ImGui::Checkbox("Force 16-Bit", &data->conf_bools[8]);
+    if (ImGui::InputInt("Frequency##bass", &data->conf.ints[3], 100, 10000))
+        data->conf.ints[3] = tf::clamp(data->conf.ints[3], 0, 96000);
+    ImGui::Checkbox("Force 16-Bit", &data->conf.bools[8]);
     ImGui::SameLine();
-    ImGui::Checkbox("Force Stereo", &data->conf_bools[9]);
+    ImGui::Checkbox("Force Stereo", &data->conf.bools[9]);
     ImGui::SameLine();
-    ImGui::Checkbox("Force DMix", &data->conf_bools[10]);
-    ImGui::Checkbox("Force AudioTrack", &data->conf_bools[11]);
+    ImGui::Checkbox("Force DMix", &data->conf.bools[10]);
+    ImGui::Checkbox("Force AudioTrack", &data->conf.bools[11]);
     ImGui::SameLine();
-    ImGui::Checkbox("Force DSound", &data->conf_bools[12]);
+    ImGui::Checkbox("Force DSound", &data->conf.bools[12]);
     ImGui::SameLine();
-    ImGui::Checkbox("Force Software", &data->conf_bools[13]);
+    ImGui::Checkbox("Force Software", &data->conf.bools[13]);
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
-        data->conf_def_style = data->conf_style;
-        audio::au->need_dev = data->conf_dev_names[data->conf_dev_id];
-        audio::au->volume = data->conf_floats[3] / 100.f;
-        audio::au->update_volume();
-        audio::au->fade_next_time = data->conf_floats[4] / 1000.f;
-        audio::au->fade_stop_time = data->conf_floats[5] / 1000.f;
-        audio::au->fade_pause_time = data->conf_floats[6] / 1000.f;
-        audio::au->fade_resume_time = data->conf_floats[7] / 1000.f;
-        // TODO: universal way?
-        conf::get()["renderer"] = toml::table{
-            {"driver", data->conf_ren_drv},
-            {"vsync", data->conf_bools[0]}
-        };
-        conf::get()["imgui"] = toml::table{
-            {"style", data->conf_style},
-            {"img_scale", data->conf_floats[2]},
-            {"font1_path", data->conf_font1_path},
-            {"font1_size", data->conf_floats[0]},
-            {"font2_path", data->conf_font2_path},
-            {"font2_size", data->conf_floats[1]}
-        };
-        conf::get()["audio"] = toml::table{
-            {"backend", data->conf_au_bk},
-            {"device", audio::au->need_dev},
-            {"volume", data->conf_floats[3]},
-            {"fade_next_time", data->conf_floats[4]},
-            {"fade_stop_time", data->conf_floats[5]},
-            {"fade_pause_time", data->conf_floats[6]},
-            {"fade_resume_time", data->conf_floats[7]}
-        };
-        conf::get()["sdl2_mixer"] = toml::table{
-            {"driver", data->conf_sdl2_drv},
-            {"format", data->conf_sdl2_fmt},
-            {"channels", data->conf_ints[0]},
-            {"frequency", data->conf_ints[1]},
-            {"chunksize", data->conf_ints[2]},
-            {"enable_flac", data->conf_bools[1]},
-            {"enable_mod", data->conf_bools[2]},
-            {"enable_mp3", data->conf_bools[3]},
-            {"enable_ogg", data->conf_bools[4]},
-            {"enable_mid", data->conf_bools[5]},
-            {"enable_opus", data->conf_bools[6]},
-            {"enable_wavpack", data->conf_bools[7]}
-        };
-        conf::get()["fmod"] = toml::table{
-            {"driver", data->conf_fmod_drv}
-        };
-        conf::get()["bass"] = toml::table{
-            {"frequency", data->conf_ints[3]},
-            {"force_16bits", data->conf_bools[8]},
-            {"force_stereo", data->conf_bools[9]},
-            {"force_dmix", data->conf_bools[10]},
-            {"force_audiotrack", data->conf_bools[11]},
-            {"force_directsound", data->conf_bools[12]},
-            {"force_software", data->conf_bools[13]}
-        };
-        // TODO: support tab order saving, but IDK how to do that easily
-        tf::vec<tf::str> pl_files;
-        pl_files.reserve(pl::pls->size());
-        for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
-            pl_files.push_back((*it)->path);
-        conf::get()["playlists"] = toml::table{
-            {"files", pl_files}
-        };
-        conf::request_save();
+        conf::end_editing(data->conf);
     }
     ImGui::SameLine();
     if (ImGui::Button("Cancel"))
@@ -1148,7 +1031,7 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
 bool ui::handle_esc() {
     bool ret = data->show_app_conf | data->show_about | data->show_logs | data->show_playlist_conf;
     if (data->show_app_conf)
-        apply_theme(data->conf_def_style);
+        apply_theme(data->conf.def_style);
     data->show_app_conf = false;
     data->show_about = false;
     data->show_logs = false;

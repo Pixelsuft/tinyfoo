@@ -359,3 +359,115 @@ bool conf::save_to_file() {
     }
     return true;
 }
+
+void conf::begin_editing(ConfData& data) {
+    data.dev_names.clear();
+    audio::au->dev_fill_arr(data.dev_names);
+    auto need_it = std::find(data.dev_names.begin(), data.dev_names.end(), audio::au->need_dev);
+    if (need_it == data.dev_names.end())
+        data.dev_id = 0;
+    else
+        data.dev_id = (int)std::distance(data.dev_names.begin(), need_it);
+    data.floats[3] = audio::au->volume * 100.f;
+    data.floats[4] = audio::au->fade_next_time * 1000.f;
+    data.floats[5] = audio::au->fade_stop_time * 1000.f;
+    data.floats[6] = audio::au->fade_pause_time * 1000.f;
+    data.floats[7] = audio::au->fade_resume_time * 1000.f;
+    data.style = data.def_style = conf::read_str("imgui", "style", "dark");
+    data.font1_path = conf::read_str("imgui", "font1_path", "");
+    data.font2_path = conf::read_str("imgui", "font2_path", "");
+    data.floats[0] = conf::read_float("imgui", "font1_size", 16.f);
+    data.floats[1] = conf::read_float("imgui", "font2_size", 24.f);
+    data.floats[2] = conf::read_float("imgui", "img_scale", 1.f);
+    data.ren_drv = conf::read_str("renderer", "driver", "auto");
+    data.bools[0] = conf::read_bool("renderer", "vsync", true);
+    data.au_bk = conf::read_str("audio", "backend", "dummy");
+    data.sdl2_drv = conf::read_str("sdl2_mixer", "driver", "dummy");
+    data.sdl2_fmt = conf::read_str("sdl2_mixer", "format", "SDL_AUDIO_S16");
+    data.bools[1] = conf::read_bool("sdl2_mixer", "enable_flac", false);
+    data.bools[2] = conf::read_bool("sdl2_mixer", "enable_mod", false);
+    data.bools[3] = conf::read_bool("sdl2_mixer", "enable_mp3", true);
+    data.bools[4] = conf::read_bool("sdl2_mixer", "enable_ogg", false);
+    data.bools[5] = conf::read_bool("sdl2_mixer", "enable_mid", false);
+    data.bools[6] = conf::read_bool("sdl2_mixer", "enable_opus", false);
+    data.bools[7] = conf::read_bool("sdl2_mixer", "enable_wavpack", false);
+    data.ints[0] = conf::read_int("sdl2_mixer", "channels", 0);
+    data.ints[1] = conf::read_int("sdl2_mixer", "frequency", 0);
+    data.ints[2] = conf::read_int("sdl2_mixer", "chunksize", 0);
+    data.fmod_drv = conf::read_str("fmod", "driver", "nosound");
+    data.bools[8] = conf::read_bool("bass", "force_16bits", false);
+    data.bools[9] = conf::read_bool("bass", "force_stereo", false);
+    data.bools[10] = conf::read_bool("bass", "force_dmix", false);
+    data.bools[11] = conf::read_bool("bass", "force_audiotrack", false);
+    data.bools[12] = conf::read_bool("bass", "force_directsound", false);
+    data.bools[13] = conf::read_bool("bass", "force_software", false);
+    data.ints[3] = conf::read_int("bass", "frequency", 0);
+}
+
+void conf::end_editing(ConfData& data) {
+    data.def_style = data.style;
+    audio::au->need_dev = data.dev_names[data.dev_id];
+    audio::au->volume = data.floats[3] / 100.f;
+    audio::au->update_volume();
+    audio::au->fade_next_time = data.floats[4] / 1000.f;
+    audio::au->fade_stop_time = data.floats[5] / 1000.f;
+    audio::au->fade_pause_time = data.floats[6] / 1000.f;
+    audio::au->fade_resume_time = data.floats[7] / 1000.f;
+    // TODO: universal way?
+    conf::get()["renderer"] = toml::table{
+        {"driver", data.ren_drv},
+        {"vsync", data.bools[0]}
+    };
+    conf::get()["imgui"] = toml::table{
+        {"style", data.style},
+        {"img_scale", data.floats[2]},
+        {"font1_path", data.font1_path},
+        {"font1_size", data.floats[0]},
+        {"font2_path", data.font2_path},
+        {"font2_size", data.floats[1]}
+    };
+    conf::get()["audio"] = toml::table{
+        {"backend", data.au_bk},
+        {"device", audio::au->need_dev},
+        {"volume", data.floats[3]},
+        {"fade_next_time", data.floats[4]},
+        {"fade_stop_time", data.floats[5]},
+        {"fade_pause_time", data.floats[6]},
+        {"fade_resume_time", data.floats[7]}
+    };
+    conf::get()["sdl2_mixer"] = toml::table{
+        {"driver", data.sdl2_drv},
+        {"format", data.sdl2_fmt},
+        {"channels", data.ints[0]},
+        {"frequency", data.ints[1]},
+        {"chunksize", data.ints[2]},
+        {"enable_flac", data.bools[1]},
+        {"enable_mod", data.bools[2]},
+        {"enable_mp3", data.bools[3]},
+        {"enable_ogg", data.bools[4]},
+        {"enable_mid", data.bools[5]},
+        {"enable_opus", data.bools[6]},
+        {"enable_wavpack", data.bools[7]}
+    };
+    conf::get()["fmod"] = toml::table{
+        {"driver", data.fmod_drv}
+    };
+    conf::get()["bass"] = toml::table{
+        {"frequency", data.ints[3]},
+        {"force_16bits", data.bools[8]},
+        {"force_stereo", data.bools[9]},
+        {"force_dmix", data.bools[10]},
+        {"force_audiotrack", data.bools[11]},
+        {"force_directsound", data.bools[12]},
+        {"force_software", data.bools[13]}
+    };
+    // TODO: support tab order saving, but IDK how to do that easily
+    tf::vec<tf::str> pl_files;
+    pl_files.reserve(pl::pls->size());
+    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
+        pl_files.push_back((*it)->path);
+    conf::get()["playlists"] = toml::table{
+        {"files", pl_files}
+    };
+    conf::request_save();
+}
