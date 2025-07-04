@@ -8,6 +8,18 @@
 #include <toml11.hpp>
 
 namespace conf {
+    static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
+    static const char* ig_style_list[] = {
+        "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
+        "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",
+        "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
+        "vgui", "visual_studio", "windark"
+    };
+    static const char* au_bk[] = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass" };
+    static const char* sdl2_drv[] = { "pulseaudio", "pipewire", "alsa", "sndio", "netbsd", "wasapi", "directsound", "haiku", "coreaudio", "aaudio", "opensles", "ps2", "psp", "vita", "n3ds", "ngage", "emscripten", "jack", "oss", "qnx", "disk", "dummy" };
+    static const char* sdl2_fmt[] = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
+    static const char* fmod_drv[] = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
+
     struct ConfData {
         tf::vec<tf::str> dev_names;
         tf::str style;
@@ -21,8 +33,7 @@ namespace conf {
         tf::str au_bk;
         bool bools[16];
         float floats[8];
-        int ints[4];
-        int dev_id;
+        int ints[8];
     };
 
     void begin_editing(ConfData& data);

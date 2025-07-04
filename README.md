@@ -43,7 +43,7 @@ python lbs.py release gen_res
 python lbs.py release join_code
 cd release
 # You can add -std=gnu++20 (-std=gnu++2a) for C++20
-g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3
+g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
 ```
 ## TODO
  - Add support toml++ (it's C++17 but can work without exceptions)

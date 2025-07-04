@@ -365,9 +365,9 @@ void conf::begin_editing(ConfData& data) {
     audio::au->dev_fill_arr(data.dev_names);
     auto need_it = std::find(data.dev_names.begin(), data.dev_names.end(), audio::au->need_dev);
     if (need_it == data.dev_names.end())
-        data.dev_id = 0;
+        data.ints[4] = 0;
     else
-        data.dev_id = (int)std::distance(data.dev_names.begin(), need_it);
+        data.ints[4] = (int)std::distance(data.dev_names.begin(), need_it);
     data.floats[3] = audio::au->volume * 100.f;
     data.floats[4] = audio::au->fade_next_time * 1000.f;
     data.floats[5] = audio::au->fade_stop_time * 1000.f;
@@ -406,7 +406,7 @@ void conf::begin_editing(ConfData& data) {
 
 void conf::end_editing(ConfData& data) {
     data.def_style = data.style;
-    audio::au->need_dev = data.dev_names[data.dev_id];
+    audio::au->need_dev = data.dev_names[data.ints[4]];
     audio::au->volume = data.floats[3] / 100.f;
     audio::au->update_volume();
     audio::au->fade_next_time = data.floats[4] / 1000.f;

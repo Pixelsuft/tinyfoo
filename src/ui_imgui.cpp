@@ -793,12 +793,11 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "Renderer");
     ImGui::PopFont();
-    static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
     if (ImGui::BeginCombo("Driver##ren", data->conf.ren_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(ren_drv); i++) {
-            bool is_selected = (data->conf.ren_drv == ren_drv[i]) || (i == 0 && data->conf.ren_drv.size() == 0);
-            if (ImGui::Selectable(ren_drv[i], &is_selected))
-                data->conf.ren_drv = ren_drv[i];
+        for (int i = 0; i < SDL_arraysize(conf::ren_drv); i++) {
+            bool is_selected = (data->conf.ren_drv == conf::ren_drv[i]) || (i == 0 && data->conf.ren_drv.size() == 0);
+            if (ImGui::Selectable(conf::ren_drv[i], &is_selected))
+                data->conf.ren_drv = conf::ren_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
@@ -808,17 +807,11 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "ImGui");
     ImGui::PopFont();
-    static const char* style_list[] = {
-        "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
-        "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",
-        "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
-        "vgui", "visual_studio", "windark"
-    };
     if (ImGui::BeginCombo("Style", data->conf.style.c_str())) {
-        for (int i = 0; i < SDL_arraysize(style_list); i++) {
-            bool is_selected = (data->conf.style == style_list[i]);
-            if (ImGui::Selectable(style_list[i], &is_selected))
-                data->conf.style = style_list[i];
+        for (int i = 0; i < SDL_arraysize(conf::ig_style_list); i++) {
+            bool is_selected = (data->conf.style == conf::ig_style_list[i]);
+            if (ImGui::Selectable(conf::ig_style_list[i], &is_selected))
+                data->conf.style = conf::ig_style_list[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
@@ -828,23 +821,22 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "Audio");
     ImGui::PopFont();
-    static const char* au_bk[] = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass" };
     if (ImGui::BeginCombo("Backend", data->conf.au_bk.c_str())) {
-        for (int i = 0; i < SDL_arraysize(au_bk); i++) {
-            bool is_selected = (data->conf.au_bk == au_bk[i]) || (i == 0 && data->conf.au_bk.size() == 0);
-            if (ImGui::Selectable(au_bk[i], &is_selected))
-                data->conf.au_bk = au_bk[i];
+        for (int i = 0; i < SDL_arraysize(conf::au_bk); i++) {
+            bool is_selected = (data->conf.au_bk == conf::au_bk[i]) || (i == 0 && data->conf.au_bk.size() == 0);
+            if (ImGui::Selectable(conf::au_bk[i], &is_selected))
+                data->conf.au_bk = conf::au_bk[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
     // Assuming that 'default' device always exists
-    if (ImGui::BeginCombo("Device", data->conf.dev_names[data->conf.dev_id].c_str())) {
+    if (ImGui::BeginCombo("Device", data->conf.dev_names[data->conf.ints[4]].c_str())) {
         for (int i = 0; i < (int)data->conf.dev_names.size(); i++) {
-            bool is_selected = i == data->conf.dev_id;
+            bool is_selected = i == data->conf.ints[4];
             if (ImGui::Selectable(data->conf.dev_names[i].c_str(), &is_selected))
-                data->conf.dev_id = i;
+                data->conf.ints[4] = i;
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
@@ -863,23 +855,21 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
-    static const char* sdl2_drv[] = { "pulseaudio", "pipewire", "alsa", "sndio", "netbsd", "wasapi", "directsound", "haiku", "coreaudio", "aaudio", "opensles", "ps2", "psp", "vita", "n3ds", "ngage", "emscripten", "jack", "oss", "qnx", "disk", "dummy" };
     if (ImGui::BeginCombo("Driver##sdl2", data->conf.sdl2_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(sdl2_drv); i++) {
-            bool is_selected = data->conf.sdl2_drv == sdl2_drv[i];
-            if (ImGui::Selectable(sdl2_drv[i], &is_selected))
-                data->conf.sdl2_drv = sdl2_drv[i];
+        for (int i = 0; i < SDL_arraysize(conf::sdl2_drv); i++) {
+            bool is_selected = data->conf.sdl2_drv == conf::sdl2_drv[i];
+            if (ImGui::Selectable(conf::sdl2_drv[i], &is_selected))
+                data->conf.sdl2_drv = conf::sdl2_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
-    static const char* sdl2_fmt[] = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
     if (ImGui::BeginCombo("Format##sdl2", data->conf.sdl2_fmt.c_str())) {
-        for (int i = 0; i < SDL_arraysize(sdl2_fmt); i++) {
-            bool is_selected = data->conf.sdl2_fmt == sdl2_fmt[i];
-            if (ImGui::Selectable(sdl2_fmt[i], &is_selected))
-                data->conf.sdl2_fmt = sdl2_fmt[i];
+        for (int i = 0; i < SDL_arraysize(conf::sdl2_fmt); i++) {
+            bool is_selected = data->conf.sdl2_fmt == conf::sdl2_fmt[i];
+            if (ImGui::Selectable(conf::sdl2_fmt[i], &is_selected))
+                data->conf.sdl2_fmt = conf::sdl2_fmt[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }
@@ -906,12 +896,11 @@ void ui::draw_settings() {
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "FMOD");
     ImGui::PopFont();
-    static const char* fmod_drv[] = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
     if (ImGui::BeginCombo("Driver##fmod", data->conf.fmod_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(fmod_drv); i++) {
-            bool is_selected = data->conf.fmod_drv == fmod_drv[i];
-            if (ImGui::Selectable(fmod_drv[i], &is_selected))
-                data->conf.fmod_drv = fmod_drv[i];
+        for (int i = 0; i < SDL_arraysize(conf::fmod_drv); i++) {
+            bool is_selected = data->conf.fmod_drv == conf::fmod_drv[i];
+            if (ImGui::Selectable(conf::fmod_drv[i], &is_selected))
+                data->conf.fmod_drv = conf::fmod_drv[i];
             if (is_selected)
                 ImGui::SetItemDefaultFocus();
         }

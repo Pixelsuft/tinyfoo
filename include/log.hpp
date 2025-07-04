@@ -2,6 +2,7 @@
 #include <sstream>
 
 // TODO: custom allocator maybe (for release mode)?
+// TODO: MIN_LOG_LEVEL
 #define _TF_LOG_TEMPLATE(category, ...) do { \
     std::stringstream _temp_string_stream; \
     _temp_string_stream __VA_ARGS__; \

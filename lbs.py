@@ -63,7 +63,7 @@ if app.stage == 'conf':
     app.conf['extra_libs'] = []
     conf_header = open(os.path.join(app.b_path, 'lbs', 'lbs.hpp'), 'w', encoding='utf-8')
     # TODO: write configuration info like time, os info, etc
-    # TODO: MIN_LOG_LEVEL, ENABLE_STDOUT_LOGGING
+    # TODO: ENABLE_STDOUT_LOGGING
     is_win = int(sys.platform == 'win32')
     is_release = int('--release' in app.args)
     conf_header.write('#pragma once\n\n')
@@ -135,7 +135,7 @@ if app.stage == 'join_code':
         app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.cpp'),
         app.cool_list_dir(os.path.join(app.cwd, 'include'), '.hpp') +
         # app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.h') +
-        app.cool_list_dir(os.path.join(app.b_path, 'lbs'), '.hpp') + app.cool_list_dir(os.path.join(app.b_path, 'nlohmann'), '.hpp') +
+        app.cool_list_dir(os.path.join(app.b_path, 'nlohmann'), '.hpp') +
         app.cool_list_dir(os.path.join(app.b_path, 'toml11'), '.hpp')
     ))
     f.close()
