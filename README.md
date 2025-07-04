@@ -46,7 +46,6 @@ cd release
 g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
 ```
 ## TODO
- - Add support toml++ (it's C++17 but can work without exceptions)
  - Support building to shared lib with minimal API
  - Add support for libpng (useful on linux?)
  - Other audio libs
