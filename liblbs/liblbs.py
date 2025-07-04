@@ -172,6 +172,16 @@ class LbsApp:
             data = self.request_bin(url)
             open(dst, 'wb').write(data)
             return True
+
+    def download_tomlpp_lib(self, dst: str, url: str = 'https://github.com/marzer/tomlplusplus/raw/refs/heads/master/toml.hpp') -> None:
+        if os.path.isfile(dst):
+            self.info('toml++ found')
+            return True
+        else:
+            self.info('Fetching toml++...')
+            data = self.request_bin(url)
+            open(dst, 'wb').write(data)
+            return True
     
     def download_bpstd_string_view_lib(self, dst: str, url: str = 'https://github.com/bitwizeshift/string_view-standalone/raw/refs/heads/master/single_include/bpstd/string_view.hpp') -> None:
         if os.path.isfile(dst):

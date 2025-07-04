@@ -48,9 +48,10 @@ if app.stage == 'fetch':
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.cpp',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.h'
     ))
-    if not os.path.isdir(os.path.join(app.b_path, 'toml11')):
-        os.mkdir(os.path.join(app.b_path, 'toml11'))
-    app.download_toml11_lib(os.path.join(app.b_path, 'toml11', 'toml11.hpp'))
+    if not os.path.isdir(os.path.join(app.b_path, 'toml')):
+        os.mkdir(os.path.join(app.b_path, 'toml'))
+    app.download_toml11_lib(os.path.join(app.b_path, 'toml', 'toml11.hpp'))
+    app.download_tomlpp_lib(os.path.join(app.b_path, 'toml', 'tomlpp.hpp'))
     if not os.path.isdir(os.path.join(app.b_path, 'nlohmann')):
         os.mkdir(os.path.join(app.b_path, 'nlohmann'))
     app.download_nlohmann_json_lib(os.path.join(app.b_path, 'nlohmann', 'json.hpp'), fwd=True)
@@ -136,7 +137,7 @@ if app.stage == 'join_code':
         app.cool_list_dir(os.path.join(app.cwd, 'include'), '.hpp') +
         # app.cool_list_dir(os.path.join(app.b_path, 'imgui'), '.h') +
         app.cool_list_dir(os.path.join(app.b_path, 'nlohmann'), '.hpp') +
-        app.cool_list_dir(os.path.join(app.b_path, 'toml11'), '.hpp')
+        app.cool_list_dir(os.path.join(app.b_path, 'toml'), '.hpp')
     ))
     f.close()
     app.info('Code joined!')
