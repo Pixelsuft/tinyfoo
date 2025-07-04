@@ -2,12 +2,25 @@
 #include <lbs.hpp>
 #include <str.hpp>
 #include <vec.hpp>
+#if ENABLE_TOMLPP
+#include <string_view>
+#ifndef TOML_EXCEPTIONS
+#define TOML_EXCEPTIONS 0
+#endif
+#include <tomlpp.hpp>
+#else
 #ifndef TOML11_DISABLE_STD_FILESYSTEM
 #define TOML11_DISABLE_STD_FILESYSTEM
 #endif
 #include <toml11.hpp>
+#endif
 
 namespace conf {
+#if ENABLE_TOMLPP
+    using toml_table = toml::table;
+#else
+    using toml_table = toml::value;
+#endif
     static const char* ren_drv[] = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
     static const char* ig_style_list[] = {
         "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
@@ -38,47 +51,79 @@ namespace conf {
 
     void begin_editing(ConfData& data);
     void end_editing(ConfData& data);
-    toml::value& get();
+    toml_table& get();
     void request_save();
     bool save_to_file();
 
     static inline float read_float(const char* tab_name, const char* prop, float def_val) {
         if (!conf::get().contains(tab_name) || !conf::get()[tab_name].is_table())
             return def_val;
+#if ENABLE_TOMLPP
+        auto& tab = conf::get()[tab_name].ref<toml::table>();
+        if (tab[prop].is_integer())
+            return (float)*tab[prop].value<int>();
+        if (tab[prop].is_floating_point())
+            return *tab[prop].value<float>();
+        return def_val;
+#else
         toml::value tab = conf::get()[tab_name];
         if (tab[prop].is_integer())
             return (float)tab[prop].as_integer();
         if (tab[prop].is_floating())
             return (float)tab[prop].as_floating();
         return def_val;
+#endif
     }
 
     static inline int read_int(const char* tab_name, const char* prop, int def_val) {
         if (!conf::get().contains(tab_name) || !conf::get()[tab_name].is_table())
             return def_val;
+#if ENABLE_TOMLPP
+        auto& tab = conf::get()[tab_name].ref<toml::table>();
+        if (tab[prop].is_integer())
+            return *tab[prop].value<int>();
+        return def_val;
+#else
         toml::value tab = conf::get()[tab_name];
         if (tab[prop].is_integer())
             return (int)tab[prop].as_integer();
         return def_val;
+#endif
     }
 
     static inline bool read_bool(const char* tab_name, const char* prop, bool def_val) {
         if (!conf::get().contains(tab_name) || !conf::get()[tab_name].is_table())
             return def_val;
+#if ENABLE_TOMLPP
+        auto& tab = conf::get()[tab_name].ref<toml::table>();
+        if (tab[prop].is_integer())
+            return *tab[prop].value<int>() > 0;
+        if (tab[prop].is_boolean())
+            return *tab[prop].value<bool>();
+        return def_val;
+#else
         toml::value tab = conf::get()[tab_name];
         if (tab[prop].is_integer())
             return tab[prop].as_integer() > 0;
         if (tab[prop].is_boolean())
             return (bool)tab[prop].as_boolean();
         return def_val;
+#endif
     }
 
     static inline tf::str read_str(const char* tab_name, const char* prop, const tf::str& def_val) {
         if (!conf::get().contains(tab_name) || !conf::get()[tab_name].is_table())
             return def_val;
+#if ENABLE_TOMLPP
+        auto& tab = conf::get()[tab_name].ref<toml::table>();
+        if (tab[prop].is_string())
+            return tf::str(*tab[prop].value<std::string_view>());
+        return def_val;
+#else
         toml::value tab = conf::get()[tab_name];
         if (tab[prop].is_string())
             return toml::find<tf::str>(tab, prop);
         return def_val;
+#endif
     }
 }

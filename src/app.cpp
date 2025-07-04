@@ -32,7 +32,11 @@ namespace app {
     void process_event(const SDL_Event& ev);
 
     struct AppData {
+#if ENABLE_TOMLPP
+        toml::table conf;
+#else
         toml::value conf;
+#endif
         tf::vec<pl::Playlist*> playlists_vec;
         tf::str base_path;
         tf::str data_path;
@@ -328,22 +332,31 @@ void app::read_config() {
     const char* content = (const char*)SDL_LoadFile(data->conf_path.c_str(), &sz);
     if (!content)
         TF_WARN(<< "Failed to read config file (" << SDL_GetError() << ")");
+#if ENABLE_TOMLPP
+    toml::parse_result result = toml::parse(content ? content : "");
+    if (!result) {
+        TF_ERROR(<< "Failed to parse config (" << result.error() << ")");
+        result = toml::parse(""); // Hopefully this never fails
+    }
+    data->conf = std::move(result.table());
+#else
     auto result = toml::try_parse_str(content ? content : "");
     if (result.is_err()) {
         auto& errs = result.as_err();
         TF_ERROR(<< "Failed to parse config");
         for (auto it = errs.begin(); it != errs.end(); it++)
             TF_INFO(<< "Details - " << (*it).title());
-        result = toml::try_parse_str(""); // Hopefully this doesn't fail
+        result = toml::try_parse_str(""); // Also this
     }
     if (result.is_ok()) {
         data->conf = result.as_ok();
         TF_INFO(<< "Config parsed successfully");
     }
+#endif
     SDL_free((void*)content);
 }
 
-toml::value& conf::get() {
+conf::toml_table& conf::get() {
     return app::data->conf;
 }
 
@@ -352,7 +365,13 @@ void conf::request_save() {
 }
 
 bool conf::save_to_file() {
+#if ENABLE_TOMLPP
+    std::stringstream stream;
+    stream << app::data->conf;
+    auto data = stream.str();
+#else
     auto data = toml::format(app::data->conf);
+#endif
     if (!SDL_SaveFile(app::data->conf_path.c_str(), data.data(), data.size())) {
         TF_ERROR(<< "Failed to save config (" << SDL_GetError() << ")");
         return false;
@@ -414,6 +433,7 @@ void conf::end_editing(ConfData& data) {
     audio::au->fade_pause_time = data.floats[6] / 1000.f;
     audio::au->fade_resume_time = data.floats[7] / 1000.f;
     // TODO: universal way?
+#if !ENABLE_TOMLPP
     conf::get()["renderer"] = toml::table{
         {"driver", data.ren_drv},
         {"vsync", data.bools[0]}
@@ -469,5 +489,6 @@ void conf::end_editing(ConfData& data) {
     conf::get()["playlists"] = toml::table{
         {"files", pl_files}
     };
+#endif
     conf::request_save();
 }

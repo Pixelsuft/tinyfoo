@@ -130,13 +130,26 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
 void pl::load_playlists() {
     if (!conf::get().contains("playlists") || !conf::get().at("playlists").is_table())
         return;
-    toml::value tab = conf::get().at("playlists");
+#if ENABLE_TOMLPP
+    auto& tab = conf::get()["playlists"].ref<toml::table>();
+#else
+    toml::table tab = conf::get().at("playlists");
+#endif
     if (!tab.contains("files") || !tab.at("files").is_array())
         return;
+#if ENABLE_TOMLPP
+    auto& arr = tab.at("files").ref<toml::array>();
+#else
     toml::array arr = tab.at("files").as_array();
+#endif
     for (int i = 0; i < (int)arr.size(); i++) {
         if (arr.at(i).is_string()) {
+#if ENABLE_TOMLPP
+            tf::str file_name = tf::str(*arr.at(i).value<std::string_view>());
+#else
+            // Help me
             tf::str file_name = tf::str(arr.at(i).as_string().c_str());
+#endif
             // TODO: has it / or \\?
             if (load_pl_from_fp(full_path_for_playlist(file_name))) {
                 pl::pls->at(pl::pls->size() - 1)->path = file_name;

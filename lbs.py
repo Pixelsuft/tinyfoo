@@ -81,6 +81,7 @@ if app.stage == 'conf':
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define ENABLE_IMGUI 1\n')
     can_gdi = app.conf["msvc"]
+    conf_header.write(f'#define ENABLE_TOMLPP 0\n')
     conf_header.write(f'#define ENABLE_UPNG {int(not can_gdi)}\n')
     conf_header.write(f'#define ENABLE_GDIPLUS {int(can_gdi)}\n')
     conf_header.write(f'#define ENABLE_SDL2_MIXER 1\n')
