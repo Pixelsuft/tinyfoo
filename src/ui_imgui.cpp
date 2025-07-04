@@ -13,11 +13,13 @@
 #include <conf.hpp>
 #include <audio_base.hpp>
 #include <set.hpp>
+#include <control.hpp>
 #include <imgui.h>
 #include <imgui_styles.hpp>
 #include <algorithm>
 #include <SDL3/SDL.h>
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
+#define CTRL_BTN_VEC ImVec2(20.f * data->img_scale, 20.f * data->img_scale)
 
 /*
 TODO: config load/save functions in a different file maybe?
@@ -461,11 +463,18 @@ void ui::draw_menubar() {
     }
     if (ImGui::BeginMenu("Playback")) {
         // TODO
-        if (ImGui::MenuItem("Stop", nullptr, nullptr)) {}
-        if (ImGui::MenuItem("Pause", nullptr, nullptr)) {}
-        if (ImGui::MenuItem("Play", nullptr, nullptr)) {}
+        bool selected = audio::au->cur_stopped();
+        if (ImGui::MenuItem("Stop", nullptr, &selected))
+            ctrl::stop();
+        selected = audio::au->cur_paused();
+        if (ImGui::MenuItem("Pause", nullptr, &selected))
+            ctrl::pause();
+        selected = !audio::au->cur_stopped();
+        if (ImGui::MenuItem("Play", nullptr, &selected))
+            ctrl::play();
         if (ImGui::MenuItem("Previous", nullptr, nullptr)) {}
-        if (ImGui::MenuItem("Next", nullptr, nullptr)) {}
+        if (ImGui::MenuItem("Next", nullptr, nullptr))
+            ctrl::next();
         if (ImGui::MenuItem("Random", nullptr, nullptr)) {}
         ImGui::Separator();
         if (ImGui::BeginMenu("Order", data->last_pl != nullptr)) {
@@ -501,32 +510,16 @@ void ui::draw_menubar() {
 void ui::draw_playback_buttons() {
     // TODO: functionality
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.f, 0.f));
-    if (ImGui::ImageButton("IconStop", (ImTextureID)(intptr_t)data->icon_stop, ImVec2(20.f * data->img_scale, 20.f * data->img_scale)))
-        audio::au->cur_stop();
-    if (ImGui::ImageButton("IconPlay", (ImTextureID)(intptr_t)data->icon_play, ImVec2(20.f * data->img_scale, 20.f * data->img_scale))) { 
-        if (audio::au->cur_paused())
-            audio::au->cur_resume();
-        else if (audio::au->cur_stopped()) {
-            pl::fill_cache();
-            audio::au->force_play_cache();
-        }
-        else
-            audio::au->cur_set_pos(0.f);
-    }
-    if (ImGui::ImageButton("IconPause", (ImTextureID)(intptr_t)data->icon_pause, ImVec2(20.f * data->img_scale, 20.f * data->img_scale))) {
-        if (audio::au->cur_stopped()) {
-            pl::fill_cache();
-            audio::au->force_play_cache();
-        }
-        else if (audio::au->cur_paused())
-            audio::au->cur_resume();
-        else
-            audio::au->cur_pause();
-    }
-    ImGui::ImageButton("IconBack", (ImTextureID)(intptr_t)data->icon_back, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
-    if (ImGui::ImageButton("IconFwd", (ImTextureID)(intptr_t)data->icon_fwd, ImVec2(20.f * data->img_scale, 20.f * data->img_scale)))
-        audio::au->force_play_cache();
-    ImGui::ImageButton("IconRng", (ImTextureID)(intptr_t)data->icon_rng, ImVec2(20.f * data->img_scale, 20.f * data->img_scale));
+    if (ImGui::ImageButton("IconStop", (ImTextureID)(intptr_t)data->icon_stop, CTRL_BTN_VEC))
+        ctrl::stop();
+    if (ImGui::ImageButton("IconPlay", (ImTextureID)(intptr_t)data->icon_play, CTRL_BTN_VEC))
+        ctrl::play();
+    if (ImGui::ImageButton("IconPause", (ImTextureID)(intptr_t)data->icon_pause, CTRL_BTN_VEC))
+        ctrl::pause();
+    ImGui::ImageButton("IconBack", (ImTextureID)(intptr_t)data->icon_back, CTRL_BTN_VEC);
+    if (ImGui::ImageButton("IconFwd", (ImTextureID)(intptr_t)data->icon_fwd, CTRL_BTN_VEC))
+        ctrl::next();
+    ImGui::ImageButton("IconRng", (ImTextureID)(intptr_t)data->icon_rng, CTRL_BTN_VEC);
     ImGui::PopStyleVar();
 }
 

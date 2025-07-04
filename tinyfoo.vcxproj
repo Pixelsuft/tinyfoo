@@ -171,6 +171,7 @@
     <ClCompile Include="src\audio_bass.cpp" />
     <ClCompile Include="src\audio_fmod.cpp" />
     <ClCompile Include="src\audio_sdl2_mixer.cpp" />
+    <ClCompile Include="src\control.cpp" />
     <ClCompile Include="src\image.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="include\app.hpp" />
     <ClInclude Include="include\audio_base.hpp" />
     <ClInclude Include="include\break.hpp" />
+    <ClInclude Include="include\control.hpp" />
     <ClInclude Include="include\image.hpp" />
     <ClInclude Include="include\imgui_styles.hpp" />
     <ClInclude Include="include\res.hpp" />
