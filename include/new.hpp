@@ -1,7 +1,7 @@
 #pragma once
 #include <lbs.hpp>
 #include <mem.hpp>
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (__cplusplus >= 201703L)
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 201703L
 #include <new>
 #endif
 #include <memory>
