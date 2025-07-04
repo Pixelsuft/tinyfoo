@@ -1,4 +1,3 @@
-#include <lbs.hpp>
 #include <log.hpp>
 #include <unreachable.hpp>
 #include <SDL3/SDL_log.h>
@@ -37,12 +36,13 @@ void logger::log_by_category(const char* data, const char* file, const char* fun
 		TF_UNREACHABLE();
 	}
 	}
-	if (category >= log_level)
+	if (category >= log_level) {
 #if IS_RELEASE
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "[%s:%i] at %s: %s", file, line, func, data);
+		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "%s", data);
 #else
-	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "[%s:%i] at %s: %s", file, line, func, data);
+		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "[%s:%i] at %s: %s", file, line, func, data);
 #endif
+	}
 	if (category >= ui_log_level)
 		ui::push_log(data, file, func, line, category);
 }

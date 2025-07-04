@@ -1,13 +1,23 @@
 #pragma once
+#include <lbs.hpp>
 #include <sstream>
 
-// TODO: custom allocator maybe (for release mode)?
-// TODO: MIN_LOG_LEVEL
+#if IS_RELEASE
+#include <alloc.hpp>
+
+#define _TF_LOG_TEMPLATE(category, ...) do { \
+    std::basic_stringstream<char, std::char_traits<char>, mem::FAlloc<char>> _temp_string_stream; \
+    _temp_string_stream __VA_ARGS__; \
+    logger::log_by_category(_temp_string_stream.str().c_str(), nullptr, nullptr, 0, category); \
+} while (0)
+#else
 #define _TF_LOG_TEMPLATE(category, ...) do { \
     std::stringstream _temp_string_stream; \
     _temp_string_stream __VA_ARGS__; \
     logger::log_by_category(_temp_string_stream.str().c_str(), logger::format_source_filename(__FILE__), __func__, __LINE__, category); \
 } while (0)
+#endif
+// TODO: MIN_LOG_LEVEL
 #define TF_INFO(...) _TF_LOG_TEMPLATE(0, __VA_ARGS__)
 #define TF_WARN(...) _TF_LOG_TEMPLATE(1, __VA_ARGS__)
 #define TF_ERROR(...) _TF_LOG_TEMPLATE(2, __VA_ARGS__)
