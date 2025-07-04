@@ -133,7 +133,7 @@ void pl::load_playlists() {
 #if ENABLE_TOMLPP
     auto& tab = conf::get()["playlists"].ref<toml::table>();
 #else
-    toml::table tab = conf::get().at("playlists");
+    toml::value tab = conf::get().at("playlists");
 #endif
     if (!tab.contains("files") || !tab.at("files").is_array())
         return;

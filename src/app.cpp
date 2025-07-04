@@ -423,6 +423,12 @@ void conf::begin_editing(ConfData& data) {
     data.ints[3] = conf::read_int("bass", "frequency", 0);
 }
 
+#if ENABLE_TOMLPP
+// HELP
+#define TOML_DUMP_STR(str) str.c_str()
+#else
+#define TOML_DUMP_STR(str) str
+#endif
 void conf::end_editing(ConfData& data) {
     data.def_style = data.style;
     audio::au->need_dev = data.dev_names[data.ints[4]];
@@ -432,63 +438,69 @@ void conf::end_editing(ConfData& data) {
     audio::au->fade_stop_time = data.floats[5] / 1000.f;
     audio::au->fade_pause_time = data.floats[6] / 1000.f;
     audio::au->fade_resume_time = data.floats[7] / 1000.f;
-    // TODO: universal way?
-#if !ENABLE_TOMLPP
-    conf::get()["renderer"] = toml::table{
-        {"driver", data.ren_drv},
-        {"vsync", data.bools[0]}
-    };
-    conf::get()["imgui"] = toml::table{
-        {"style", data.style},
-        {"img_scale", data.floats[2]},
-        {"font1_path", data.font1_path},
-        {"font1_size", data.floats[0]},
-        {"font2_path", data.font2_path},
-        {"font2_size", data.floats[1]}
-    };
-    conf::get()["audio"] = toml::table{
-        {"backend", data.au_bk},
-        {"device", audio::au->need_dev},
-        {"volume", data.floats[3]},
-        {"fade_next_time", data.floats[4]},
-        {"fade_stop_time", data.floats[5]},
-        {"fade_pause_time", data.floats[6]},
-        {"fade_resume_time", data.floats[7]}
-    };
-    conf::get()["sdl2_mixer"] = toml::table{
-        {"driver", data.sdl2_drv},
-        {"format", data.sdl2_fmt},
-        {"channels", data.ints[0]},
-        {"frequency", data.ints[1]},
-        {"chunksize", data.ints[2]},
-        {"enable_flac", data.bools[1]},
-        {"enable_mod", data.bools[2]},
-        {"enable_mp3", data.bools[3]},
-        {"enable_ogg", data.bools[4]},
-        {"enable_mid", data.bools[5]},
-        {"enable_opus", data.bools[6]},
-        {"enable_wavpack", data.bools[7]}
-    };
-    conf::get()["fmod"] = toml::table{
-        {"driver", data.fmod_drv}
-    };
-    conf::get()["bass"] = toml::table{
-        {"frequency", data.ints[3]},
-        {"force_16bits", data.bools[8]},
-        {"force_stereo", data.bools[9]},
-        {"force_dmix", data.bools[10]},
-        {"force_audiotrack", data.bools[11]},
-        {"force_directsound", data.bools[12]},
-        {"force_software", data.bools[13]}
-    };
     // TODO: support tab order saving, but IDK how to do that easily
+#if ENABLE_TOMLPP
+    toml::array pl_files;
+    pl_files.reserve(pl::pls->size());
+    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
+        pl_files.push_back((*it)->path.c_str());
+#else
     tf::vec<tf::str> pl_files;
     pl_files.reserve(pl::pls->size());
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
         pl_files.push_back((*it)->path);
-    conf::get()["playlists"] = toml::table{
-        {"files", pl_files}
-    };
 #endif
+    app::data->conf = toml::table{
+        {"renderer", toml::table{
+            {"driver", TOML_DUMP_STR(data.ren_drv)},
+            {"vsync", data.bools[0]}
+        }},
+        {"imgui", toml::table{
+            {"style", TOML_DUMP_STR(data.style)},
+            {"img_scale", data.floats[2]},
+            {"font1_path", TOML_DUMP_STR(data.font1_path)},
+            {"font1_size", data.floats[0]},
+            {"font2_path", TOML_DUMP_STR(data.font2_path)},
+            {"font2_size", data.floats[1]}
+        }},
+        {"audio", toml::table{
+            {"backend", TOML_DUMP_STR(data.au_bk)},
+            {"device", TOML_DUMP_STR(audio::au->need_dev)},
+            {"volume", data.floats[3]},
+            {"fade_next_time", data.floats[4]},
+            {"fade_stop_time", data.floats[5]},
+            {"fade_pause_time", data.floats[6]},
+            {"fade_resume_time", data.floats[7]}
+        }},
+        {"sdl2_mixer", toml::table{
+            {"driver", TOML_DUMP_STR(data.sdl2_drv)},
+            {"format", TOML_DUMP_STR(data.sdl2_fmt)},
+            {"channels", data.ints[0]},
+            {"frequency", data.ints[1]},
+            {"chunksize", data.ints[2]},
+            {"enable_flac", data.bools[1]},
+            {"enable_mod", data.bools[2]},
+            {"enable_mp3", data.bools[3]},
+            {"enable_ogg", data.bools[4]},
+            {"enable_mid", data.bools[5]},
+            {"enable_opus", data.bools[6]},
+            {"enable_wavpack", data.bools[7]}
+        }},
+        {"fmod", toml::table{
+            {"driver", TOML_DUMP_STR(data.fmod_drv)}
+        }},
+        {"bass", toml::table{
+            {"frequency", data.ints[3]},
+            {"force_16bits", data.bools[8]},
+            {"force_stereo", data.bools[9]},
+            {"force_dmix", data.bools[10]},
+            {"force_audiotrack", data.bools[11]},
+            {"force_directsound", data.bools[12]},
+            {"force_software", data.bools[13]}
+        }},
+        {"playlists", toml::table{
+            {"files", pl_files}
+        }}
+    };
     conf::request_save();
 }
