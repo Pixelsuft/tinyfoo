@@ -112,6 +112,7 @@ namespace audio {
         SDL_SharedObject* handle;
         int (SDLCALL *Mix_Init)(int);
         void (SDLCALL *Mix_Quit)(void);
+        int (SDLCALL *Mix_OpenAudio)(int, uint16_t, int, int);
         int (SDLCALL *Mix_OpenAudioDevice)(int, uint16_t, int, int, const char*, int);
         int (SDLCALL *Mix_QuerySpec)(int*, uint16_t*, int*);
         int (SDLCALL *Mix_AllocateChannels)(int);
@@ -163,6 +164,7 @@ namespace audio {
             // TODO: error if old version
             MIX_LOAD_FUNC(Mix_Init);
             MIX_LOAD_FUNC(Mix_Quit);
+            MIX_LOAD_FUNC(Mix_OpenAudio);
             MIX_LOAD_FUNC(Mix_OpenAudioDevice);
             MIX_LOAD_FUNC(Mix_QuerySpec);
             MIX_LOAD_FUNC(Mix_AllocateChannels);
@@ -270,10 +272,17 @@ namespace audio {
             if (b_samples > 0)
                 sample_frames = b_samples;
             // TF_INFO(<< " " << sample_frames << " " << spec.channels << " " << spec.format);
-            if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, nullptr, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
+#if 1
+            if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, dev_name, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
             }
+#else
+            if (mix.Mix_OpenAudio(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames) < 0) {
+                TF_ERROR(<< "Failed to open audio (" << SDL_GetError() << ")");
+                return false;
+            }
+#endif
             int num_fr = 0;
             Uint16 num_fmt = 0;
             int num_ch = 0;
