@@ -28,6 +28,7 @@ x64
 keystore
 enc_temp_folder
 embuild
+miniaudio
 push.bat
 imgui.ini
 stdin.txt
