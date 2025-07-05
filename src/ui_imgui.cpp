@@ -335,7 +335,7 @@ void ui::draw_menubar() {
         if (ImGui::MenuItem("New playlist...", nullptr, nullptr)) {
 
         }
-        if (ImGui::MenuItem("Configure playlist", nullptr, nullptr)) {
+        if (ImGui::MenuItem("Configure playlist", nullptr, nullptr, data->last_pl != nullptr)) {
             data->need_conf_pl = data->last_pl;
             data->show_playlist_conf = true;
             SDL_memcpy(data->pl_name_buf, data->need_conf_pl->name.c_str(), std::min(data->need_conf_pl->name.size() + 1, (size_t)63));

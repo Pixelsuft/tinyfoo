@@ -40,14 +40,12 @@ namespace pl {
 
 static inline tf::str fn_from_fp(const tf::str& fp) {
     tf::str ret = fp;
-    auto t1_find = fp.rfind('\\') + 1;
-    auto t2_find = fp.rfind('/') + 1;
-    if (t1_find >= 0 && t1_find < fp.size())
-        ret = fp.substr(t1_find);
-    else if (t2_find >= 0 && t2_find < fp.size())
-        ret = fp.substr(t2_find);
-    else
-        ret = fp;
+    auto t1_find = ret.rfind('\\') + 1;
+    if (t1_find >= 0 && t1_find < ret.size())
+        ret = ret.substr(t1_find);
+    t1_find = ret.rfind('/') + 1;
+    if (t1_find >= 0 && t1_find < ret.size())
+        ret = ret.substr(t1_find);
     t1_find = ret.rfind('.');
     if (t1_find >= 0 && t1_find < ret.size())
         ret = ret.substr(0, t1_find);
@@ -82,15 +80,16 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         TF_ERROR(<< "Failed to load playlist file (" << SDL_GetError() << ")");
         return false;
     }
+    // TODO: how to handle errors without exceptions
     json d = json::parse(data);
     SDL_free((void*)data);
-    if (!d.is_object() || !d["name"].is_string()) {
+    if (!d.is_object()) {
         TF_ERROR(<< "Failed to parse playlist");
         return false;
     }
     pl::Playlist* p = tf::nw<pl::Playlist>();
     // p->path = fp;
-    p->name = util::json_unpack_str(d["name"]);
+    p->name = d["name"].is_string() ? util::json_unpack_str(d["name"]) : "Unknown";
     if (d["sort"].is_string())
         p->sorting = util::json_unpack_str(d["sort"]);
     else
