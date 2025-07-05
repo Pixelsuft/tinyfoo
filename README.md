@@ -12,7 +12,7 @@ Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are 
 All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
  - [SDL3](https://github.com/libsdl-org/SDL)
  - [nlohmann json](https://github.com/nlohmann/json)
- - [toml11](https://github.com/ToruNiina/toml11)
+ - [toml11](https://github.com/ToruNiina/toml11) or [toml++](https://github.com/marzer/tomlplusplus)
  - [ImGui](https://github.com/ocornut/imgui)
 ## Building (Visual Studio)
 ```sh
@@ -47,6 +47,7 @@ g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-m
 ```
 ## TODO
  - Support building to shared lib with minimal API
+ - Support searching in playlist
  - Add support for libpng (useful on linux?)
  - Other audio libs
  - Fix TODOs in code and code cleanup
