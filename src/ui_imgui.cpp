@@ -468,6 +468,7 @@ void ui::draw_playback_buttons() {
 void ui::draw_volume_control() {
     ImGui::PushID("VolumeSlider");
     ImGui::PushItemWidth(100.f);
+    // TODO: conf max vol
     if (ImGui::SliderFloat("", &audio::au->volume, 0.f, audio::au->max_volume, "", ImGuiSliderFlags_NoRoundToFormat))
         audio::au->update_volume();
     if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {

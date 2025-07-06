@@ -141,8 +141,9 @@ namespace audio {
     class AudioSDL2Mixer : public AudioBase {
         protected:
         SDL2MixerApi mix;
-        float pause_pos;
         public:
+        SDL_Mutex* mut;
+        float pause_pos;
         bool was_finished;
         bool hooked;
         bool stopped;
@@ -226,6 +227,9 @@ namespace audio {
             }
             if (ret_flags < init_flags)
                 TF_WARN(<< "Failed to init some " << lib_name << "formats (" << SDL_GetError() << ")");
+            mut = SDL_CreateMutex();
+            if (!mut)
+                TF_ERROR(<< "Failed to create mutex for audio thread");
             TF_INFO(<< lib_name << " inited successfully with " << tf::nfstr(SDL_GetCurrentAudioDriver()) << " driver");
             inited = true;
         }
@@ -272,7 +276,8 @@ namespace audio {
             if (b_samples > 0)
                 sample_frames = b_samples;
             // TF_INFO(<< sample_frames << " " << spec.channels << " " << spec.format << " " << tf::nfstr(dev_name));
-#if 1
+#if 0
+            // TODO: FIXME
             if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, dev_name, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
@@ -461,8 +466,10 @@ namespace audio {
         }
 
         void update() {
+            SDL_LockMutex(mut);
             if (was_finished) {
                 was_finished = false;
+                SDL_UnlockMutex(mut);
                 hooked = false;
                 if (paused) {
                     return;
@@ -472,6 +479,8 @@ namespace audio {
                 pl::fill_cache();
                 pre_open();
             }
+            else
+                SDL_UnlockMutex(mut);
         }
 
         void cur_stop() {
@@ -569,6 +578,8 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
+            if (mut)
+                SDL_DestroyMutex(mut);
             inited = false;
             mix.Mix_Quit();
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -579,7 +590,9 @@ namespace audio {
 
 void SDLCALL sdl2_music_finish_cb(void) {
     audio::AudioSDL2Mixer* a = (audio::AudioSDL2Mixer*)audio::au;
+    SDL_LockMutex(a->mut);
     a->was_finished = true;
+    SDL_UnlockMutex(a->mut);
     // TF_INFO(<< "Finished!");
 }
 
