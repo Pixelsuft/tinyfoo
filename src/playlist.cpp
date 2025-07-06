@@ -80,10 +80,9 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         TF_ERROR(<< "Failed to load playlist file (" << SDL_GetError() << ")");
         return false;
     }
-    // TODO: how to handle errors without exceptions
-    json d = json::parse(data);
+    json d = json::parse(data, nullptr, false);
     SDL_free((void*)data);
-    if (!d.is_object()) {
+    if (d.is_discarded() || !d.is_object()) {
         TF_ERROR(<< "Failed to parse playlist");
         return false;
     }

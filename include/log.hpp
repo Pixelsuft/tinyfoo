@@ -17,11 +17,26 @@
     logger::log_by_category(_temp_string_stream.str().c_str(), logger::format_source_filename(__FILE__), __func__, __LINE__, category); \
 } while (0)
 #endif
-// TODO: MIN_LOG_LEVEL
+#if MIN_LOG_LEVEL <= 0
 #define TF_INFO(...) _TF_LOG_TEMPLATE(0, __VA_ARGS__)
+#else
+#define TF_INFO(...) do {} while (0)
+#endif
+#if MIN_LOG_LEVEL <= 1
 #define TF_WARN(...) _TF_LOG_TEMPLATE(1, __VA_ARGS__)
+#else
+#define TF_WARN(...) do {} while (0)
+#endif
+#if MIN_LOG_LEVEL <= 2
 #define TF_ERROR(...) _TF_LOG_TEMPLATE(2, __VA_ARGS__)
+#else
+#define TF_ERROR(...) do {} while (0)
+#endif
+#if MIN_LOG_LEVEL <= 3
 #define TF_FATAL(...) _TF_LOG_TEMPLATE(3, __VA_ARGS__)
+#else
+#define TF_FATAL(...) do {} while (0)
+#endif
 
 namespace logger {
     constexpr size_t comptime_strlen_heck(const char* str) {
@@ -33,9 +48,8 @@ namespace logger {
 
     constexpr const char* format_source_filename(const char* fn) {
         char* end = (char*)fn + comptime_strlen_heck(fn) - 1;
-        while (end > fn + 8 && *end != '\\' && *end != '/') {
+        while (end > fn + 8 && *end != '\\' && *end != '/')
             end--;
-        }
         return (end > fn + 8) ? (end - 3) : fn;
     }
 

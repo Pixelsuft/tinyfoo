@@ -11,6 +11,7 @@ namespace mem {
 #endif
 }
 
+#if !IS_RELEASE
 void* mem::alloc(int size) {
 	return SDL_malloc((size_t)size);
 }
@@ -18,6 +19,7 @@ void* mem::alloc(int size) {
 void mem::free(void* ptr) {
 	SDL_free(ptr);
 }
+#endif
 
 void* mem::bump_alloc(int size) {
 #if !IS_RELEASE
