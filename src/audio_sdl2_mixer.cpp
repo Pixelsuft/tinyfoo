@@ -65,6 +65,12 @@ typedef struct _Mix_Music Mix_Music;
     } \
 } while (0)
 #endif
+typedef struct SDL2_version {
+    Uint8 major;
+    Uint8 minor;
+    Uint8 patch;
+} SDL2_version;
+
 #ifdef mus_h
 #undef mus_h
 #endif
@@ -110,6 +116,7 @@ namespace audio {
 
     struct SDL2MixerApi {
         SDL_SharedObject* handle;
+        const SDL2_version* (SDLCALL *Mix_Linked_Version)(void);
         int (SDLCALL *Mix_Init)(int);
         void (SDLCALL *Mix_Quit)(void);
         int (SDLCALL *Mix_OpenAudio)(int, uint16_t, int, int);
@@ -159,10 +166,16 @@ namespace audio {
             const char* lib_path = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_path);
             if (!mix.handle) {
-                TF_WARN(<< "Failed to load " << lib_name << " library (" << SDL_GetError() << ")");
+                TF_ERROR(<< "Failed to load " << lib_name << " library (" << SDL_GetError() << ")");
                 return;
             }
-            // TODO: error if old version
+            MIX_LOAD_FUNC(Mix_Linked_Version);
+            const SDL2_version* ver = mix.Mix_Linked_Version();
+            if ((ver->major < 2) || (ver->major == 2 && ver->minor < 6)) {
+                TF_ERROR(<< lib_name << " version is " << ver->major << "." << ver->minor << "." << ver->patch << " is older than 2.6.0");
+                SDL_UnloadObject(mix.handle);
+                return;
+            }
             MIX_LOAD_FUNC(Mix_Init);
             MIX_LOAD_FUNC(Mix_Quit);
             MIX_LOAD_FUNC(Mix_OpenAudio);
