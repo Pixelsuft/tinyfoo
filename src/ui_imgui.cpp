@@ -18,6 +18,13 @@
 #include <imgui_styles.hpp>
 #include <algorithm>
 #include <SDL3/SDL.h>
+#if DWM_STATUS_PATCH
+#include <X11/Xlib.h>
+// Breaks imgui
+#ifdef Status
+#undef Status
+#endif
+#endif
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 #define CTRL_BTN_VEC ImVec2(20.f * data->img_scale, 20.f * data->img_scale)
 
@@ -39,7 +46,12 @@ namespace ui {
 #if WIN_TITLE_PATCH
         tf::str last_cap;
 #endif
-        size_t meta_mod;
+#if DWM_STATUS_PATCH
+        SDL_Time dwm_last_upd;
+        Display* dwm_disp;
+        Window dwm_root;
+#endif
+        Point size;
         double meta_dur;
         char pl_name_buf[64];
         size_t meta_sz;
@@ -57,7 +69,7 @@ namespace ui {
         void* icon_back;
         void* icon_fwd;
         void* icon_rng;
-        Point size;
+        size_t meta_mod;
         float img_scale;
         bool show_app_conf;
         bool show_about;
@@ -221,6 +233,25 @@ void ui::do_extra_stuff() {
         SDL_SetWindowTitle((SDL_Window*)app::win_handle, new_cap.c_str());
     }
 #endif
+#if DWM_STATUS_PATCH
+    SDL_Time ticks;
+    if (SDL_GetCurrentTime(&ticks)) {
+        if ((ticks / 1000000000) != data->dwm_last_upd) {
+            char buf[2048];
+            data->dwm_last_upd = ticks / 1000000000;
+            struct tm* time_s = util::tm_from_sdl_time(ticks);
+            SDL_snprintf(
+                buf, 64, "%i-%02i-%02i %02i:%02i:%02i",
+                time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
+                time_s->tm_hour, time_s->tm_min, time_s->tm_sec
+            );
+            XStoreName(data->dwm_disp, data->dwm_root, buf);
+            XFlush(data->dwm_disp);
+        }
+    }
+    else
+        TF_WARN(<< "Failed to get current time (" << SDL_GetError() << ")");
+#endif
 }
 
 bool ui::init() {
@@ -311,6 +342,19 @@ bool ui::init() {
         res::free_asset_data(font_data);
     }
     data->log_cache.reserve(LOG_CACHE_COUNT);
+#if DWM_STATUS_PATCH
+    data->dwm_disp = XOpenDisplay(nullptr);
+    if (data->dwm_disp) {
+        data->dwm_root = XRootWindow(data->dwm_disp, XDefaultScreen(data->dwm_disp));
+        if (!data->dwm_root)
+            TF_ERROR(<< "Failed to get X display root window");
+    }
+    else {
+        data->dwm_root = 0;
+        TF_ERROR(<< "Failed to open X display");
+    }
+    data->dwm_last_upd = 0;
+#endif
     return true;
 }
 
@@ -988,6 +1032,10 @@ void ui::draw_about() {
 }
 
 void ui::destroy() {
+#if DWM_STATUS_PATCH
+    if (data->dwm_disp)
+        XCloseDisplay(data->dwm_disp);
+#endif
     mem::free((void*)data->pl_path_buf);
     ren::tex_destroy(data->icon_stop);
     ren::tex_destroy(data->icon_play);
