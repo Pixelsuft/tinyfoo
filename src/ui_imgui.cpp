@@ -21,10 +21,6 @@
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 #define CTRL_BTN_VEC ImVec2(20.f * data->img_scale, 20.f * data->img_scale)
 
-/*
-TODO: config load/save functions in a different file maybe?
-*/
-
 namespace app {
     extern void* win_handle;
     extern Point drop_pos;
@@ -332,9 +328,8 @@ void ui::draw_menubar() {
         if (ImGui::MenuItem("Add folder...", nullptr, nullptr, data->last_pl != nullptr))
             pl::add_folder_dialog(data->last_pl);
         ImGui::Separator();
-        if (ImGui::MenuItem("New playlist...", nullptr, nullptr)) {
-
-        }
+        if (ImGui::MenuItem("New playlist...", nullptr, nullptr))
+            pl::add_new_pl();
         if (ImGui::MenuItem("Configure playlist", nullptr, nullptr, data->last_pl != nullptr)) {
             data->need_conf_pl = data->last_pl;
             data->show_playlist_conf = true;
@@ -933,15 +928,30 @@ void ui::draw_settings() {
 void ui::draw_playlist_conf() {
     ImGui::InputText("Playlist name", data->pl_name_buf, 256);
     ImGui::InputText("Playlist path", data->pl_path_buf, 65536);
-    if (ImGui::Button("Apply & Save")) {
+    // TODO: valid name and path
+    bool can = data->pl_name_buf[0] != '\0' && data->pl_path_buf[0] != '\0' && SDL_strcmp(data->pl_name_buf, "Unknown") != 0;
+    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
+        if ((*it) == data->need_conf_pl)
+            continue;
+        if ((*it)->name == data->pl_name_buf || util::compare_paths((*it)->path, data->pl_path_buf)) {
+            can = false;
+            break;
+        }
+    }
+    if (can && ImGui::Button("Apply & Save")) {
         tf::str old_name(data->need_conf_pl->name);
         tf::str old_path(data->need_conf_pl->path);
         data->need_conf_pl->name = data->pl_name_buf;
         data->need_conf_pl->path = data->pl_path_buf;
+        data->need_conf_pl->changed = true;
         if (pl::save(data->need_conf_pl)) {
-            if (!util::compare_paths(old_path, data->need_conf_pl->path)) {
+            // Hacky
+            conf::begin_editing(data->conf);
+            conf::end_editing(data->conf);
+            conf::request_save();
+            if (old_name != "Unknown" && !util::compare_paths(old_path, data->need_conf_pl->path)) {
                 if (!SDL_RemovePath(pl::full_path_for_playlist(old_path).c_str()))
-                    TF_ERROR(<< "Failed to remove old playlist data path (" << SDL_GetError() << ")");
+                    TF_WARN(<< "Failed to remove old playlist data path (" << SDL_GetError() << ")");
             }
         }
         else {
@@ -951,7 +961,8 @@ void ui::draw_playlist_conf() {
         }
         data->show_playlist_conf = false;
     }
-    ImGui::SameLine();
+    if (can)
+        ImGui::SameLine();
     if (ImGui::Button("Cancel"))
         data->show_playlist_conf = false;
 }

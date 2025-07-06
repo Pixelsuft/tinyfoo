@@ -17,7 +17,6 @@ namespace util {
     }
 
     static inline bool compare_paths(const tf::str& p1, const tf::str& p2) {
-        // TODO: compare absolute and relative paths
 #if IS_WIN && IS_RELEASE
         if (p1.size() != p2.size())
             return false;

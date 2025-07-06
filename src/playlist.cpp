@@ -72,6 +72,22 @@ tf::str pl::full_path_for_playlist(const tf::str& path) {
         return path;
 }
 
+void pl::add_new_pl() {
+    for (auto it = pls->begin(); it != pls->end(); it++) {
+        if ((*it)->name == "Unknown")
+            return; // No dup
+    }
+    Playlist* p = tf::nw<pl::Playlist>();
+    p->path = "unknown.json";
+    p->name = "Unknown";
+    p->sorting = "none";
+    p->reserve_sorting = false;
+    p->last_sel = p->last_shift_sel = p->last_shift_sel2 = 0;
+    p->changed = false;
+    sort_by(p, "none");
+    pls->push_back(p);
+}
+
 bool pl::load_pl_from_fp(const tf::str& fp) {
     TF_INFO(<< "Loading playlist " << fp);
     size_t sz;
@@ -86,7 +102,7 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         TF_ERROR(<< "Failed to parse playlist");
         return false;
     }
-    pl::Playlist* p = tf::nw<pl::Playlist>();
+    Playlist* p = tf::nw<pl::Playlist>();
     // p->path = fp;
     p->name = d["name"].is_string() ? util::json_unpack_str(d["name"]) : "Unknown";
     if (d["sort"].is_string())
@@ -145,13 +161,10 @@ void pl::load_playlists() {
 #if ENABLE_TOMLPP
             tf::str file_name = tf::str(*arr.at(i).value<std::string_view>());
 #else
-            // Help me
             tf::str file_name = tf::str(arr.at(i).as_string().c_str());
 #endif
-            // TODO: has it / or \\?
-            if (load_pl_from_fp(full_path_for_playlist(file_name))) {
+            if (load_pl_from_fp(full_path_for_playlist(file_name)))
                 pl::pls->at(pl::pls->size() - 1)->path = file_name;
-            }
         }
     }
 }
@@ -309,7 +322,6 @@ bool pl::save(Playlist* p) {
     }
     out["content"] = content;
     p->changed = false;
-    // TF_INFO(<< out);
     std::string out_str(out.dump());
     return write_file(full_path_for_playlist(p->path).c_str(), out_str.data(), out_str.size());
 }
