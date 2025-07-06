@@ -204,7 +204,7 @@ namespace audio {
             allow_mid = conf::read_bool("sdl2_mixer", "enable_mid", false);
             allow_opus = conf::read_bool("sdl2_mixer", "enable_opus", false);
             allow_wavpack = conf::read_bool("sdl2_mixer", "enable_wavpack", false);
-            if (drv_hint.size() == 0)
+            if (drv_hint.size() == 0 || drv_hint == "default")
                 SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
             else if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, drv_hint.c_str()))
                 TF_WARN(<< "Failed to set SDL3 audio hint (" << SDL_GetError() << ")");
