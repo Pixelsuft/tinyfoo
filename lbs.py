@@ -1,6 +1,7 @@
 import os
 import sys
-import json
+import platform
+import datetime
 from liblbs import LbsApp
 
 
@@ -63,10 +64,15 @@ if app.stage == 'conf':
         sys.exit(1)
     app.conf['extra_libs'] = []
     conf_header = open(os.path.join(app.b_path, 'lbs', 'lbs.hpp'), 'w', encoding='utf-8')
-    # TODO: write configuration info like time, os info, etc
     is_win = int(sys.platform == 'win32')
     is_release = int('--release' in app.args)
     conf_header.write(f'#pragma once\n\n')
+    conf_header.write(f'#define LBS_PLATFORM "{sys.platform}"\n')
+    conf_header.write(f'#define LBS_PYTHON "{sys.version}"\n')
+    conf_header.write(f'#define LBS_MACHINE "{platform.machine()}"\n')
+    conf_header.write(f'#define LBS_SYSTEM "{platform.platform()}"\n')
+    conf_header.write(f'#define LBS_CPU "{platform.processor()}"\n')
+    conf_header.write(f'#define LBS_CONF_TIME "{datetime.datetime.today().strftime(r"%Y-%m-%d %H:%M:%S")}"\n')
     conf_header.write(f'#define IS_MSVC {int(app.conf["msvc"])}\n')
     conf_header.write(f'#define IS_MINGW {int(app.conf["mingw"])}\n')
     if app.conf['msvc']:
