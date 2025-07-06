@@ -954,7 +954,7 @@ void ui::draw_playlist_conf() {
             conf::request_save();
             if (old_name != "Unknown" && !util::compare_paths(old_path, data->need_conf_pl->path)) {
                 if (!SDL_RemovePath(pl::full_path_for_playlist(old_path).c_str()))
-                    TF_WARN(<< "Failed to remove old playlist data path (" << SDL_GetError() << ")");
+                    TF_WARN(<< "Failed to remove old playlist data file (" << SDL_GetError() << ")");
             }
         }
         else {
@@ -966,6 +966,15 @@ void ui::draw_playlist_conf() {
     }
     if (can)
         ImGui::SameLine();
+    if (ImGui::Button("Delete")) {
+        // Should I delay that to app quit so rage quit works???
+        pl::remove_pl(data->need_conf_pl);
+        conf::begin_editing(data->conf);
+        conf::end_editing(data->conf);
+        conf::request_save();
+        data->show_playlist_conf = false;
+    }
+    ImGui::SameLine();
     if (ImGui::Button("Cancel"))
         data->show_playlist_conf = false;
 }

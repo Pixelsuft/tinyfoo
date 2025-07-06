@@ -326,6 +326,26 @@ bool pl::save(Playlist* p) {
     return write_file(full_path_for_playlist(p->path).c_str(), out_str.data(), out_str.size());
 }
 
+void pl::remove_pl(Playlist* p) {
+    if (std::find(p->mus.begin(), p->mus.end(), audio::au->cur_mus) != p->mus.end()) {
+        audio::au->cur_stop();
+        audio::au->cur_mus = nullptr; // Is this legal?
+    }
+    for (int i = (int)audio::au->cache.size(); i > 0; i--) {
+        audio::Music* m = audio::au->cache[i - 1];
+        if (std::find(p->mus.begin(), p->mus.end(), m) != p->mus.end())
+            audio::au->cache.erase(audio::au->cache.begin() + i - 1);
+    }
+    for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++)
+        audio::au->mus_close(*mit);
+    if (!SDL_RemovePath(full_path_for_playlist(p->path).c_str()))
+        TF_WARN(<< "Failed to remove playlist data file (" << SDL_GetError() << ")");
+    auto it = std::find(pls->begin(), pls->end(), p);
+    if (it != pls->end())
+        pls->erase(it);
+    tf::dl(p);
+}
+
 void pl::unload_playlists(bool rage) {
     audio::au->cur_stop();
     for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++)
