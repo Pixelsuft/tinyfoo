@@ -219,7 +219,7 @@ namespace ui {
 void ui::do_extra_stuff() {
 #if WIN_TITLE_PATCH
     tf::str new_cap;
-    if (audio::au->cur_mus && !audio::au->cur_stopped()) {
+    if (!audio::au->cur_stopped()) {
         char pos_buf[32];
         char dur_buf[32];
         fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
@@ -237,14 +237,29 @@ void ui::do_extra_stuff() {
     SDL_Time ticks;
     if (SDL_GetCurrentTime(&ticks)) {
         if ((ticks / 1000000000) != data->dwm_last_upd) {
-            char buf[2048];
+            // TODO: also update when track changed
+            char buf[1024];
             data->dwm_last_upd = ticks / 1000000000;
             struct tm* time_s = util::tm_from_sdl_time(ticks);
-            SDL_snprintf(
-                buf, 64, "%i-%02i-%02i %02i:%02i:%02i",
-                time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
-                time_s->tm_hour, time_s->tm_min, time_s->tm_sec
-            );
+            if (audio::au->cur_stopped()) {
+                SDL_snprintf(
+                    buf, 1024, "%i-%02i-%02i %02i:%02i:%02i",
+                    time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
+                    time_s->tm_hour, time_s->tm_min, time_s->tm_sec
+                );
+            }
+            else {
+                char pos_buf[32];
+                char dur_buf[32];
+                fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
+                fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
+                SDL_snprintf(
+                    buf, 1024, "%s [%s/%s] | %i-%02i-%02i %02i:%02i:%02i",
+                    audio::au->cur_mus->fn.substr(0, 512).c_str(), pos_buf, dur_buf,
+                    time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
+                    time_s->tm_hour, time_s->tm_min, time_s->tm_sec
+                );
+            }
             XStoreName(data->dwm_disp, data->dwm_root, buf);
             XFlush(data->dwm_disp);
         }
@@ -448,7 +463,6 @@ void ui::draw_menubar() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Playback")) {
-        // TODO
         bool selected = audio::au->cur_stopped();
         if (ImGui::MenuItem("Stop", nullptr, &selected))
             ctrl::stop();
