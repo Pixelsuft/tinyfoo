@@ -178,6 +178,8 @@ bool pl::mus_open_file(audio::Music* mus) {
 }
 
 void pl::add_file_by_fp(Playlist* p, const char* fp) {
+    if (p->name == "Unknown")
+        return;
     // TF_INFO(<< "Adding file " << fp);
     audio::Music* m = tf::nw<audio::Music>();
     m->full_path = fp;
@@ -302,6 +304,8 @@ static inline bool write_file(const char* fp, const char* data, size_t size) {
 }
 
 bool pl::save(Playlist* p) {
+    if (p->name == "Unknown")
+        return false;
     clear_selected(p);
     sort_by(p, "fn");
     json out;
