@@ -101,7 +101,7 @@ bool app::init() {
     }
     else
         TF_WARN(<< "Failed to get app base path (" << SDL_GetError() << ")");
-    temp_path = SDL_GetPrefPath(nullptr, "tinyfoo");
+    temp_path = SDL_GetPrefPath("Pixelsuft", "tinyfoo");
     if (temp_path) {
         data->data_path = tf::str(temp_path);
         SDL_free((void*)temp_path);
