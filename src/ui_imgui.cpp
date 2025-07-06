@@ -901,6 +901,8 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
+    if (ImGui::InputInt("Version", &data->conf.ints[5]))
+        data->conf.ints[5] = tf::clamp(data->conf.ints[5], 0, 0x00090900);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "BASS");
     ImGui::PopFont();

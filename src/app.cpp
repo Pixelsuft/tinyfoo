@@ -416,6 +416,7 @@ void conf::begin_editing(ConfData& data) {
     data.ints[1] = conf::read_int("sdl2_mixer", "frequency", 0);
     data.ints[2] = conf::read_int("sdl2_mixer", "chunksize", 0);
     data.fmod_drv = conf::read_str("fmod", "driver", "nosound");
+    data.ints[5] = conf::read_int("fmod", "version", 0);
     data.bools[8] = conf::read_bool("bass", "force_16bits", false);
     data.bools[9] = conf::read_bool("bass", "force_stereo", false);
     data.bools[10] = conf::read_bool("bass", "force_dmix", false);
@@ -489,7 +490,8 @@ void conf::end_editing(ConfData& data) {
             {"enable_wavpack", data.bools[7]}
         }},
         {"fmod", toml::table{
-            {"driver", TOML_DUMP_STR(data.fmod_drv)}
+            {"driver", TOML_DUMP_STR(data.fmod_drv)},
+            {"version", data.ints[5]}
         }},
         {"bass", toml::table{
             {"frequency", data.ints[3]},

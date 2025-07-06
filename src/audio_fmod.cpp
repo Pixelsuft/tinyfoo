@@ -736,11 +736,33 @@ namespace audio {
                 return;
             }
             tf::str need_driver = conf::read_str("fmod", "driver", "");
-            // TODO: brute force version/read from config
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, 0x00020308))) {
-                TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
-                SDL_UnloadObject(fmod.handle);
-                return;
+            unsigned int ver = (unsigned int)conf::read_int("fmod", "version", 0);
+            if (ver > 0) {
+                if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, ver))) {
+                    TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
+                    SDL_UnloadObject(fmod.handle);
+                    return;
+                }
+            }
+            else {
+                TF_WARN(<< "Trying to brute force FMOD version");
+                for (unsigned int i = 1; i < 0x00090901; i++) {
+                    if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, i))) {
+                        if (err == FMOD_ERR_HEADER_MISMATCH)
+                            continue;
+                        TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
+                        SDL_UnloadObject(fmod.handle);
+                        return;
+                    }
+                    ver = i;
+                    break;
+                }
+                if (ver == 0) {
+                    TF_ERROR(<< "Failed to brute force FMOD version");
+                    SDL_UnloadObject(fmod.handle);
+                    return;
+                }
+                TF_WARN(<< "Brute forced FMOD version " << ver);
             }
             if (need_driver.size() > 0 && need_driver != "default" && FMOD_HAS_ERROR(err = fmod.FMOD_System_SetOutput(sys, output_type_from_str(need_driver))))
                 TF_WARN(<< "Failed to set FMOD output driver (" << FMOD_ErrorString(err) << ")");
