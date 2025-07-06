@@ -14,6 +14,7 @@ namespace logger {
 void logger::log_by_category(const char* data, const char* file, const char* func, int line, int category) {
 	if (category < log_level && category < ui_log_level)
 		return;
+#if ENABLE_STDOUT_LOGGING
 	SDL_LogPriority pr;
 	switch (category) {
 	case 0: {
@@ -43,6 +44,7 @@ void logger::log_by_category(const char* data, const char* file, const char* fun
 		SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, pr, "[%s:%i] at %s: %s", file, line, func, data);
 #endif
 	}
+#endif
 	if (category >= ui_log_level)
 		ui::push_log(data, file, func, line, category);
 }
