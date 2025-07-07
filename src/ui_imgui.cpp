@@ -48,6 +48,7 @@ namespace ui {
 #endif
 #if DWM_STATUS_PATCH
         SDL_Time dwm_last_upd;
+        audio::Music* dwm_last_m;
         Display* dwm_disp;
         Window dwm_root;
 #endif
@@ -235,12 +236,16 @@ void ui::do_extra_stuff() {
 #endif
 #if DWM_STATUS_PATCH
     SDL_Time ticks;
+    if (data->dwm_last_m != audio::au->cur_mus) {
+        data->dwm_last_m = audio::au->cur_mus;
+        data->dwm_last_upd = 0; // Hack
+    }
     if (SDL_GetCurrentTime(&ticks)) {
         if ((ticks / 1000000000) != data->dwm_last_upd) {
-            // TODO: also update when track changed
             char buf[1024];
             data->dwm_last_upd = ticks / 1000000000;
             struct tm* time_s = util::tm_from_sdl_time(ticks);
+            // TODO: configure formatting sizes via lbs.hpp
             if (audio::au->cur_stopped()) {
                 SDL_snprintf(
                     buf, 1024, "%i-%02i-%02i %02i:%02i:%02i",
@@ -358,6 +363,7 @@ bool ui::init() {
     }
     data->log_cache.reserve(LOG_CACHE_COUNT);
 #if DWM_STATUS_PATCH
+    data->dwm_last_m = nullptr;
     data->dwm_disp = XOpenDisplay(nullptr);
     if (data->dwm_disp) {
         data->dwm_root = XRootWindow(data->dwm_disp, XDefaultScreen(data->dwm_disp));
