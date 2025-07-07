@@ -328,6 +328,26 @@ bool pl::save(Playlist* p) {
     return write_file(full_path_for_playlist(p->path).c_str(), out_str.data(), out_str.size());
 }
 
+void pl::remove_dead(Playlist* p) {
+    // TODO: Should I split this into frame-by-frame (pl::update_cache) instead of one frame??
+    for (int i = (int)p->mus.size(); i > 0; i--) {
+        audio::Music* m = p->mus[i - 1];
+        SDL_PathInfo info;
+        if (!SDL_GetPathInfo(m->full_path.c_str(), &info)) {
+            audio::au->mus_close(m);
+            if (m == audio::au->cur_mus) {
+                audio::au->cur_stop();
+                audio::au->cur_mus = nullptr;
+            }
+            auto it = std::find(audio::au->cache.begin(), audio::au->cache.end(), m);
+            if (it != audio::au->cache.end())
+                audio::au->cache.erase(it);
+            p->mus.erase(p->mus.begin() + i - 1);
+            p->changed = true;
+        }
+    }
+}
+
 void pl::remove_pl(Playlist* p) {
     if (std::find(p->mus.begin(), p->mus.end(), audio::au->cur_mus) != p->mus.end()) {
         audio::au->cur_stop();

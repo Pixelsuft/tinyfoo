@@ -468,7 +468,7 @@ void ui::draw_menubar() {
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, data->last_pl != nullptr)) {
-            
+            pl::remove_dead(data->last_pl);
         }
         if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, data->last_pl != nullptr)) {
             
