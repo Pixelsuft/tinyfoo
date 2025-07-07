@@ -532,7 +532,6 @@ void ui::draw_playback_buttons() {
 void ui::draw_volume_control() {
     ImGui::PushID("VolumeSlider");
     ImGui::PushItemWidth(100.f);
-    // TODO: conf max vol
     if (ImGui::SliderFloat("", &audio::au->volume, 0.f, audio::au->max_volume, "", ImGuiSliderFlags_NoRoundToFormat))
         audio::au->update_volume();
     if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
@@ -904,6 +903,8 @@ void ui::draw_settings() {
     }
     if (ImGui::InputFloat("Volume (%)", &data->conf.floats[3]))
         data->conf.floats[3] = tf::clamp(data->conf.floats[3], 0.f, audio::au->max_volume * 100.f);
+    if (ImGui::InputFloat("Max Volume (%)", &data->conf.floats[8]))
+        data->conf.floats[8] = tf::clamp(data->conf.floats[8], 0.f, 10000.f);
     if (ImGui::InputFloat("Next Fading Time (ms)", &data->conf.floats[4]))
         data->conf.floats[4] = tf::clamp(data->conf.floats[4], 0.f, 10000.f);
     if (ImGui::InputFloat("Stop Fading Time (ms)", &data->conf.floats[5]))
@@ -983,6 +984,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force DSound", &data->conf.bools[12]);
     ImGui::SameLine();
     ImGui::Checkbox("Force Software", &data->conf.bools[13]);
+    ImGui::Text("WARN: most of the changes require restarting");
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
         conf::end_editing(data->conf);

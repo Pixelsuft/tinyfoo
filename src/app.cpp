@@ -394,6 +394,7 @@ void conf::begin_editing(ConfData& data) {
     data.floats[5] = audio::au->fade_stop_time * 1000.f;
     data.floats[6] = audio::au->fade_pause_time * 1000.f;
     data.floats[7] = audio::au->fade_resume_time * 1000.f;
+    data.floats[8] = conf::read_float("audio", "max_volume", 100.f);
     data.style = data.def_style = conf::read_str("imgui", "style", "dark");
     data.font1_path = conf::read_str("imgui", "font1_path", "");
     data.font2_path = conf::read_str("imgui", "font2_path", "");
@@ -473,7 +474,8 @@ void conf::end_editing(ConfData& data) {
             {"fade_next_time", data.floats[4]},
             {"fade_stop_time", data.floats[5]},
             {"fade_pause_time", data.floats[6]},
-            {"fade_resume_time", data.floats[7]}
+            {"fade_resume_time", data.floats[7]},
+            {"max_volume", data.floats[8]}
         }},
         {"sdl2_mixer", toml::table{
             {"driver", TOML_DUMP_STR(data.sdl2_drv)},

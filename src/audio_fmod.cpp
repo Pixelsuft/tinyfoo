@@ -676,7 +676,8 @@ namespace audio {
             ch = nullptr;
             sps = 44100.f;
             stopped = was_finished = fading = paused = false;
-            // max_volume = 2.f;
+            if (max_volume <= 0.f)
+                max_volume = 2.f;
             pause_pos = 0.f;
             const char* lib_path = IS_WIN ? "fmod.dll" : "libfmod.so";
             fmod.handle = SDL_LoadObject(lib_path);

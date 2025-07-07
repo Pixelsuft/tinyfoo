@@ -342,6 +342,8 @@ namespace audio {
             lib_name = "BASS";
             pause_pos = 0.f;
             paused = stopped = fading = false;
+            if (max_volume <= 0.f)
+                max_volume = 2.f;
             const char* lib_path = IS_WIN ? "bass.dll" : "libbass.so";
             bass.handle = SDL_LoadObject(lib_path);
             if (!bass.handle) {

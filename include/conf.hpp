@@ -45,7 +45,7 @@ namespace conf {
         tf::str ren_drv;
         tf::str au_bk;
         bool bools[16];
-        float floats[8];
+        float floats[16];
         int ints[8];
     };
 

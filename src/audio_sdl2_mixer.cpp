@@ -163,6 +163,8 @@ namespace audio {
             stopped = false;
             paused = false;
             pause_pos = 0.f;
+            if (max_volume <= 0.f)
+                max_volume = 1.f;
             const char* lib_path = IS_WIN ? (use_mixer_x ? "SDL2_mixer_ext.dll" : "SDL2_mixer.dll") : (use_mixer_x ? "libSDL2_mixer_ext.so" : "libSDL2_mixer.so");
             mix.handle = SDL_LoadObject(lib_path);
             if (!mix.handle) {
