@@ -129,8 +129,6 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
             m->file_size = (val["sz"].is_number_integer() && val["sz"].is_number_unsigned()) ? (uint64_t)val["sz"] : 0;
             m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
             m->type = (val["tp"].is_number_integer() && val["tp"].is_number_unsigned()) ? (audio::Type)((int)val["tp"]) : audio::Type::NONE;
-            // TODO: config var to validate music changes on start
-            // check_music_mod(m);
             p->mus.push_back(m);
         }
     }

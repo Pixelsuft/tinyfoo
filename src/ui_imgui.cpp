@@ -384,9 +384,6 @@ void ui::update_size(const Point& size) {
 }
 
 void ui::draw_menubar() {
-    // Menu
-    // https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp
-    // static void DemoWindowMenuBar
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Add files...", nullptr, nullptr, data->last_pl != nullptr))
             pl::add_files_dialog(data->last_pl);
@@ -465,6 +462,16 @@ void ui::draw_menubar() {
                 pl::reload_cache(1);
             }
             ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem("Search", nullptr, nullptr, data->last_pl != nullptr)) {
+            // TODO
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, data->last_pl != nullptr)) {
+            
+        }
+        if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, data->last_pl != nullptr)) {
+            
         }
         ImGui::EndMenu();
     }
