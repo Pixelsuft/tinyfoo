@@ -329,7 +329,7 @@ bool pl::save(Playlist* p) {
 }
 
 void pl::remove_dead(Playlist* p) {
-    // TODO: Should I split this into frame-by-frame (pl::update_cache) instead of one frame??
+    // Should I split this into frame-by-frame (pl::update_cache) instead of one frame??
     for (int i = (int)p->mus.size(); i > 0; i--) {
         audio::Music* m = p->mus[i - 1];
         SDL_PathInfo info;
