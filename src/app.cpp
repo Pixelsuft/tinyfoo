@@ -394,6 +394,7 @@ void conf::begin_editing(ConfData& data) {
     data.floats[5] = audio::au->fade_stop_time * 1000.f;
     data.floats[6] = audio::au->fade_pause_time * 1000.f;
     data.floats[7] = audio::au->fade_resume_time * 1000.f;
+    data.ints[6] = audio::au->order_mode;
     data.floats[8] = conf::read_float("audio", "max_volume", 100.f);
     data.style = data.def_style = conf::read_str("imgui", "style", "dark");
     data.font1_path = conf::read_str("imgui", "font1_path", "");
@@ -435,9 +436,10 @@ void conf::begin_editing(ConfData& data) {
 #endif
 void conf::end_editing(ConfData& data) {
     data.def_style = data.style;
-    audio::au->need_dev = data.dev_names[data.ints[4]];
     audio::au->volume = data.floats[3] / 100.f;
     audio::au->update_volume();
+    audio::au->need_dev = data.dev_names[data.ints[4]];
+    audio::au->order_mode = data.ints[6];
     audio::au->fade_next_time = data.floats[4] / 1000.f;
     audio::au->fade_stop_time = data.floats[5] / 1000.f;
     audio::au->fade_pause_time = data.floats[6] / 1000.f;
@@ -504,8 +506,9 @@ void conf::end_editing(ConfData& data) {
             {"force_directsound", data.bools[12]},
             {"force_software", data.bools[13]}
         }},
-        {"playlists", toml::table{
-            {"files", pl_files}
+        {"playback", toml::table{
+            {"playlists", pl_files},
+            {"order", data.ints[6]}
         }}
     };
     conf::request_save();
