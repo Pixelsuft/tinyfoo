@@ -125,6 +125,9 @@ namespace audio {
             case Type::MO3: {
                 return "MO3";
             }
+            case Type::DLS: {
+                return "DLS";
+            }
         }
         return "NONE";
     }
