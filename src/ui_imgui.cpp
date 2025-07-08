@@ -776,7 +776,7 @@ void ui::draw_playlist_view() {
         if (app::can_i_drop && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceExtern)) {
             ImGui::SetDragDropPayload("DROP_FILES", nullptr, 0);
             ImGui::BeginTooltip();
-            ImGui::Text("Upload files to the current playlist");
+            ImGui::TextUnformatted("Upload files to the current playlist");
             ImGui::EndTooltip();
             ImGui::EndDragDropSource();
         }
@@ -992,7 +992,7 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force DSound", &data->conf.bools[12]);
     ImGui::SameLine();
     ImGui::Checkbox("Force Software", &data->conf.bools[13]);
-    ImGui::Text("WARN: most of the changes require restarting");
+    ImGui::TextUnformatted("WARN: most of the changes require restarting");
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
         conf::end_editing(data->conf);
@@ -1056,9 +1056,9 @@ void ui::draw_playlist_conf() {
 void ui::draw_about() {
     ImGui::Image((ImTextureID)(intptr_t)data->logo_tex, ImVec2(128.f * data->img_scale, 128.f * data->img_scale));
     ImGui::PushFont(data->font2);
-    ImGui::Text("Tinyfoo");
+    ImGui::TextUnformatted("Tinyfoo");
     ImGui::PopFont();
-    ImGui::Text("Created by Pixelsuft");
+    ImGui::TextUnformatted("Created by Pixelsuft");
 }
 
 void ui::destroy() {
@@ -1113,9 +1113,10 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
     (void)category;
     if (!app::win_handle || !data)
         return;
+    static const char* cat_map[] = { "INFO", "WARN", "ERROR", "FATAL" };
     if (data->log_cache.size() >= LOG_CACHE_COUNT)
         data->log_cache.erase(data->log_cache.begin());
-    data->log_cache.push_back(tf::str(msg));
+    data->log_cache.push_back(tf::str("[") + cat_map[category] + "] " + tf::str(msg));
 }
 
 bool ui::handle_esc() {
@@ -1131,9 +1132,8 @@ bool ui::handle_esc() {
 
 void ui::draw_logs() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
-    for (auto it = data->log_cache.begin(); it != data->log_cache.end(); it++) {
-        ImGui::Text("%s", (*it).c_str());
-    }
+    for (auto it = data->log_cache.begin(); it != data->log_cache.end(); it++)
+        ImGui::TextUnformatted((*it).c_str());
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
         ImGui::SetScrollHereY(1.0f);
     ImGui::PopStyleVar();
