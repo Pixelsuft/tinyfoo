@@ -839,8 +839,9 @@ void ui::draw() {
         ImGui::End();
     }
     if (data->show_logs) {
+        ImGui::SetNextWindowSize({ 500.f, 400.f }, ImGuiCond_Appearing);
         ImGui::SetNextWindowFocus();
-        if (ImGui::Begin("Logs", &data->show_logs, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse))
+        if (ImGui::Begin("Logs", &data->show_logs, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar))
             draw_logs();
         ImGui::End();
     }
@@ -1129,10 +1130,12 @@ bool ui::handle_esc() {
 }
 
 void ui::draw_logs() {
-    // TODO: log info, color, disable autoscrolling properly
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0.f, 0.f });
     for (auto it = data->log_cache.begin(); it != data->log_cache.end(); it++) {
         ImGui::Text("%s", (*it).c_str());
     }
-    ImGui::SetScrollHereY(1.0f);
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+        ImGui::SetScrollHereY(1.0f);
+    ImGui::PopStyleVar();
 }
 #endif
