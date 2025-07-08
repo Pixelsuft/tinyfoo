@@ -405,7 +405,7 @@ void conf::begin_editing(ConfData& data) {
     data.ren_drv = conf::read_str("renderer", "driver", "auto");
     data.bools[0] = conf::read_bool("renderer", "vsync", true);
     data.au_bk = conf::read_str("audio", "backend", "dummy");
-    data.sdl2_drv = conf::read_str("sdl2_mixer", "driver", "dummy");
+    data.sdl2_drv = conf::read_str("sdl2_mixer", "driver", "default");
     data.sdl2_fmt = conf::read_str("sdl2_mixer", "format", "SDL_AUDIO_S16");
     data.bools[1] = conf::read_bool("sdl2_mixer", "enable_flac", false);
     data.bools[2] = conf::read_bool("sdl2_mixer", "enable_mod", false);
@@ -417,7 +417,7 @@ void conf::begin_editing(ConfData& data) {
     data.ints[0] = conf::read_int("sdl2_mixer", "channels", 0);
     data.ints[1] = conf::read_int("sdl2_mixer", "frequency", 0);
     data.ints[2] = conf::read_int("sdl2_mixer", "chunksize", 0);
-    data.fmod_drv = conf::read_str("fmod", "driver", "nosound");
+    data.fmod_drv = conf::read_str("fmod", "driver", "default");
     data.ints[5] = conf::read_int("fmod", "version", 0);
     data.bools[8] = conf::read_bool("bass", "force_16bits", false);
     data.bools[9] = conf::read_bool("bass", "force_stereo", false);

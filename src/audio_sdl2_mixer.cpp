@@ -212,7 +212,7 @@ namespace audio {
             bool allow_mid = false;
             bool allow_opus = false;
             bool allow_wavpack = false;
-            drv_hint = conf::read_str("sdl2_mixer", "driver", "");
+            drv_hint = conf::read_str("sdl2_mixer", "driver", "default");
             allow_flac = conf::read_bool("sdl2_mixer", "enable_flac", false);
             allow_mod = conf::read_bool("sdl2_mixer", "enable_mod", false);
             allow_mp3 = conf::read_bool("sdl2_mixer", "enable_mp3", true);

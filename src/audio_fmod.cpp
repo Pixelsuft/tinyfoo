@@ -736,7 +736,7 @@ namespace audio {
                 SDL_UnloadObject(fmod.handle);
                 return;
             }
-            tf::str need_driver = conf::read_str("fmod", "driver", "");
+            tf::str need_driver = conf::read_str("fmod", "driver", "default");
             unsigned int ver = (unsigned int)conf::read_int("fmod", "version", 0);
             if (ver > 0) {
                 if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Create(&sys, ver))) {
