@@ -1034,7 +1034,7 @@ void ui::draw_playlist_conf() {
         else {
             data->need_conf_pl->name = old_name;
             data->need_conf_pl->path = old_path;
-            TF_WARN(<< "Failed to save");
+            TF_WARN(<< "Failed to save playlist");
         }
         data->show_playlist_conf = false;
     }
