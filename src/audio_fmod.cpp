@@ -1140,7 +1140,7 @@ namespace audio {
             if (!mus->h1)
                 return;
             FMOD_RESULT err;
-            if (err = fmod.FMOD_Sound_Release(mus_h))
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_Sound_Release(mus_h)))
                 TF_ERROR(<< "Failed to close music (" << FMOD_ErrorString(err) << ")");
             mus->h1 = nullptr;
         }

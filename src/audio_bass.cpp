@@ -9,7 +9,11 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
-#define BASS_LIKES_WCHAR (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
+#if (defined(_WIN32_WCE) || (defined(WINAPI_FAMILY) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP))
+#define BASS_LIKES_WCHAR 1
+#else
+#define BASS_LIKES_WCHAR 0
+#endif
 
 #if 1
 #if IS_WIN
