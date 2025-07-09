@@ -28,8 +28,6 @@
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 #define CTRL_BTN_VEC ImVec2(20.f * data->img_scale, 20.f * data->img_scale)
 
-// TODO: block many funcs when searching
-
 namespace app {
     extern void* win_handle;
     extern Point drop_pos;
