@@ -40,6 +40,7 @@ namespace app {
 namespace ui {
     struct UiData {
         conf::ConfData conf;
+        char search_buf[256];
         tf::vec<tf::str> log_cache;
         tf::str meta_fn;
         tf::str meta_fmt;
@@ -102,6 +103,7 @@ namespace ui {
     void draw_tab();
     void draw_meta();
     void draw_playlist_view();
+    void draw_playlist_music_row(int row, bool& something_changed);
     void draw_about();
     void draw_logs();
     void draw_playlist_conf();
@@ -278,6 +280,7 @@ bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
     data = tf::bump_nw<UiData>();
     data->last_pl = data->sel_pl = data->prev_cache_pl = data->need_conf_pl = nullptr;
+    data->search_buf[0] = '\0';
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
@@ -638,6 +641,109 @@ void ui::draw_meta() {
     ImGui::Text("Formats: %s", data->meta_fmt.c_str());
 }
 
+void ui::draw_playlist_music_row(int row, bool& something_changed) {
+    audio::Music* mus = data->last_pl->mus[row];
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+    if (mus->selected)
+        ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
+    else if (!ImGui::IsPopupOpen("MusSelPopup")) {
+        ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
+        if (ImGui::IsPopupOpen("MusSelPopup")) {
+            for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                data->last_pl->mus[*it]->selected = false;
+            }
+            data->last_pl->selected.clear();
+            data->last_pl->selected.push_back(row);
+            mus->selected = true;
+        }
+    }
+    ImGui::TableSetColumnIndex(1);
+    char buf[64];
+    fmt_duration(buf, (double)mus->dur);
+    ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+    ImGui::TableSetColumnIndex(2);
+    ret |= ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+    ImGui::TableSetColumnIndex(3);
+    fmt_last_mod(buf, mus->last_mod);
+    ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
+    something_changed |= ret;
+    if (ret) {
+        Uint64 now = SDL_GetTicks();
+        bool pushed = false;
+        if (app::ctrl_state) {
+            // ...
+        }
+        else if (app::shift_state) {
+            int min_id = data->last_pl->last_shift_sel;
+            int max_id = data->last_pl->last_shift_sel2;
+            for (int i = min_id; i <= max_id; i++) {
+                auto it = std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i);
+                if (it != data->last_pl->selected.end()) {
+                    data->last_pl->selected.erase(it);
+                    data->last_pl->mus[i]->selected = false;
+                }
+            }
+            min_id = std::min(data->last_pl->last_sel, row);
+            max_id = std::max(data->last_pl->last_sel, row);
+            for (int i = min_id; i <= max_id; i++) {
+                if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i) == data->last_pl->selected.end()) {
+                    data->last_pl->mus[i]->selected = true;
+                    data->last_pl->selected.push_back(i);
+                    // data->last_pl->last_sel = i;
+                }
+            }
+            data->last_pl->last_shift_sel = min_id;
+            data->last_pl->last_shift_sel2 = max_id;
+            pushed = true;
+        }
+        else {
+            for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                data->last_pl->mus[*it]->selected = false;
+            }
+            data->last_pl->selected.clear();
+        }
+        if (mus->selected) {
+            if (!pushed) {
+                data->last_pl->selected.push_back(row);
+                if (app::shift_state)
+                    data->last_pl->last_shift_sel = row;
+                else
+                    data->last_pl->last_sel = row;
+            }
+        }
+        else if (!pushed) {
+            if (app::ctrl_state) {
+                for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
+                    if ((*it) == row) {
+                        data->last_pl->selected.erase(it);
+                        break;
+                    }
+                }
+            }
+            else {
+                mus->selected = true;
+                if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
+                    data->last_pl->selected.push_back(row);
+            }
+            if (app::shift_state)
+                data->last_pl->last_shift_sel = row;
+            else
+                data->last_pl->last_sel = row;
+        }
+        if ((now - mus->last_click) <= 250) {
+            if (app::ctrl_state) {
+                mus->selected = true;
+                if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
+                    data->last_pl->selected.push_back(row);
+            }
+            pl::play_selected(data->last_pl);
+        }
+        mus->last_click = now;
+    }
+}
+
 void ui::draw_playlist_view() {
     if (ImGui::BeginTable("PlaylistTable", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
         bool something_changed = false;
@@ -650,108 +756,8 @@ void ui::draw_playlist_view() {
         ImGuiListClipper clipper;
         clipper.Begin((int)data->last_pl->mus.size());
         while (clipper.Step()) {
-            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-                ImGui::TableNextRow();
-                audio::Music* mus = data->last_pl->mus[row];
-                ImGui::TableSetColumnIndex(0);
-                bool ret = ImGui::Selectable(mus->fn.c_str(), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                if (mus->selected)
-                    ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
-                else if (!ImGui::IsPopupOpen("MusSelPopup")) {
-                    ImGui::OpenPopupOnItemClick("MusSelPopup", ImGuiPopupFlags_MouseButtonRight);
-                    if (ImGui::IsPopupOpen("MusSelPopup")) {
-                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
-                            data->last_pl->mus[*it]->selected = false;
-                        }
-                        data->last_pl->selected.clear();
-                        data->last_pl->selected.push_back(row);
-                        mus->selected = true;
-                    }
-                }
-                ImGui::TableSetColumnIndex(1);
-                char buf[64];
-                fmt_duration(buf, (double)mus->dur);
-                ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                ImGui::TableSetColumnIndex(2);
-                ret |= ImGui::Selectable(audio::get_type_str(mus->type), &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                ImGui::TableSetColumnIndex(3);
-                fmt_last_mod(buf, mus->last_mod);
-                ret |= ImGui::Selectable(buf, &mus->selected, ImGuiSelectableFlags_SpanAllColumns);
-                something_changed |= ret;
-                if (ret) {
-                    Uint64 now = SDL_GetTicks();
-                    bool pushed = false;
-                    if (app::ctrl_state) {
-                        // ...
-                    }
-                    else if (app::shift_state) {
-                        int min_id = data->last_pl->last_shift_sel;
-                        int max_id = data->last_pl->last_shift_sel2;
-                        for (int i = min_id; i <= max_id; i++) {
-                            auto it = std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i);
-                            if (it != data->last_pl->selected.end()) {
-                                data->last_pl->selected.erase(it);
-                                data->last_pl->mus[i]->selected = false;
-                            }
-                        }
-                        min_id = std::min(data->last_pl->last_sel, row);
-                        max_id = std::max(data->last_pl->last_sel, row);
-                        for (int i = min_id; i <= max_id; i++) {
-                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), i) == data->last_pl->selected.end()) {
-                                data->last_pl->mus[i]->selected = true;
-                                data->last_pl->selected.push_back(i);
-                                // data->last_pl->last_sel = i;
-                            }
-                        }
-                        data->last_pl->last_shift_sel = min_id;
-                        data->last_pl->last_shift_sel2 = max_id;
-                        pushed = true;
-                    }
-                    else {
-                        for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
-                            data->last_pl->mus[*it]->selected = false;
-                        }
-                        data->last_pl->selected.clear();
-                    }
-                    if (mus->selected) {
-                        if (!pushed) {
-                            data->last_pl->selected.push_back(row);
-                            if (app::shift_state)
-                                data->last_pl->last_shift_sel = row;
-                            else
-                                data->last_pl->last_sel = row;
-                        }
-                    }
-                    else if (!pushed) {
-                        if (app::ctrl_state) {
-                            for (auto it = data->last_pl->selected.begin(); it != data->last_pl->selected.end(); it++) {
-                                if ((*it) == row) {
-                                    data->last_pl->selected.erase(it);
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            mus->selected = true;
-                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
-                                data->last_pl->selected.push_back(row);
-                        }
-                        if (app::shift_state)
-                            data->last_pl->last_shift_sel = row;
-                        else
-                            data->last_pl->last_sel = row;
-                    }
-                    if ((now - mus->last_click) <= 250) {
-                        if (app::ctrl_state) {
-                            mus->selected = true;
-                            if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
-                                data->last_pl->selected.push_back(row);
-                        }
-                        pl::play_selected(data->last_pl);
-                    }
-                    mus->last_click = now;
-                }
-            }
+            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                draw_playlist_music_row(row, something_changed);
         }
         if (ImGui::BeginPopupContextItem("MusSelPopup")) {
             if (ImGui::Button("Play")) {

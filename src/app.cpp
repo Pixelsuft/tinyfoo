@@ -146,7 +146,7 @@ bool app::init() {
         if (icon)
             SDL_DestroySurface(icon);
     }
-    // This one actually never fails
+    // TODO: fail check
     ui::init();
     img::destroy(); // Hack: we don't need it anymore actually
     data->stage = 4;
