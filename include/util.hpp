@@ -16,6 +16,32 @@ namespace util {
         return s.c_str();
     }
 
+    static inline bool str_starts_with(const tf::str& inp, const tf::str& mask) {
+#if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
+        return inp.starts_with(mask);
+#else
+        return inp.rfind(mask, 0) == 0;
+#endif
+    }
+
+    static inline bool str_matches_mask(const tf::str& inp, const tf::str& mask) {
+        if (mask.size() > inp.size())
+            return false;
+        for (auto it = inp.begin(); it != inp.end() - mask.size(); it++) {
+            bool can = true;
+            for (int i = 0; i < (int)mask.size(); i++) {
+                if (SDL_tolower(*(it + i)) != SDL_tolower(*(mask.begin() + i))) {
+                    can = false;
+                    break;
+                }
+            }
+            if (can)
+                return true;
+        }
+        return false;
+        // return inp.find(mask) != tf::str::npos;
+    }
+
     static inline bool compare_paths(const tf::str& p1, const tf::str& p2) {
 #if IS_WIN && IS_RELEASE
         if (p1.size() != p2.size())
