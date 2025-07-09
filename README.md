@@ -47,7 +47,7 @@ g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-m
 ```
 ## TODO
  - Support building to shared lib with minimal API
- - Support searching in playlist
+ - Support configuring tab columns
  - Add support for libpng (useful on linux?) (waiting for v2)
  - Other audio libs
  - Fix TODOs in code and code cleanup
