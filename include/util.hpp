@@ -20,7 +20,7 @@ namespace util {
 #if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
         return inp.starts_with(mask);
 #else
-        return inp.rfind(mask, 0) == 0;
+        return inp.size() >= mask.size() && SDL_memcmp(&inp[0], &mask[0], mask.size()) == 0;
 #endif
     }
 
@@ -28,6 +28,9 @@ namespace util {
         if (mask.size() > inp.size())
             return false;
         for (auto it = inp.begin(); it != inp.end() - mask.size(); it++) {
+            if (SDL_strncasecmp(&(*it), &mask[0], mask.size()) == 0)
+                return true;
+            /*
             bool can = true;
             for (int i = 0; i < (int)mask.size(); i++) {
                 if (SDL_tolower(*(it + i)) != SDL_tolower(*(mask.begin() + i))) {
@@ -37,6 +40,7 @@ namespace util {
             }
             if (can)
                 return true;
+            */
         }
         return false;
         // return inp.find(mask) != tf::str::npos;
