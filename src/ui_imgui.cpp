@@ -28,6 +28,8 @@
 #define COOL_CYAN ImVec4(0.f, 162.f, 232.f, 255.f)
 #define CTRL_BTN_VEC ImVec2(20.f * data->img_scale, 20.f * data->img_scale)
 
+// TODO: block many funcs when searching
+
 namespace app {
     extern void* win_handle;
     extern Point drop_pos;
@@ -42,6 +44,7 @@ namespace ui {
         conf::ConfData conf;
         char search_buf[256];
         tf::vec<tf::str> log_cache;
+        tf::vec<int> search_res;
         tf::str meta_fn;
         tf::str meta_fmt;
 #if WIN_TITLE_PATCH
@@ -73,6 +76,7 @@ namespace ui {
         void* icon_rng;
         size_t meta_mod;
         float img_scale;
+        bool searching;
         bool show_app_conf;
         bool show_about;
         bool show_logs;
@@ -83,7 +87,7 @@ namespace ui {
     UiData* data;
 
     pl::Playlist* get_last_pl(int hacky) {
-        if (hacky == 1 && (data->show_about || data->show_logs || data->show_playlist_conf || data->show_app_conf))
+        if (hacky == 1 && (data->searching || data->show_about || data->show_logs || data->show_playlist_conf || data->show_app_conf))
             return nullptr;
         if (hacky == 2)
             return data->sel_pl ? data->sel_pl : data->last_pl;
@@ -109,6 +113,7 @@ namespace ui {
     void draw_playlist_conf();
     void draw_settings();
     void update_meta_info();
+    void draw_search();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
     static inline void apply_theme(const tf::str& style) {
@@ -285,6 +290,7 @@ bool ui::init() {
     data->show_logs = false;
     data->show_playlist_conf = false;
     data->show_app_conf = false;
+    data->searching = false;
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
     data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
@@ -588,6 +594,11 @@ void ui::draw_playlist_tabs() {
         for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
             if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
                 data->last_pl = *it;
+                if (data->last_pl != prev && data->searching) {
+                    data->search_res.clear();
+                    data->search_buf[0] = '\0';
+                    data->searching = false;
+                }
                 draw_tab();
                 ImGui::EndTabItem();
             }
@@ -598,8 +609,33 @@ void ui::draw_playlist_tabs() {
     }
 }
 
+static inline bool matches_mask(const tf::str& inp, const tf::str& mask) {
+    // TODO: case insensetive
+    return inp.find(mask) != tf::str::npos;
+}
+
+void ui::draw_search() {
+    if (ImGui::InputText("Search", data->search_buf, 256)) {
+        // TODO: maybe optimize when new char entered
+        if (data->search_buf[0] == '\0' && data->searching) {
+            data->search_res.clear();
+            data->searching = false;
+        }
+        else if (data->search_buf[0] != '\0') {
+            data->searching = true;
+            tf::str mask(data->search_buf);
+            data->search_res.clear();
+            for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
+                if (matches_mask((*it)->fn, mask))
+                    data->search_res.push_back((int)std::distance(data->last_pl->mus.begin(), it));
+            }
+        }
+    }
+}
+
 void ui::draw_meta() {
     if (data->show_meta_debug) {
+        draw_search();
         ImGui::PushFont(data->font2);
         ImGui::TextColored(COOL_CYAN, "Debug");
         ImGui::PopFont();
@@ -753,11 +789,17 @@ void ui::draw_playlist_view() {
         ImGui::TableSetupColumn("Last Modified");
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
-        ImGuiListClipper clipper;
-        clipper.Begin((int)data->last_pl->mus.size());
-        while (clipper.Step()) {
-            for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-                draw_playlist_music_row(row, something_changed);
+        if (data->searching) {
+            for (auto it = data->search_res.begin(); it != data->search_res.end(); it++)
+                draw_playlist_music_row(*it, something_changed);
+        }
+        else {
+            ImGuiListClipper clipper;
+            clipper.Begin((int)data->last_pl->mus.size());
+            while (clipper.Step()) {
+                for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                    draw_playlist_music_row(row, something_changed);
+            }
         }
         if (ImGui::BeginPopupContextItem("MusSelPopup")) {
             if (ImGui::Button("Play")) {
