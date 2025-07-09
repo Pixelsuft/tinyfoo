@@ -4,6 +4,11 @@
 #endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <lbs.hpp>
+#if 0
+#include <log.hpp>
+
+#else
 #include <app.hpp>
 
 int main(int argc, char* argv[]) {
@@ -13,3 +18,4 @@ int main(int argc, char* argv[]) {
 	app::destroy();
 	return 0;
 }
+#endif
