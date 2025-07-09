@@ -118,6 +118,10 @@ namespace ui {
     void draw_search();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
+    static inline bool can_pl() {
+        return data->last_pl != nullptr && !data->searching;
+    }
+
     static inline void apply_theme(const tf::str& style) {
         style_reset();
         if (style == "dark")
@@ -397,14 +401,14 @@ void ui::update_size(const Point& size) {
 
 void ui::draw_menubar() {
     if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Add files...", nullptr, nullptr, data->last_pl != nullptr))
+        if (ImGui::MenuItem("Add files...", nullptr, nullptr, can_pl()))
             pl::add_files_dialog(data->last_pl);
-        if (ImGui::MenuItem("Add folder...", nullptr, nullptr, data->last_pl != nullptr))
+        if (ImGui::MenuItem("Add folder...", nullptr, nullptr, can_pl()))
             pl::add_folder_dialog(data->last_pl);
         ImGui::Separator();
         if (ImGui::MenuItem("New playlist...", nullptr, nullptr))
             pl::add_new_pl();
-        if (ImGui::MenuItem("Configure playlist", nullptr, nullptr, data->last_pl != nullptr)) {
+        if (ImGui::MenuItem("Configure playlist", nullptr, nullptr, can_pl())) {
             data->need_conf_pl = data->last_pl;
             data->show_playlist_conf = true;
             SDL_memcpy(data->pl_name_buf, data->need_conf_pl->name.c_str(), std::min(data->need_conf_pl->name.size() + 1, (size_t)63));
@@ -412,7 +416,7 @@ void ui::draw_menubar() {
             data->pl_name_buf[63] = '\0';
             data->pl_path_buf[65535] = '\0';
         }
-        if (ImGui::MenuItem("Save playlist", nullptr, nullptr, data->last_pl != nullptr))
+        if (ImGui::MenuItem("Save playlist", nullptr, nullptr, can_pl()))
             pl::save(data->last_pl);
         ImGui::Separator();
         if (ImGui::MenuItem("Settings", nullptr, nullptr)) {
@@ -431,12 +435,12 @@ void ui::draw_menubar() {
             pl::clear_selected(data->last_pl);
         if (ImGui::MenuItem("Select all", nullptr, nullptr, data->last_pl != nullptr))
             pl::select_all(data->last_pl);
-        if (ImGui::BeginMenu("Selection", data->last_pl != nullptr)) {
+        if (ImGui::BeginMenu("Selection", can_pl())) {
             if (ImGui::MenuItem("Remove", nullptr, nullptr, data->last_pl->selected.size() > 0))
                 pl::remove_selected(data->last_pl);
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Sort", data->last_pl != nullptr)) {
+        if (ImGui::BeginMenu("Sort", can_pl())) {
             if (ImGui::MenuItem("None", nullptr, nullptr)) {
                 // data->last_pl->reserve_sorting = false;
                 data->last_pl->sorting = "none";
@@ -482,11 +486,11 @@ void ui::draw_menubar() {
             data->searching = false;
         }
         ImGui::Separator();
-        if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, data->last_pl != nullptr)) {
+        if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, can_pl())) {
             pl::remove_dead(data->last_pl);
         }
-        if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, data->last_pl != nullptr)) {
-            
+        if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, can_pl())) {
+            // TODO
         }
         ImGui::EndMenu();
     }
@@ -802,8 +806,16 @@ void ui::draw_playlist_view() {
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
         if (data->searching) {
-            for (auto it = data->search_res.begin(); it != data->search_res.end(); it++)
-                draw_playlist_music_row(*it, something_changed);
+            // TODO: configure limit via LBS
+            if (data->search_res.size() > 2500) {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::TextUnformatted("Too many items to display");
+            }
+            else {
+                for (auto it = data->search_res.begin(); it != data->search_res.end(); it++)
+                    draw_playlist_music_row(*it, something_changed);
+            }
         }
         else {
             ImGuiListClipper clipper;
