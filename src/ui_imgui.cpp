@@ -82,6 +82,7 @@ namespace ui {
         bool show_logs;
         bool show_playlist_conf;
         bool show_meta_debug;
+        bool show_search;
     };
 
     UiData* data;
@@ -291,6 +292,7 @@ bool ui::init() {
     data->show_playlist_conf = false;
     data->show_app_conf = false;
     data->searching = false;
+    data->show_search = false;
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
     data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
@@ -472,8 +474,10 @@ void ui::draw_menubar() {
             }
             ImGui::EndMenu();
         }
-        if (ImGui::MenuItem("Search", nullptr, nullptr, data->last_pl != nullptr)) {
-            // TODO
+        if (ImGui::MenuItem("Search", nullptr, &data->show_search, data->last_pl != nullptr)) {
+            data->search_res.clear();
+            data->search_buf[0] = '\0';
+            data->searching = false;
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, data->last_pl != nullptr)) {
@@ -610,8 +614,21 @@ void ui::draw_playlist_tabs() {
 }
 
 static inline bool matches_mask(const tf::str& inp, const tf::str& mask) {
-    // TODO: case insensetive
-    return inp.find(mask) != tf::str::npos;
+    if (mask.size() > inp.size())
+        return false;
+    for (auto it = inp.begin(); it != inp.end() - mask.size(); it++) {
+        bool can = true;
+        for (int i = 0; i < (int)mask.size(); i++) {
+            if (SDL_tolower(*(it + i)) != SDL_tolower(*(mask.begin() + i))) {
+                can = false;
+                break;
+            }
+        }
+        if (can)
+            return true;
+    }
+    return false;
+    // return inp.find(mask) != tf::str::npos;
 }
 
 void ui::draw_search() {
@@ -634,8 +651,9 @@ void ui::draw_search() {
 }
 
 void ui::draw_meta() {
-    if (data->show_meta_debug) {
+    if (data->show_search)
         draw_search();
+    if (data->show_meta_debug) {
         ImGui::PushFont(data->font2);
         ImGui::TextColored(COOL_CYAN, "Debug");
         ImGui::PopFont();
