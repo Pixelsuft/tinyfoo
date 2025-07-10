@@ -608,7 +608,6 @@ void SDLCALL sdl2_music_finish_cb(void) {
     SDL_LockMutex(a->mut);
     a->was_finished = true;
     SDL_UnlockMutex(a->mut);
-    // TF_INFO(<< "Finished!");
 }
 
 audio::AudioBase* audio::create_sdl2_mixer(bool use_mixer_x) {

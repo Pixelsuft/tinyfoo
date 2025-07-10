@@ -3,6 +3,7 @@
 #include <log.hpp>
 #include <new.hpp>
 #include <lbs.hpp>
+#include <stl.hpp>
 #include <ui.hpp>
 #include <res.hpp>
 #include <image.hpp>
@@ -146,8 +147,12 @@ bool app::init() {
         if (icon)
             SDL_DestroySurface(icon);
     }
-    // TODO: fail check
-    ui::init();
+    if (!ui::init()) {
+        TF_FATAL(<< "UI init failed");
+        img::destroy();
+        destroy();
+        return false;
+    }
     img::destroy(); // Hack: we don't need it anymore actually
     data->stage = 4;
     audio::au = nullptr;
@@ -263,8 +268,7 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_DROP_TEXT: {
             if (!can_i_drop)
                 break;
-            const char* src = ev.drop.source ? ev.drop.source : "nullptr";
-            TF_INFO(<< "TODO: drop text " << ev.drop.data << " from " << src);
+            TF_INFO(<< "TODO: drop text " << ev.drop.data << " from " << tf::nfstr(ev.drop.source));
             break;
         }
     }
