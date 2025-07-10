@@ -26,3 +26,9 @@ typedef struct {
 
 TF_API int tf_threaded_main(int blocking);
 TF_API int tf_thread_cmd(TF_Cmd cmd);
+TF_API void tf_time_delay(int ms);
+#ifdef __cplusplus
+TF_API int tf_get_init_state();
+#else
+TF_API int tf_get_init_state(void);
+#endif

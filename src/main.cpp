@@ -24,7 +24,7 @@ struct TF_Cmd {
 
 tf::vec<TF_Cmd>* tf_dll_commands;
 SDL_Mutex* tf_dll_mut;
-bool tf_dll_inited;
+int tf_dll_inited;
 
 void tf_dll_update() {
 	SDL_LockMutex(tf_dll_mut);
@@ -41,14 +41,17 @@ static int tf_prog_thread(void* ptr) {
 	tf_dll_mut = SDL_CreateMutex();
 	if (!tf_dll_mut) {
 		TF_FATAL(<< "Failed to create tinyfoo mutex (" << SDL_GetError() << ")");
+		tf_dll_inited = -1;
 		return 1;
 	}
-	if (!app::init())
+	if (!app::init()) {
+		tf_dll_inited = -1;
 		return 1;
+	}
 	tf_dll_commands = tf::nw<tf::vec<TF_Cmd>>();
-	tf_dll_inited = true;
+	tf_dll_inited = 1;
 	app::run();
-	tf_dll_inited = false;
+	tf_dll_inited = 0;
 	tf::dl(tf_dll_commands);
 	SDL_DestroyMutex(tf_dll_mut);
 	tf_dll_commands = nullptr;
@@ -57,8 +60,16 @@ static int tf_prog_thread(void* ptr) {
     return 0;
 }
 
+TF_EXPORT void tf_time_delay(int ms) {
+	SDL_Delay((Uint32)ms);
+}
+
+TF_EXPORT int tf_get_init_state() {
+	return tf_dll_inited;
+}
+
 TF_EXPORT int tf_thread_cmd(TF_Cmd cmd) {
-	if (!tf_dll_inited)
+	if (tf_dll_inited != 1)
 		return 0;
 	SDL_LockMutex(tf_dll_mut);
 	if (tf_dll_commands->size() <= 5) {
@@ -71,7 +82,7 @@ TF_EXPORT int tf_thread_cmd(TF_Cmd cmd) {
 }
 
 TF_EXPORT int tf_threaded_main(int blocking) {
-	tf_dll_inited = false;
+	tf_dll_inited = 0;
 	tf_dll_commands = nullptr;
 	tf_dll_mut = nullptr;
 	SDL_Thread* thread = SDL_CreateThread(tf_prog_thread, "tinyfoo", nullptr);
