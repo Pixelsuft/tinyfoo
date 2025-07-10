@@ -574,7 +574,7 @@ namespace audio {
         }
 
         void update_volume() {
-            volume = tf::clamp(volume, 0.f, 1.f);
+            volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));
             if (!mix.Mix_PlayingMusic())
                 return;
             mix.Mix_VolumeMusic((int)(volume * (float)MIX_MAX_VOLUME));            

@@ -48,6 +48,22 @@ void tf_dll_update() {
 				ctrl::next();
 				break;
 			}
+			case 4: {
+				ctrl::set_vol(cmd.val);
+				break;
+			}
+			case 5: {
+				ctrl::ch_vol(cmd.val);
+				break;
+			}
+			case 6: {
+				ctrl::set_pos(cmd.val);
+				break;
+			}
+			case 7: {
+				ctrl::ch_pos(cmd.val);
+				break;
+			}
 			default: {
 				TF_INFO(<< "TODO cmd: " << cmd.idx);
 				break;

@@ -30,6 +30,10 @@ Command IDs (TF_Cmd.idx):
 1 - play
 2 - toggle pause
 3 - next
+4 - set volume (normally in [0.f; 1.f] range)
+5 - change volume
+6 - set position (seconds)
+7 - change position
 */
 
 TF_API int tf_threaded_main(int blocking);

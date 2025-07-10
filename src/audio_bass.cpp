@@ -2,7 +2,6 @@
 #if ENABLE_BASS
 #include <audio_base.hpp>
 #include <new.hpp>
-#include <lbs.hpp>
 #include <log.hpp>
 #include <break.hpp>
 #include <playlist.hpp>
@@ -242,6 +241,9 @@ typedef struct {
 #endif
 #ifdef cur_h
 #undef cur_h
+#endif
+#ifdef min
+#undef min
 #endif
 #define mus_h (*((DWORD*)(&mus->h1)))
 #define cur_h (*((DWORD*)(&cur_mus->h1)))
@@ -702,7 +704,7 @@ namespace audio {
         }
 
         void update_volume() {
-            volume = tf::clamp(volume, 0.f, 1.f);
+            volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));
             if (cur_mus && !bass.BASS_ChannelSetAttribute(cur_h, BASS_ATTRIB_VOL, volume))
                 TF_WARN(<< "Failed to update music volume (" << BASS_GetError() << ")");
         }

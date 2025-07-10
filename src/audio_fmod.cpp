@@ -982,7 +982,7 @@ namespace audio {
         }
 
         void update_volume() {
-            volume = std::max(volume, 0.f);
+            volume = tf::clamp(volume, 0.f, max_volume);
             FMOD_RESULT err;
             if (ch && FMOD_HAS_ERROR(err = fmod.FMOD_Channel_SetVolume(ch, volume)))
                 TF_WARN(<< "Failed to set music volume (" << FMOD_ErrorString(err) << ")");
