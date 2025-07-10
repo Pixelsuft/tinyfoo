@@ -107,6 +107,8 @@ if app.stage == 'conf':
     conf_header.write(f'#define LOG_CACHE_COUNT 1024\n')
     conf_header.write(f'#define WIN_TITLE_PATCH 1\n')
     conf_header.write(f'#define DWM_STATUS_PATCH 0\n')
+    conf_header.write(f'#define DWM_STATUS_BUF_SIZE 1024\n')
+    conf_header.write(f'#define DWM_STATUS_FN_SIZE 512\n')
     conf_header.write(f'#define BUMP_SIZE 4096\n')
     conf_header.close()
     open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(

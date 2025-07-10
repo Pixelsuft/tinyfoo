@@ -26,6 +26,7 @@ namespace pl {
     void add_new_pl();
     void remove_pl(Playlist* p);
     void remove_dead(Playlist* p);
+    void scan_changes(Playlist* p);
     void add_file_by_fp(Playlist*, const char* fp);
     void add_files_dialog(Playlist* p);
     void add_folder_dialog(Playlist* p);

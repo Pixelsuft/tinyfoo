@@ -253,13 +253,12 @@ void ui::do_extra_stuff() {
     }
     if (SDL_GetCurrentTime(&ticks)) {
         if ((ticks / 1000000000) != data->dwm_last_upd) {
-            char buf[1024];
+            char buf[DWM_STATUS_BUF_SIZE];
             data->dwm_last_upd = ticks / 1000000000;
             struct tm* time_s = util::tm_from_sdl_time(ticks);
-            // TODO: configure formatting sizes via lbs.hpp
             if (audio::au->cur_stopped()) {
                 SDL_snprintf(
-                    buf, 1024, "%i-%02i-%02i %02i:%02i:%02i",
+                    buf, DWM_STATUS_BUF_SIZE, "%i-%02i-%02i %02i:%02i:%02i",
                     time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
                     time_s->tm_hour, time_s->tm_min, time_s->tm_sec
                 );
@@ -270,8 +269,8 @@ void ui::do_extra_stuff() {
                 fmt_duration(dur_buf, (float)audio::au->cur_get_dur());
                 fmt_duration(pos_buf, (float)audio::au->cur_get_pos());
                 SDL_snprintf(
-                    buf, 1024, "%s [%s/%s] | %i-%02i-%02i %02i:%02i:%02i",
-                    audio::au->cur_mus->fn.substr(0, 512).c_str(), pos_buf, dur_buf,
+                    buf, DWM_STATUS_BUF_SIZE, "%s [%s/%s] | %i-%02i-%02i %02i:%02i:%02i",
+                    audio::au->cur_mus->fn.substr(0, DWM_STATUS_FN_SIZE).c_str(), pos_buf, dur_buf,
                     time_s->tm_year + 1900, time_s->tm_mon + 1, time_s->tm_mday,
                     time_s->tm_hour, time_s->tm_min, time_s->tm_sec
                 );
@@ -484,12 +483,10 @@ void ui::draw_menubar() {
             data->searching = false;
         }
         ImGui::Separator();
-        if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, can_pl())) {
+        if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, can_pl()))
             pl::remove_dead(data->last_pl);
-        }
-        if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, can_pl())) {
-            // TODO
-        }
+        if (ImGui::MenuItem("Scan items for changes", nullptr, nullptr, can_pl()))
+            pl::scan_changes(data->last_pl);
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Playback")) {

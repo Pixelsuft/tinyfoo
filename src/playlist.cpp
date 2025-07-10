@@ -35,7 +35,7 @@ namespace pl {
     bool load_pl_from_fp(const tf::str& fp);
     void audio_clear_cache(tf::vec<audio::Music*>& cached, bool keep_cache);
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
-    void check_music_mod(audio::Music* mus);
+    void check_music_mod(Playlist* p, audio::Music* mus);
 }
 
 static inline tf::str fn_from_fp(const tf::str& fp) {
@@ -348,6 +348,11 @@ void pl::remove_dead(Playlist* p) {
     }
 }
 
+void pl::scan_changes(Playlist* p) {
+    for (auto it = p->mus.begin(); it != p->mus.end(); it++)
+        check_music_mod(p, *it);
+}
+
 void pl::remove_pl(Playlist* p) {
     if (std::find(p->mus.begin(), p->mus.end(), audio::au->cur_mus) != p->mus.end()) {
         audio::au->cur_stop();
@@ -412,7 +417,7 @@ void pl::play_selected(Playlist* p) {
     mus_open_file(mus);
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();
-    check_music_mod(mus);
+    check_music_mod(p, mus);
     int cnt = 0;
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
@@ -421,7 +426,7 @@ void pl::play_selected(Playlist* p) {
             mus_open_file(mus);
         }
         mus->cached = false;
-        check_music_mod(mus);
+        check_music_mod(p, mus);
         audio::au->cache.push_back(mus);
     }
     for (auto it = cached.begin(); it != cached.end(); it++) {
@@ -435,7 +440,7 @@ void pl::play_selected(Playlist* p) {
     reload_cache(2);
 }
 
-void pl::check_music_mod(audio::Music* mus) {
+void pl::check_music_mod(Playlist* p, audio::Music* mus) {
     uint64_t mod_time, file_sz;
     file_mod_time(mus->full_path.c_str(), mod_time, file_sz);
     if (mod_time == 0 || mod_time == mus->last_mod)
@@ -444,6 +449,7 @@ void pl::check_music_mod(audio::Music* mus) {
     if ((opened || mus_open_file(mus)) && audio::au->mus_fill_info(mus)) {
         mus->last_mod = mod_time;
         mus->file_size = file_sz;
+        p->changed = true;
     }
     if (!opened)
         audio::au->mus_close(mus);
@@ -570,7 +576,7 @@ void pl::fill_cache() {
             TF_UNREACHABLE();
         mus_open_file(m);
         m->cached = true;
-        check_music_mod(m);
+        check_music_mod(p, m);
         audio::au->cache.push_back(m);
     }
 }
