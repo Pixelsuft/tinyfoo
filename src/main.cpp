@@ -18,7 +18,7 @@
 #endif
 
 struct TF_Cmd {
-	int cmd;
+	int idx;
 	float val;
 };
 
@@ -31,7 +31,28 @@ void tf_dll_update() {
 	while (tf_dll_commands->size() > 0) {
 		TF_Cmd cmd = tf_dll_commands->at(tf_dll_commands->size() - 1);
 		tf_dll_commands->pop_back();
-		TF_INFO(<< "TODO cmd: " << cmd.cmd);
+		switch (cmd.idx) {
+			case 0: {
+				ctrl::stop();
+				break;
+			}
+			case 1: {
+				ctrl::play();
+				break;
+			}
+			case 2: {
+				ctrl::pause();
+				break;
+			}
+			case 3: {
+				ctrl::next();
+				break;
+			}
+			default: {
+				TF_INFO(<< "TODO cmd: " << cmd.idx);
+				break;
+			}
+		}
 	}
 	SDL_UnlockMutex(tf_dll_mut);
 }

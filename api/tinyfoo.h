@@ -14,15 +14,23 @@
 
 #ifdef __cplusplus
 struct TF_Cmd {
-	int cmd;
+	int idx;
 	float val;
 };
 #else
 typedef struct {
-	int cmd;
+	int idx;
 	float val;
 } TF_Cmd;
 #endif
+
+/*
+Command IDs (TF_Cmd.idx):
+0 - stop
+1 - play
+2 - toggle pause
+3 - next
+*/
 
 TF_API int tf_threaded_main(int blocking);
 TF_API int tf_thread_cmd(TF_Cmd cmd);
