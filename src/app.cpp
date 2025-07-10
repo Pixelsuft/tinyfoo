@@ -16,6 +16,10 @@
 #include <imgui_impl_sdl3.h>
 #endif
 
+#if IS_DLL_BUILD
+void tf_dll_update();
+#endif
+
 namespace logger {
     extern int log_level;
     extern int ui_log_level;
@@ -285,6 +289,9 @@ void app::run() {
         }
         audio::au->update();
         pl::update_cache();
+#if IS_DLL_BUILD
+        tf_dll_update();
+#endif
         ren::begin_frame();
         if (!(SDL_GetWindowFlags(data->win) & SDL_WINDOW_MINIMIZED))
             ui::draw();

@@ -75,6 +75,7 @@ if app.stage == 'conf':
     conf_header.write(f'#define LBS_CONF_TIME "{datetime.datetime.today().strftime(r"%Y-%m-%d %H:%M:%S")}"\n')
     conf_header.write(f'#define IS_MSVC {int(app.conf["msvc"])}\n')
     conf_header.write(f'#define IS_MINGW {int(app.conf["mingw"])}\n')
+    conf_header.write(f'#define IS_DLL_BUILD 0\n')
     if app.conf['msvc']:
         conf_header.write(f'#ifdef _DEBUG\n')
         conf_header.write(f'#define IS_RELEASE 0\n')

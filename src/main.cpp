@@ -3,12 +3,91 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 #include <lbs.hpp>
-#if 0
+#if IS_DLL_BUILD
+#include <app.hpp>
+#include <vec.hpp>
+#include <new.hpp>
+#include <control.hpp>
 #include <log.hpp>
 
+#if IS_WIN
+#define TF_EXPORT extern "C" __declspec(dllexport)
 #else
+#define TF_EXPORT extern "C"
+#endif
+
+struct TF_Cmd {
+	int cmd;
+	float val;
+};
+
+tf::vec<TF_Cmd>* tf_dll_commands;
+SDL_Mutex* tf_dll_mut;
+bool tf_dll_inited;
+
+void tf_dll_update() {
+	SDL_LockMutex(tf_dll_mut);
+	while (tf_dll_commands->size() > 0) {
+		TF_Cmd cmd = tf_dll_commands->at(tf_dll_commands->size() - 1);
+		tf_dll_commands->pop_back();
+		TF_INFO(<< "TODO cmd: " << cmd.cmd);
+	}
+	SDL_UnlockMutex(tf_dll_mut);
+}
+
+static int tf_prog_thread(void* ptr) {
+	(void)ptr;
+	tf_dll_mut = SDL_CreateMutex();
+	if (!tf_dll_mut) {
+		TF_FATAL(<< "Failed to create tinyfoo mutex (" << SDL_GetError() << ")");
+		return 1;
+	}
+	if (!app::init())
+		return 1;
+	tf_dll_commands = tf::nw<tf::vec<TF_Cmd>>();
+	tf_dll_inited = true;
+	app::run();
+	tf_dll_inited = false;
+	tf::dl(tf_dll_commands);
+	SDL_DestroyMutex(tf_dll_mut);
+	tf_dll_commands = nullptr;
+	tf_dll_mut = nullptr;
+	app::destroy();
+    return 0;
+}
+
+TF_EXPORT int tf_thread_cmd(TF_Cmd cmd) {
+	if (!tf_dll_inited)
+		return 0;
+	SDL_LockMutex(tf_dll_mut);
+	if (tf_dll_commands->size() <= 5) {
+		tf_dll_commands->push_back(cmd);
+		SDL_UnlockMutex(tf_dll_mut);
+		return 1;
+	}
+	SDL_UnlockMutex(tf_dll_mut);
+	return 0;
+}
+
+TF_EXPORT int tf_threaded_main(int blocking) {
+	tf_dll_inited = false;
+	tf_dll_commands = nullptr;
+	tf_dll_mut = nullptr;
+	SDL_Thread* thread = SDL_CreateThread(tf_prog_thread, "tinyfoo", nullptr);
+	if (!thread) {
+		TF_FATAL(<< "Failed to create tinyfoo thread (" << SDL_GetError() << ")");
+		return 0;
+	}
+	if (blocking > 0)
+		SDL_WaitThread(thread, nullptr);
+	else
+		SDL_DetachThread(thread);
+	return 1;
+}
+#else
+#include <SDL3/SDL_main.h>
+#include <lbs.hpp>
 #include <app.hpp>
 
 int main(int argc, char* argv[]) {
