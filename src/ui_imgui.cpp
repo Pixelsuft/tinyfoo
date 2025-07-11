@@ -476,12 +476,9 @@ void ui::draw_menubar() {
             }
             ImGui::EndMenu();
         }
-        if (ImGui::MenuItem("Search", nullptr, &data->show_search, data->last_pl != nullptr)) {
-            data->search_res.clear();
-            data->search_prev_mask = "";
-            data->search_buf[0] = '\0';
-            data->searching = false;
-        }
+        bool search_sel = data->show_search;
+        if (ImGui::MenuItem("Search", nullptr, &search_sel, data->last_pl != nullptr))
+            toggle_search();
         ImGui::Separator();
         if (ImGui::MenuItem("Remove dead items", nullptr, nullptr, can_pl()))
             pl::remove_dead(data->last_pl);
@@ -600,6 +597,7 @@ void ui::draw_playlist_tabs() {
             if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
                 data->last_pl = *it;
                 if (data->last_pl != prev && data->searching) {
+                    // TODO: actually re-search maybe???
                     data->search_res.clear();
                     data->search_prev_mask = "";
                     data->search_buf[0] = '\0';
@@ -615,13 +613,22 @@ void ui::draw_playlist_tabs() {
     }
 }
 
+void ui::toggle_search() {
+    if (data->show_search) {
+        data->search_res.clear();
+        data->search_prev_mask = "";
+        data->searching = false;
+        data->show_search = false;
+    }
+    else {
+        data->show_search = true;
+    }
+}
+
 void ui::draw_search() {
     if (ImGui::InputText("Search", data->search_buf, 256)) {
-        if (data->search_buf[0] == '\0' && data->searching) {
-            data->search_res.clear();
-            data->search_prev_mask = "";
-            data->searching = false;
-        }
+        if (data->search_buf[0] == '\0' && data->searching)
+            ui::toggle_search();
         else if (data->search_buf[0] != '\0') {
             data->searching = true;
             tf::str mask(data->search_buf);
@@ -802,7 +809,7 @@ void ui::draw_playlist_view() {
         ImGui::TableHeadersRow();
         if (data->searching) {
             // TODO: configure limit via LBS
-            if (data->search_res.size() > 2500) {
+            if (data->search_res.size() > MUSIC_SEARCH_LIMIT) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::TextUnformatted("Too many items to display");

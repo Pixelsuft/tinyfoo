@@ -104,13 +104,14 @@ if app.stage == 'conf':
     conf_header.write(f'#define ENABLE_FMOD 1\n')
     conf_header.write(f'#define ENABLE_BASS 1\n')
     conf_header.write(f'#define ENABLE_STDOUT_LOGGING 1\n')
+    conf_header.write(f'#define BUMP_SIZE 4096\n')
     conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')
     conf_header.write(f'#define LOG_CACHE_COUNT 1024\n')
+    conf_header.write(f'#define MUSIC_SEARCH_LIMIT 2500\n')
     conf_header.write(f'#define WIN_TITLE_PATCH 1\n')
     conf_header.write(f'#define DWM_STATUS_PATCH 0\n')
     conf_header.write(f'#define DWM_STATUS_BUF_SIZE 1024\n')
     conf_header.write(f'#define DWM_STATUS_FN_SIZE 512\n')
-    conf_header.write(f'#define BUMP_SIZE 4096\n')
     conf_header.close()
     open(os.path.join(app.b_path, 'imgui', 'imconfig.h'), 'w', encoding='utf-8').write(
 '''#pragma once

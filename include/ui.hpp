@@ -7,5 +7,6 @@ namespace ui {
     void destroy();
     void do_extra_stuff();
     bool handle_esc();
+    void toggle_search();
     void update_size(const Point& size);
 }
