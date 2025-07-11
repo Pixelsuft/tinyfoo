@@ -2,26 +2,26 @@
 
 #ifdef __cplusplus
 #define TF_EXTERN extern "C"
+#define TF_NO_FUNC_ARGS
+
+struct TF_Cmd {
+	int idx;
+	float val;
+};
 #else
 #define TF_EXTERN
+#define TF_NO_FUNC_ARGS void
+
+typedef struct {
+	int idx;
+	float val;
+} TF_Cmd;
 #endif
 
 #ifdef _WIN32
 #define TF_API TF_EXTERN __declspec(dllimport)
 #else
 #define TF_API TF_EXTERN
-#endif
-
-#ifdef __cplusplus
-struct TF_Cmd {
-	int idx;
-	float val;
-};
-#else
-typedef struct {
-	int idx;
-	float val;
-} TF_Cmd;
 #endif
 
 /*
@@ -37,11 +37,11 @@ Command IDs (TF_Cmd.idx):
 8 - app stop (val >= 1.f for rage quit)
 */
 
+// Returns 1 on success, 0 on failure
 TF_API int tf_threaded_main(int blocking);
+// Returns 1 on success, 0 on failure
 TF_API int tf_thread_cmd(TF_Cmd cmd);
+// Helper function
 TF_API void tf_time_delay(int ms);
-#ifdef __cplusplus
-TF_API int tf_get_init_state();
-#else
-TF_API int tf_get_init_state(void);
-#endif
+// Returns 1 when inited, 0 when not inited, -1 on error
+TF_API int tf_get_init_state(TF_NO_FUNC_ARGS);
