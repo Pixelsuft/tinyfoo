@@ -31,11 +31,12 @@ int main(int argc, char* argv[]) {
 			cmd.val = 0.f;
 		}
 		else {
-			std::cout << "Unknown command\n";
+			if (inp.size() > 0)
+				std::cout << "Unknown command\n";
 			continue;
 		}
 		tf_thread_cmd(cmd);
 	}
-	std::cout << "Quiting...";
+	std::cout << "Quiting...\n";
 	return 0;
 }
