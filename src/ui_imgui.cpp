@@ -808,7 +808,6 @@ void ui::draw_playlist_view() {
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableHeadersRow();
         if (data->searching) {
-            // TODO: configure limit via LBS
             if (data->search_res.size() > MUSIC_SEARCH_LIMIT) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
