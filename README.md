@@ -1,8 +1,6 @@
 # tinyfoo
-Simple music player written in C++ with SDL3 and ImGui <br />
+Simple music player written in C++11 with SDL3 and ImGui <br />
 ![Logo](assets/icon.png)
-## WIP
-The project is still in development. It is usable, but currently misses a lot of features.
 ## Suppored audio backends
 Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are required to make them working. <br />
  - [SDL2_mixer](https://wiki.libsdl.org/SDL2_mixer/FrontPage)/[SDL-Mixer-X](https://wohlsoft.github.io/SDL-Mixer-X/) via [sdl2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable [SDL3_mixer](https://github.com/libsdl-org/SDL_mixer) release yet)
@@ -51,5 +49,5 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
 ## TODO
  - Support configuring tab columns
  - Add support for libpng (useful on linux?) (waiting for v2)
- - Other audio libs
+ - Other audio libs (miniaudio, SoLoud, ...)
  - Fix TODOs in code and code cleanup
