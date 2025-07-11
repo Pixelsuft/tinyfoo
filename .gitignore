@@ -22,6 +22,10 @@ build
 build_x86
 debug
 release
+release0
+release1
+release2
+release3
 Release
 Debug
 x64
