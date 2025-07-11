@@ -1,11 +1,17 @@
 #ifdef LBS_GO_JOIN_UR_CODE
 // Hacky
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include <lbs.hpp>
+#include <app.hpp>
+#include <vec.hpp>
+#include <new.hpp>
+#include <control.hpp>
+#include <log.hpp>
 #endif
 #include <SDL3/SDL.h>
 #include <lbs.hpp>
-#if IS_DLL_BUILD
 #include <app.hpp>
+#if IS_DLL_BUILD
 #include <vec.hpp>
 #include <new.hpp>
 #include <control.hpp>
@@ -142,8 +148,6 @@ TF_EXPORT int tf_threaded_main(int blocking) {
 }
 #else
 #include <SDL3/SDL_main.h>
-#include <lbs.hpp>
-#include <app.hpp>
 
 int main(int argc, char* argv[]) {
 	if (!app::init())
