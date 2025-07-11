@@ -23,7 +23,7 @@ python lbs.py msvc gen_res
 ```
 Then open VS project and build in Debug/Release mode
 ## Building (CMake)
-Note: when using in debug mode, assets folder must be in cwd
+Note: when using in debug mode, assets folder must be in executable cwd
 ```sh
 python lbs.py build init
 python lbs.py build fetch
