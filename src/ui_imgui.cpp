@@ -787,7 +787,7 @@ void ui::draw_playlist_music_row(int row, bool& something_changed) {
             else
                 data->last_pl->last_sel = row;
         }
-        if ((now - mus->last_click) <= 250) {
+        if ((now - mus->last_click) <= DOUBLE_CLICK_TIME) {
             if (app::ctrl_state) {
                 mus->selected = true;
                 if (std::find(data->last_pl->selected.begin(), data->last_pl->selected.end(), row) == data->last_pl->selected.end())
@@ -1194,13 +1194,14 @@ void ui::push_log(const char* msg, const char* file, const char* func, int line,
 }
 
 bool ui::handle_esc() {
-    bool ret = data->show_app_conf | data->show_about | data->show_logs | data->show_playlist_conf;
+    bool ret = data->show_app_conf | data->show_about | data->show_logs | data->show_playlist_conf | data->show_search;
     if (data->show_app_conf)
         apply_theme(data->conf.def_style);
     data->show_app_conf = false;
     data->show_about = false;
     data->show_logs = false;
     data->show_playlist_conf = false;
+    data->show_search = false;
     return ret;
 }
 

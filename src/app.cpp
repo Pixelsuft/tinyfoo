@@ -197,7 +197,13 @@ bool app::init() {
 
 void app::process_event(const SDL_Event& ev) {
 #ifdef ENABLE_IMGUI
-    ImGui_ImplSDL3_ProcessEvent(&ev);
+    bool ig_handle = true;
+    if (ev.type == SDL_EVENT_KEY_DOWN || ev.type == SDL_EVENT_KEY_UP) {
+        if (ev.key.scancode == SDL_SCANCODE_ESCAPE)
+            ig_handle = false;
+    }
+    if (ig_handle)
+        ImGui_ImplSDL3_ProcessEvent(&ev);
 #endif
     switch (ev.type) {
         case SDL_EVENT_QUIT: {
