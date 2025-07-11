@@ -113,6 +113,7 @@ namespace ui {
     void draw_playlist_conf();
     void draw_settings();
     void update_meta_info();
+    void update_search();
     void draw_search();
     void push_log(const char* data, const char* file, const char* func, int line, int category);
 
@@ -597,11 +598,8 @@ void ui::draw_playlist_tabs() {
             if (ImGui::BeginTabItem((*it)->name.c_str(), nullptr, 0)) {
                 data->last_pl = *it;
                 if (data->last_pl != prev && data->searching) {
-                    // TODO: actually re-search maybe???
-                    data->search_res.clear();
                     data->search_prev_mask = "";
-                    data->search_buf[0] = '\0';
-                    data->searching = false;
+                    update_search();
                 }
                 draw_tab();
                 ImGui::EndTabItem();
@@ -625,27 +623,31 @@ void ui::toggle_search() {
     }
 }
 
+void ui::update_search() {
+    tf::str mask(data->search_buf);
+    if (data->search_prev_mask.size() > 0 && util::str_starts_with(mask, data->search_prev_mask)) {
+        for (int i = (int)data->search_res.size(); i > 0; i--) {
+            if (!util::str_matches_mask(data->last_pl->mus[data->search_res[i - 1]]->fn, mask))
+                data->search_res.erase(data->search_res.begin() + i - 1);
+        }
+    }
+    else {
+        data->search_res.clear();
+        for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
+            if (util::str_matches_mask((*it)->fn, mask))
+                data->search_res.push_back((int)std::distance(data->last_pl->mus.begin(), it));
+        }
+    }
+    data->search_prev_mask = mask;
+}
+
 void ui::draw_search() {
     if (ImGui::InputText("Search", data->search_buf, 256)) {
         if (data->search_buf[0] == '\0' && data->searching)
             ui::toggle_search();
         else if (data->search_buf[0] != '\0') {
             data->searching = true;
-            tf::str mask(data->search_buf);
-            if (data->search_prev_mask.size() > 0 && util::str_starts_with(mask, data->search_prev_mask)) {
-                for (int i = (int)data->search_res.size(); i > 0; i--) {
-                    if (!util::str_matches_mask(data->last_pl->mus[data->search_res[i - 1]]->fn, mask))
-                        data->search_res.erase(data->search_res.begin() + i - 1);
-                }
-            }
-            else {
-                data->search_res.clear();
-                for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
-                    if (util::str_matches_mask((*it)->fn, mask))
-                        data->search_res.push_back((int)std::distance(data->last_pl->mus.begin(), it));
-                }
-            }
-            data->search_prev_mask = mask;
+            update_search();
         }
     }
 }

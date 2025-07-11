@@ -214,7 +214,6 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_KEY_UP: {
             ctrl_state = (ev.key.mod & SDL_KMOD_CTRL) != 0;
             shift_state = (ev.key.mod & SDL_KMOD_SHIFT) != 0;
-            // TODO: break if other windows are visible (ex. playlist config)
             if (ev.key.down && ev.key.repeat == 0) {
                 if ((ev.key.scancode == SDL_SCANCODE_RETURN || ev.key.scancode == SDL_SCANCODE_RETURN2) && ui::get_last_pl(1))
                     data->should_play_sel_hack = true;
@@ -222,6 +221,8 @@ void app::process_event(const SDL_Event& ev) {
                     pl::remove_selected(ui::get_last_pl(0));
                 else if (ev.key.scancode == SDL_SCANCODE_A && ctrl_state && ui::get_last_pl(1))
                     pl::select_all(ui::get_last_pl(0));
+                else if (ev.key.scancode == SDL_SCANCODE_F && ctrl_state && ui::get_last_pl(1))
+                    ui::toggle_search();
                 else if (ev.key.scancode == SDL_SCANCODE_C && ctrl_state && ui::get_last_pl(1)) {
                     pl::Playlist* p = ui::get_last_pl(0);
                     if (p->selected.size() == 0)
