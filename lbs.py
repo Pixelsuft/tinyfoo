@@ -91,7 +91,7 @@ if app.stage == 'conf':
         conf_header.write(f'#if _MSVC_LANG >= 201703L\n')
     elif app.conf['mingw']:
         # it's broken here somewhy
-        conf_header.write('#if 0')
+        conf_header.write('#if 0\n')
     else:
         conf_header.write(f'#if __cplusplus >= 201703L\n')
     conf_header.write(f'#define ENABLE_TOMLPP 1\n')

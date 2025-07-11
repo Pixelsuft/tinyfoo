@@ -34,6 +34,7 @@ Command IDs (TF_Cmd.idx):
 5 - change volume
 6 - set position (seconds)
 7 - change position
+8 - app stop (val >= 1.f for rage quit)
 */
 
 TF_API int tf_threaded_main(int blocking);

@@ -64,6 +64,10 @@ void tf_dll_update() {
 				ctrl::ch_pos(cmd.val);
 				break;
 			}
+			case 8: {
+				app::stop(cmd.val >= 1.f);
+				break;
+			}
 			default: {
 				TF_INFO(<< "TODO cmd: " << cmd.idx);
 				break;
@@ -89,6 +93,8 @@ static int tf_prog_thread(void* ptr) {
 	tf_dll_inited = 1;
 	app::run();
 	tf_dll_inited = 0;
+	SDL_LockMutex(tf_dll_mut);
+	SDL_UnlockMutex(tf_dll_mut);
 	tf::dl(tf_dll_commands);
 	SDL_DestroyMutex(tf_dll_mut);
 	tf_dll_commands = nullptr;

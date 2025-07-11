@@ -4,6 +4,9 @@
 #include <log.hpp>
 #include <ren.hpp>
 #include <SDL3/SDL.h>
+#if ENABLE_GDIPLUS && ENABLE_UPNG
+#warning "Too many image backends"
+#endif
 #if ENABLE_GDIPLUS
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
