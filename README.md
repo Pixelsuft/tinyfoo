@@ -49,7 +49,6 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++2a -Ofast -fno-rtti -Iimgui -Ilbs -ISDL
 g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Iimgui -Ilbs -lSDL3 -lgdiplus
 ```
 ## TODO
- - Support building to shared lib with minimal API
  - Support configuring tab columns
  - Add support for libpng (useful on linux?) (waiting for v2)
  - Other audio libs
