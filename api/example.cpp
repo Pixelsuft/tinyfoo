@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
 	std::string inp;
 	while (tf_get_init_state() == 1) {
 		std::cout << "Enter command: ";
-		std::cin >> inp;
+		// std::cin >> inp;
+		std::getline(std::cin, inp);
 		if (inp == "stop")
 			cmd.idx = 0;
 		else if (inp == "play")
@@ -35,5 +36,6 @@ int main(int argc, char* argv[]) {
 		}
 		tf_thread_cmd(cmd);
 	}
+	std::cout << "Quiting...";
 	return 0;
 }
