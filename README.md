@@ -36,14 +36,17 @@ make
 ```
 ## Example building using MinGW64 in release mode
 ```sh
+# --mingw is not required for MSYS2
 python lbs.py release init --mingw
 python lbs.py release fetch
 python lbs.py release conf --release
 python lbs.py release gen_res
 python lbs.py release join_code
 cd release
-# You can add -std=gnu++20 (-std=gnu++2a) for C++20
-g++ tinyfoo.cpp -o tinyfoo.exe -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
+# MinGW64
+g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++2a -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
+# MSYS2
+g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Iimgui -Ilbs -lSDL3 -lgdiplus
 ```
 ## TODO
  - Support building to shared lib with minimal API
