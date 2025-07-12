@@ -12,6 +12,8 @@
 #include <imgui_impl_sdlrenderer3.h>
 #endif
 
+// TODO: support native renderers without SDL3 layer (via LBS defines?)
+
 namespace ren {
     struct RenData {
         SDL_Window* win;
