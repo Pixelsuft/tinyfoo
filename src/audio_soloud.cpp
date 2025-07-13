@@ -102,6 +102,8 @@ enum SOLOUD_ENUMS {
     } \
 } while (0)
 #endif
+#define SL_ERROR() sl.Soloud_getErrorString(sys, ret)
+#define SL_HAS_ERROR(expr) ((expr) != 0)
 #define SL_API
 
 template<int> const char* SoLoudDefaultDllHelper();
@@ -153,6 +155,7 @@ namespace audio {
     class AudioSoLoud : public AudioBase {
         protected:
         SoLoudApi sl;
+        Soloud* sys;
         public:
         float pause_pos;
         bool was_finished;
@@ -206,16 +209,31 @@ namespace audio {
             SL_LOAD_FUNC(WavStream_getLength);
             SL_LOAD_FUNC(WavStream_setVolume);
             SL_LOAD_FUNC(WavStream_stop);
+            sys = sl.Soloud_create();
+            if (!sys) {
+                TF_ERROR(<< "Failed to create soloud instance");
+                SDL_UnloadObject(sl.handle);
+                return;
+            }
+            TF_INFO(<< "SoLoud successfully created");
             inited = true;
         }
 
         bool dev_open() {
-            return false;
+            // TODO: conf
+            int ret;
+            if (SL_HAS_ERROR(ret = sl.Soloud_initEx(sys, SOLOUD_CLIP_ROUNDOFF, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, 2))) {
+                TF_ERROR(<< "Failed to init SoLoud (" << SL_ERROR() << ")");
+                return false;
+            }
+            TF_INFO(<< "SoLoud device opened (" << tf::nfstr(sl.Soloud_getBackendString(sys)) << ", " << sl.Soloud_getBackendSamplerate(sys)
+            << "Hz freq, " << sl.Soloud_getBackendChannels(sys) << " channels, " << sl.Soloud_getBackendBufferSize(sys) << " chunksize)");
             dev_opened = true;
             return true;
         }
 
         void dev_close() {
+            sl.Soloud_deinit(sys);
             dev_opened = false;
         }
 
@@ -310,6 +328,7 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
+            sl.Soloud_destroy(sys);
             inited = false;
             SDL_UnloadObject(sl.handle);
         }
