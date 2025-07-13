@@ -11,8 +11,8 @@ if app.exit_code:
     sys.exit(app.exit_code)
 app.print_logo(logo)
 
-if not app.stage:
-    app.warn('TODO: write to use help')
+if not app.stage or app.stage == 'help':
+    app.info(f'Usage: "{sys.executable}" "{__file__}" [dir_name] [init/fetch/conf/gen_res/join_code]')
     sys.exit(0)
 
 if app.stage == 'init':

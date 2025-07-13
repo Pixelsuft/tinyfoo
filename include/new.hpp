@@ -1,6 +1,9 @@
 #pragma once
 #include <lbs.hpp>
 #include <mem.hpp>
+#if IS_RELEASE
+#include <unreachable.hpp>
+#endif
 #if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 201703L
 #include <new>
 #endif
@@ -11,10 +14,12 @@ namespace tf {
 	template <typename T, typename... Args>
 	static inline T* nw(Args&&... args) {
 		void* ptr_res = mem::alloc(sizeof(T));
+#if !IS_RELEASE
 		if (ptr_res == nullptr) {
-            // TODO: unreachable (release mode)
+            // WTF
 			return nullptr;
 		}
+#endif
 #if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
 		return std::construct_at((T*)ptr_res, std::forward<Args>(args)...);
 #else
@@ -35,10 +40,10 @@ namespace tf {
 	template <typename T, typename... Args>
 	static inline T* bump_nw(Args&&... args) {
 		void* ptr_res = mem::bump_alloc(sizeof(T));
-		if (ptr_res == nullptr) {
-            // TODO: unreachable
-			return nullptr;
-		}
+#if IS_RELEASE
+		if (ptr_res == nullptr)
+            TF_UNREACHABLE();
+#endif
 #if (defined(_MSVC_LANG) ? _MSVC_LANG : __cplusplus) >= 202002L
 		return std::construct_at((T*)ptr_res, std::forward<Args>(args)...);
 #else
