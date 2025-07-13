@@ -163,15 +163,11 @@ namespace audio {
         public:
         float pause_pos;
         unsigned int ch;
-        bool was_finished;
-        bool hooked;
         bool stopped;
         bool paused;
 
         AudioSoLoud() : AudioBase() {
             lib_name = "SoLoud";
-            was_finished = false;
-            hooked = false;
             stopped = false;
             paused = false;
             pause_pos = 0.f;
@@ -325,37 +321,55 @@ namespace audio {
         }
     
         bool mus_fill_info(Music* mus) {
+            // TODO
             return false;
         }
 
         void update() {
-            if (was_finished) {
-                was_finished = false;
-                hooked = false;
+            if (cur_mus && sl.Soloud_countAudioSource(sys, cur_wav) == 0) {
+                ch = 0;
+                if (!stopped)
+                    force_play_cache();
+                pl::fill_cache();
+                pre_open();
             }
         }
 
         void cur_stop() {
+            if (!cur_mus)
+                return;
             bool was_paused = cur_paused();
             paused = false;
             stopped = true;
+            if (was_paused)
+                sl.Soloud_stop(sys, ch);
+            else {
+                sl.Soloud_fadeVolume(sys, ch, 0.f, (double)fade_stop_time);
+                sl.Soloud_scheduleStop(sys, ch, (double)fade_stop_time);
+            }
             pl::fill_cache();
         }
 
         float cur_get_pos() {
             if (cur_paused())
                 return pause_pos;
-            return 0.f;
+            if (!cur_mus || stopped || sl.Soloud_countAudioSource(sys, cur_wav) == 0)
+                return 0.f;
+            // FIXME: it's broken
+            return (float)sl.Soloud_getStreamPosition(sys, ch);
         }
 
         void cur_set_pos(float pos) {
-            if (!cur_mus || !hooked)
+            if (!cur_mus)
                 return;
             pos = tf::clamp(pos, 0.f, cur_mus->dur);
             if (paused) {
                 pause_pos = pos;
                 return;
             }
+            int ret;
+            if (SL_HAS_ERROR(ret = sl.Soloud_seek(sys, ch, (double)pos)))
+                TF_WARN(<< "Failed to seek music (" << SL_ERROR() << ")");
         }
 
         void cur_pause() {
@@ -363,6 +377,8 @@ namespace audio {
                 return;
             pause_pos = cur_get_pos();
             paused = true;
+            sl.Soloud_fadeVolume(sys, ch, 0.f, (double)fade_pause_time);
+            sl.Soloud_schedulePause(sys, ch, (double)fade_pause_time);
         }
 
         void cur_resume() {
@@ -370,10 +386,13 @@ namespace audio {
                 return;
             paused = false;
             stopped = false;
+            sl.Soloud_seek(sys, ch, (double)pause_pos);
+            sl.Soloud_setPause(sys, ch, 0);
+            sl.Soloud_fadeVolume(sys, ch, volume, (double)fade_resume_time);
         }
 
         bool cur_stopped() {
-            return !hooked && !paused;
+            return !paused && (!cur_mus || sl.Soloud_countAudioSource(sys, cur_wav) == 0);
         }
 
         bool cur_paused() {
@@ -381,7 +400,9 @@ namespace audio {
         }
 
         void update_volume() {
-            volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));    
+            volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));
+            if (cur_mus)
+                sl.WavStream_setVolume(cur_wav, volume);
         }
 
         ~AudioSoLoud() {

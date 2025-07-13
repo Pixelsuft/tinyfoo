@@ -626,6 +626,7 @@ namespace audio {
                     fading = false;
                     if (!stopped)
                         force_play_cache();
+                    pl::fill_cache();
                     pre_open();
                 }
             }
@@ -638,6 +639,7 @@ namespace audio {
         void cur_stop() {
             if (!cur_mus)
                 return;
+            // TODO: handle paused
             paused = false;
             stopped = true;
             fading = true;
