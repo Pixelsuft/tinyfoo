@@ -272,8 +272,17 @@ namespace audio {
             unsigned int bk_int = SOLOUD_AUTO;
             if (need_bk.size() > 0)
                 bk_int = backend_from_str(need_bk);
+            int b_channels = conf::read_int("soloud", "channel", 0);
+            int b_freq = conf::read_int("soloud", "frequency", 0);
+            int b_samples = conf::read_int("soloud", "chunksize", 0);
+            if (b_channels <= 0)
+                b_channels = 2;
+            if (b_freq <= 0)
+                b_freq = SOLOUD_AUTO;
+            if (b_samples <= 0)
+                b_samples = SOLOUD_AUTO;
             int ret;
-            if (SL_HAS_ERROR(ret = sl.Soloud_initEx(sys, SOLOUD_CLIP_ROUNDOFF, bk_int, SOLOUD_AUTO, SOLOUD_AUTO, 2))) {
+            if (SL_HAS_ERROR(ret = sl.Soloud_initEx(sys, SOLOUD_CLIP_ROUNDOFF, bk_int, (unsigned int)b_freq, (unsigned int)b_samples, (unsigned int)b_channels))) {
                 TF_ERROR(<< "Failed to init SoLoud (" << SL_ERROR() << ")");
                 return false;
             }
