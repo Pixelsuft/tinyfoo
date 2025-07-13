@@ -128,7 +128,6 @@ void ren::destroy() {
 }
 
 static inline void* create_fallback_texture() {
-    // TODO
     TF_WARN(<< "Returning fallback texture");
     return nullptr;
 }

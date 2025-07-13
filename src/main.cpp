@@ -75,7 +75,7 @@ void tf_dll_update() {
 				break;
 			}
 			default: {
-				TF_INFO(<< "TODO cmd: " << cmd.idx);
+				TF_WARN(<< "Unknown cmd: " << cmd.idx);
 				break;
 			}
 		}

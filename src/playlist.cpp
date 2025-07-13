@@ -465,7 +465,6 @@ void pl::remove_selected(Playlist* p) {
     SDL_qsort(p->selected.data(), p->selected.size(), sizeof(int), (SDL_CompareCallback)id_compare_by_val_for_del);
     for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
         audio::Music* m = p->mus[*it];
-        // TODO: actually support zombies maybe?
         if (audio::au->cur_mus == m) {
             audio::au->cur_stop();
             audio::au->cur_mus = nullptr;
@@ -542,7 +541,6 @@ void pl::reload_cache(int mode) {
 }
 
 void pl::fill_cache() {
-    // TODO: improve
     Playlist* p = ui::get_last_pl(2);
     if (!p || p->mus.size() < 3)
         return;

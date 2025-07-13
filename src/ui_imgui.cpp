@@ -313,7 +313,7 @@ bool ui::init() {
         tf::dl(data);
         return false;
     }
-    // TODO: more fonts for different shit
+    // TODO: more fonts for different stuff maybe???
     float font1_size = 16.f;
     float font2_size = 24.f;
     data->font1 = nullptr;
@@ -677,7 +677,7 @@ void ui::draw_meta() {
         for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++)
             ImGui::TextUnformatted((*it)->fn.c_str());
     }
-    // TODO: improve
+    // TODO: improve?
     char temp_buf[64];
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "Location");
@@ -1079,7 +1079,7 @@ void ui::draw_settings() {
 void ui::draw_playlist_conf() {
     ImGui::InputText("Playlist name", data->pl_name_buf, 256);
     ImGui::InputText("Playlist path", data->pl_path_buf, 65536);
-    // TODO: valid name and path
+    // TODO: validate name and path
     bool can = data->pl_name_buf[0] != '\0' && data->pl_path_buf[0] != '\0' && SDL_strcmp(data->pl_name_buf, "Unknown") != 0;
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         if ((*it) == data->need_conf_pl)

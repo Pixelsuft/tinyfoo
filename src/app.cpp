@@ -279,7 +279,9 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_DROP_TEXT: {
             if (!can_i_drop)
                 break;
-            TF_INFO(<< "TODO: drop text " << ev.drop.data << " from " << tf::nfstr(ev.drop.source));
+            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            if (ui::get_last_pl(1))
+                pl::add_file_by_fp(ui::get_last_pl(0), ev.drop.data);
             break;
         }
     }
@@ -344,7 +346,7 @@ void app::destroy() {
 }
 
 void app::read_config() {
-    // TODO: search config in other paths
+    // TODO: search config in other paths maybe??
     data->conf_path = data->data_path + "config.toml";
     size_t sz;
     const char* content = (const char*)SDL_LoadFile(data->conf_path.c_str(), &sz);

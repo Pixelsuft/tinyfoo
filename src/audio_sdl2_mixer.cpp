@@ -292,7 +292,7 @@ namespace audio {
                 sample_frames = b_samples;
             // TF_INFO(<< sample_frames << " " << spec.channels << " " << spec.format << " " << tf::nfstr(dev_name));
 #if 0
-            // TODO: FIXME
+            // TODO: FIXME sdl2-compat is broken
             if (mix.Mix_OpenAudioDevice(spec.freq, (uint16_t)spec.format, spec.channels, sample_frames, dev_name, SDL_AUDIO_ALLOW_ANY_CHANGE) < 0) {
                 TF_ERROR(<< "Failed to open audio device (" << SDL_GetError() << ")");
                 return false;
