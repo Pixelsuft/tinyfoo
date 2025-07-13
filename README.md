@@ -48,7 +48,9 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++2a -Ofast -fno-rtti -Iimgui -Ilbs -ISDL
 g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Iimgui -Ilbs -lSDL3 -lgdiplus
 ```
 ## TODO
+ - Improve UI
  - Support configuring tab columns
+ - Other playmodes (like smart_rng to choose track author and then title)
  - Add support for libpng (useful on linux?) (waiting for v2)
  - Other audio libs (miniaudio, ...)
  - Fix TODOs in code and code cleanup
