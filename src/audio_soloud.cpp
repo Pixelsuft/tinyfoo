@@ -105,6 +105,7 @@ enum SOLOUD_ENUMS {
 #define SL_ERROR() sl.Soloud_getErrorString(sys, ret)
 #define SL_HAS_ERROR(expr) ((expr) != 0)
 #define SL_API
+#define cur_wav ((WavStream*)cur_mus->h1)
 #define mus_wav ((WavStream*)mus->h1)
 
 template<int> const char* SoLoudDefaultDllHelper();
@@ -136,9 +137,11 @@ namespace audio {
         int (SL_API *Soloud_seek)(Soloud*, unsigned int, double);
         void (SL_API *Soloud_stop)(Soloud*, unsigned int);
         void (SL_API *Soloud_stopAll)(Soloud*);
+        int (SL_API *Soloud_countAudioSource)(Soloud*, AudioSource*);
         double (SL_API *Soloud_getStreamTime)(Soloud*, unsigned int);
         double (SL_API *Soloud_getStreamPosition)(Soloud*, unsigned int);
         int (SL_API *Soloud_getPause)(Soloud*, unsigned int);
+        void (SL_API *Soloud_setPause)(Soloud*, unsigned int, int);
         float (SL_API *Soloud_getVolume)(Soloud*, unsigned int);
         int (SL_API *Soloud_setRelativePlaySpeed)(Soloud*, unsigned int, float);
         void (SL_API *Soloud_setVolume)(Soloud*, unsigned int, float);
@@ -159,6 +162,7 @@ namespace audio {
         Soloud* sys;
         public:
         float pause_pos;
+        unsigned int ch;
         bool was_finished;
         bool hooked;
         bool stopped;
@@ -173,6 +177,7 @@ namespace audio {
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
+            ch = 0;
             const char* lib_path = SoLoudDefaultDllHelper<sizeof(void*)>();
             sl.handle = SDL_LoadObject(lib_path);
             if (!sl.handle) {
@@ -195,9 +200,11 @@ namespace audio {
             SL_LOAD_FUNC(Soloud_seek);
             SL_LOAD_FUNC(Soloud_stop);
             SL_LOAD_FUNC(Soloud_stopAll);
+            SL_LOAD_FUNC(Soloud_countAudioSource);
             SL_LOAD_FUNC(Soloud_getStreamTime);
             SL_LOAD_FUNC(Soloud_getStreamPosition);
             SL_LOAD_FUNC(Soloud_getPause);
+            SL_LOAD_FUNC(Soloud_setPause);
             SL_LOAD_FUNC(Soloud_getVolume);
             SL_LOAD_FUNC(Soloud_setRelativePlaySpeed);
             SL_LOAD_FUNC(Soloud_setVolume);
@@ -243,6 +250,54 @@ namespace audio {
             // SoLoud doesn't support that
         }
 
+        void force_play_cache() {
+            if (cache.size() == 0)
+                return;
+            bool from_rep = false;
+            int ret;
+            if (cache[0] == cur_mus) {
+                if (stopped) {
+                    cur_mus = nullptr;
+                    force_play_cache();
+                    pl::fill_cache();
+                    return;
+                }
+                cache.erase(cache.begin());
+                if (paused || sl.Soloud_countAudioSource(sys, cur_wav) > 0) {
+                    paused = false;
+                    update_volume();
+                    if (SL_HAS_ERROR(ret = sl.Soloud_seek(sys, ch, 0.0)))
+                        TF_WARN(<< "Failed to seek sound to start (" << SL_ERROR() << ")");
+                    sl.Soloud_setPause(sys, ch, 0);
+                    pl::fill_cache();
+                    return;
+                }
+                from_rep = true;
+            }
+            stopped = false;
+            if (cur_mus && sl.Soloud_countAudioSource(sys, cur_wav) > 0) {
+                stopped = false;
+                paused = false;
+                sl.Soloud_fadeVolume(sys, ch, 0.f, (double)fade_next_time);
+                sl.Soloud_scheduleStop(sys, ch, (double)fade_next_time);
+                return;
+            }
+            Music* prev = nullptr;
+            if (!from_rep) {
+                prev = cur_mus;
+                cur_mus = cache[0];
+                cache.erase(cache.begin());
+            }
+            cur_mus->cached = false;
+            pl::mus_open_file(cur_mus);
+            stopped = false;
+            paused = false;
+            ch = sl.Soloud_playBackgroundEx(sys, cur_wav, volume, 0, 0);
+            if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
+                mus_close(prev);
+            pl::fill_cache();
+        }
+
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
@@ -252,6 +307,7 @@ namespace audio {
                 TF_ERROR(<< "Failed to create wavstream");
                 return false;
             }
+            // Will that softlock??
             if (SL_HAS_ERROR(ret = sl.WavStream_load(mus_wav, fp))) {
                 TF_ERROR(<< "Failed to load music (" << SL_ERROR() << ")");
                 sl.WavStream_destroy(mus_wav);
@@ -266,12 +322,6 @@ namespace audio {
                 return;
             sl.WavStream_destroy(mus_wav);
             mus->h1 = nullptr;
-        }
-
-        void force_play_cache() {
-            if (cache.size() == 0)
-                return;
-            pl::fill_cache();
         }
     
         bool mus_fill_info(Music* mus) {

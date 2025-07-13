@@ -553,7 +553,7 @@ namespace audio {
                 TF_WARN(<< "Failed to play music (" << BASS_GetError() << ")");
                 stopped = true;
                 paused = false;
-                fading = false;                
+                fading = false;
             }
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
