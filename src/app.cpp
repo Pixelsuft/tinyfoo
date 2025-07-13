@@ -176,6 +176,10 @@ bool app::init() {
     else if (backend_au == "bass")
         audio::au = audio::create_bass();
 #endif
+#if ENABLE_SOLOUD
+    else if (backend_au == "soloud")
+        audio::au = audio::create_soloud();
+#endif
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)
             audio::free_audio(audio::au);

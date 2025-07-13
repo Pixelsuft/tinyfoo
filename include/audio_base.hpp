@@ -57,5 +57,8 @@ namespace audio {
 #if ENABLE_BASS
     AudioBase* create_bass();
 #endif
+#if ENABLE_BASS
+    AudioBase* create_soloud();
+#endif
     void free_audio(AudioBase* handle);
 }
