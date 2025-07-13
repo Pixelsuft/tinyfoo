@@ -8,6 +8,101 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
+#if 1
+typedef void* AudioSource;
+typedef void* Soloud;
+typedef void* Wav;
+typedef void* WavStream;
+
+enum SOLOUD_ENUMS {
+	SOLOUD_AUTO = 0,
+	SOLOUD_SDL1 = 1,
+	SOLOUD_SDL2 = 2,
+	SOLOUD_PORTAUDIO = 3,
+	SOLOUD_WINMM = 4,
+	SOLOUD_XAUDIO2 = 5,
+	SOLOUD_WASAPI = 6,
+	SOLOUD_ALSA = 7,
+	SOLOUD_JACK = 8,
+	SOLOUD_OSS = 9,
+	SOLOUD_OPENAL = 10,
+	SOLOUD_COREAUDIO = 11,
+	SOLOUD_OPENSLES = 12,
+	SOLOUD_VITA_HOMEBREW = 13,
+	SOLOUD_MINIAUDIO = 14,
+	SOLOUD_NOSOUND = 15,
+	SOLOUD_NULLDRIVER = 16,
+	SOLOUD_BACKEND_MAX = 17,
+	SOLOUD_CLIP_ROUNDOFF = 1,
+	SOLOUD_ENABLE_VISUALIZATION = 2,
+	SOLOUD_LEFT_HANDED_3D = 4,
+	SOLOUD_NO_FPU_REGISTER_CHANGE = 8,
+	BASSBOOSTFILTER_WET = 0,
+	BASSBOOSTFILTER_BOOST = 1,
+	BIQUADRESONANTFILTER_LOWPASS = 0,
+	BIQUADRESONANTFILTER_HIGHPASS = 1,
+	BIQUADRESONANTFILTER_BANDPASS = 2,
+	BIQUADRESONANTFILTER_WET = 0,
+	BIQUADRESONANTFILTER_TYPE = 1,
+	BIQUADRESONANTFILTER_FREQUENCY = 2,
+	BIQUADRESONANTFILTER_RESONANCE = 3,
+	ECHOFILTER_WET = 0,
+	ECHOFILTER_DELAY = 1,
+	ECHOFILTER_DECAY = 2,
+	ECHOFILTER_FILTER = 3,
+	FLANGERFILTER_WET = 0,
+	FLANGERFILTER_DELAY = 1,
+	FLANGERFILTER_FREQ = 2,
+	FREEVERBFILTER_WET = 0,
+	FREEVERBFILTER_FREEZE = 1,
+	FREEVERBFILTER_ROOMSIZE = 2,
+	FREEVERBFILTER_DAMP = 3,
+	FREEVERBFILTER_WIDTH = 4,
+	LOFIFILTER_WET = 0,
+	LOFIFILTER_SAMPLERATE = 1,
+	LOFIFILTER_BITDEPTH = 2,
+	NOISE_WHITE = 0,
+	NOISE_PINK = 1,
+	NOISE_BROWNISH = 2,
+	NOISE_BLUEISH = 3,
+	ROBOTIZEFILTER_WET = 0,
+	ROBOTIZEFILTER_FREQ = 1,
+	ROBOTIZEFILTER_WAVE = 2,
+	SFXR_COIN = 0,
+	SFXR_LASER = 1,
+	SFXR_EXPLOSION = 2,
+	SFXR_POWERUP = 3,
+	SFXR_HURT = 4,
+	SFXR_JUMP = 5,
+	SFXR_BLIP = 6,
+	SPEECH_KW_SAW = 0,
+	SPEECH_KW_TRIANGLE = 1,
+	SPEECH_KW_SIN = 2,
+	SPEECH_KW_SQUARE = 3,
+	SPEECH_KW_PULSE = 4,
+	SPEECH_KW_NOISE = 5,
+	SPEECH_KW_WARBLE = 6,
+	VIC_PAL = 0,
+	VIC_NTSC = 1,
+	VIC_BASS = 0,
+	VIC_ALTO = 1,
+	VIC_SOPRANO = 2,
+	VIC_NOISE = 3,
+	VIC_MAX_REGS = 4,
+	WAVESHAPERFILTER_WET = 0,
+	WAVESHAPERFILTER_AMOUNT = 1
+};
+
+#define SL_LOAD_FUNC(func_name) do { \
+    *(void**)&sl.func_name = (void*)SDL_LoadFunction(sl.handle, #func_name); \
+    if (!sl.func_name) { \
+        TF_ERROR(<< "Failed to load " << lib_name << " function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
+        SDL_UnloadObject(sl.handle); \
+        return; \
+    } \
+} while (0)
+#endif
+#define SL_API
 
 template<int> const char* SoLoudDefaultDllHelper();
 
@@ -22,6 +117,37 @@ template<> const char* SoLoudDefaultDllHelper<8>() {
 namespace audio {
     struct SoLoudApi {
         SDL_SharedObject* handle;
+        void (SL_API *Soloud_destroy)(Soloud*);
+        Soloud* (SL_API *Soloud_create)();
+        int (SL_API *Soloud_initEx)(Soloud*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int);
+        void (SL_API *Soloud_deinit)(Soloud*);
+        unsigned int (SL_API *Soloud_getVersion)(Soloud*);
+        const char* (SL_API *Soloud_getErrorString)(Soloud*, int);
+        unsigned int (SL_API *Soloud_getBackendId)(Soloud*);
+        const char* (SL_API *Soloud_getBackendString)(Soloud*);
+        unsigned int (SL_API *Soloud_getBackendChannels)(Soloud*);
+        unsigned int (SL_API *Soloud_getBackendSamplerate)(Soloud*);
+        unsigned int (SL_API *Soloud_getBackendBufferSize)(Soloud*);
+        unsigned int (SL_API *Soloud_playEx)(Soloud*, AudioSource*, float, float, int, unsigned int);
+        unsigned int (SL_API *Soloud_playBackgroundEx)(Soloud*, AudioSource*, float, int, unsigned int);
+        int (SL_API *Soloud_seek)(Soloud*, unsigned int, double);
+        void (SL_API *Soloud_stop)(Soloud*, unsigned int);
+        void (SL_API *Soloud_stopAll)(Soloud*);
+        double (SL_API *Soloud_getStreamTime)(Soloud*, unsigned int);
+        double (SL_API *Soloud_getStreamPosition)(Soloud*, unsigned int);
+        int (SL_API *Soloud_getPause)(Soloud*, unsigned int);
+        float (SL_API *Soloud_getVolume)(Soloud*, unsigned int);
+        int (SL_API *Soloud_setRelativePlaySpeed)(Soloud*, unsigned int, float);
+        void (SL_API *Soloud_setVolume)(Soloud*, unsigned int, float);
+        void (SL_API *Soloud_fadeVolume)(Soloud*, unsigned int, float, double);
+        void (SL_API *Soloud_schedulePause)(Soloud*, unsigned int, double);
+        void (SL_API *Soloud_scheduleStop)(Soloud*, unsigned int, double);
+        void (SL_API *WavStream_destroy)(WavStream*);
+        WavStream* (SL_API *WavStream_create)();
+        int (SL_API *WavStream_load)(WavStream*, const char*);
+        double (SL_API *WavStream_getLength)(WavStream*);
+        void (SL_API *WavStream_setVolume)(WavStream*, float);
+        void (SL_API *WavStream_stop)(WavStream*);
     };
 
     class AudioSoLoud : public AudioBase {
@@ -43,12 +169,43 @@ namespace audio {
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
-            const char* lib_path = SoLoudDefaultDllHelper<sizeof(size_t)>();
+            const char* lib_path = SoLoudDefaultDllHelper<sizeof(void*)>();
             sl.handle = SDL_LoadObject(lib_path);
             if (!sl.handle) {
                 TF_ERROR(<< "Failed to load SoLoud library (" << SDL_GetError() << ")");
                 return;
             }
+            SL_LOAD_FUNC(Soloud_destroy);
+            SL_LOAD_FUNC(Soloud_create);
+            SL_LOAD_FUNC(Soloud_initEx);
+            SL_LOAD_FUNC(Soloud_deinit);
+            SL_LOAD_FUNC(Soloud_getVersion);
+            SL_LOAD_FUNC(Soloud_getErrorString);
+            SL_LOAD_FUNC(Soloud_getBackendId);
+            SL_LOAD_FUNC(Soloud_getBackendString);
+            SL_LOAD_FUNC(Soloud_getBackendChannels);
+            SL_LOAD_FUNC(Soloud_getBackendSamplerate);
+            SL_LOAD_FUNC(Soloud_getBackendBufferSize);
+            SL_LOAD_FUNC(Soloud_playEx);
+            SL_LOAD_FUNC(Soloud_playBackgroundEx);
+            SL_LOAD_FUNC(Soloud_seek);
+            SL_LOAD_FUNC(Soloud_stop);
+            SL_LOAD_FUNC(Soloud_stopAll);
+            SL_LOAD_FUNC(Soloud_getStreamTime);
+            SL_LOAD_FUNC(Soloud_getStreamPosition);
+            SL_LOAD_FUNC(Soloud_getPause);
+            SL_LOAD_FUNC(Soloud_getVolume);
+            SL_LOAD_FUNC(Soloud_setRelativePlaySpeed);
+            SL_LOAD_FUNC(Soloud_setVolume);
+            SL_LOAD_FUNC(Soloud_fadeVolume);
+            SL_LOAD_FUNC(Soloud_schedulePause);
+            SL_LOAD_FUNC(Soloud_scheduleStop);
+            SL_LOAD_FUNC(WavStream_destroy);
+            SL_LOAD_FUNC(WavStream_create);
+            SL_LOAD_FUNC(WavStream_load);
+            SL_LOAD_FUNC(WavStream_getLength);
+            SL_LOAD_FUNC(WavStream_setVolume);
+            SL_LOAD_FUNC(WavStream_stop);
             inited = true;
         }
 
@@ -71,7 +228,6 @@ namespace audio {
                 return true;
             mus->h1 = nullptr;
             if (!mus->h1) {
-                TF_ERROR(<< "Failed to open music \"" << fp << "\" (" << SDL_GetError() << ")");
                 return false;
             }
             return true;
