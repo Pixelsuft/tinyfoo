@@ -402,7 +402,7 @@ namespace audio {
         void update_volume() {
             volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));
             if (cur_mus)
-                sl.WavStream_setVolume(cur_wav, volume);
+                sl.Soloud_setVolume(sys, ch, volume);
         }
 
         ~AudioSoLoud() {
