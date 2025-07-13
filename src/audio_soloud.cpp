@@ -105,6 +105,7 @@ enum SOLOUD_ENUMS {
 #define SL_ERROR() sl.Soloud_getErrorString(sys, ret)
 #define SL_HAS_ERROR(expr) ((expr) != 0)
 #define SL_API
+#define mus_wav ((WavStream*)mus->h1)
 
 template<int> const char* SoLoudDefaultDllHelper();
 
@@ -239,13 +240,22 @@ namespace audio {
 
         void dev_fill_arr(tf::vec<tf::str>& arr) {
             arr.push_back("Default");
+            // SoLoud doesn't support that
         }
 
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
-            mus->h1 = nullptr;
+            int ret;
+            mus->h1 = sl.WavStream_create();
             if (!mus->h1) {
+                TF_ERROR(<< "Failed to create wavstream");
+                return false;
+            }
+            if (SL_HAS_ERROR(ret = sl.WavStream_load(mus_wav, fp))) {
+                TF_ERROR(<< "Failed to load music (" << SL_ERROR() << ")");
+                sl.WavStream_destroy(mus_wav);
+                mus->h1 = nullptr;
                 return false;
             }
             return true;
@@ -254,6 +264,7 @@ namespace audio {
         void mus_close(Music* mus) {
             if (!mus->h1)
                 return;
+            sl.WavStream_destroy(mus_wav);
             mus->h1 = nullptr;
         }
 
