@@ -62,9 +62,8 @@ public:
 
     virtual HRESULT STDMETHODCALLTYPE Read(void* pv, ULONG cb, ULONG* pcbRead) {
         size_t read = SDL_ReadIO(ctx, pv, (size_t)cb);
-        if (pcbRead) {
+        if (pcbRead)
             *pcbRead = (ULONG)read;
-        }
         return read == cb ? S_OK : E_FAIL;
     }
 
@@ -86,9 +85,8 @@ public:
         Sint64 ret = SDL_SeekIO(ctx, (Sint64)dlibMove.QuadPart, whence);
         if (ret < 0)
             return E_FAIL;
-        if (plibNewPosition) {
+        if (plibNewPosition)
             plibNewPosition->QuadPart = (ULONGLONG)ret;
-        }
         return S_OK;
     }
 
@@ -96,8 +94,9 @@ public:
         (void)grfStatFlag;
         SDL_memset(pstatstg, 0, sizeof(*pstatstg));
         pstatstg->type = STGTY_STREAM;
-        pstatstg->cbSize.QuadPart = (ULONGLONG)SDL_GetIOSize(ctx);
-        return S_OK;
+        Sint64 ret_sz = SDL_GetIOSize(ctx);
+        pstatstg->cbSize.QuadPart = (ret_sz > 0) ? (ULONGLONG)ret_sz : 0;
+        return (ret_sz < 0) ? E_FAIL : S_OK;
     }
 
     virtual HRESULT STDMETHODCALLTYPE Clone(IStream** ppstm) {
