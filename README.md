@@ -6,6 +6,7 @@ Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are 
  - [SDL2_mixer](https://wiki.libsdl.org/SDL2_mixer/FrontPage)/[SDL-Mixer-X](https://wohlsoft.github.io/SDL-Mixer-X/) via [sdl2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable [SDL3_mixer](https://github.com/libsdl-org/SDL_mixer) release yet)
  - [FMOD](https://www.fmod.com/)
  - [BASS](https://www.un4seen.com/)
+ - [SoLoud](https://solhsa.com/soloud/) (setting music position is broken somewhy)
 ## External dependencies
 All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
  - [SDL3](https://github.com/libsdl-org/SDL)
@@ -49,5 +50,5 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
 ## TODO
  - Support configuring tab columns
  - Add support for libpng (useful on linux?) (waiting for v2)
- - Other audio libs (miniaudio, SoLoud, ...)
+ - Other audio libs (miniaudio, ...)
  - Fix TODOs in code and code cleanup

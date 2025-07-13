@@ -119,6 +119,44 @@ template<> const char* SoLoudDefaultDllHelper<8>() {
 }
 
 namespace audio {
+    unsigned int backend_from_str(const tf::str& type) {
+        if (type == "auto" || type == "default")
+            return SOLOUD_AUTO;
+        else if (type == "sdl1")
+            return SOLOUD_SDL1;
+        else if (type == "sdl2")
+            return SOLOUD_SDL2;
+        else if (type == "portaudio")
+            return SOLOUD_PORTAUDIO;
+        else if (type == "winmm")
+            return SOLOUD_WINMM;
+        else if (type == "xaudio2")
+            return SOLOUD_XAUDIO2;
+        else if (type == "wasapi")
+            return SOLOUD_WASAPI;
+        else if (type == "alsa")
+            return SOLOUD_ALSA;
+        else if (type == "jack")
+            return SOLOUD_JACK;
+        else if (type == "oss")
+            return SOLOUD_OSS;
+        else if (type == "openal")
+            return SOLOUD_OPENAL;
+        else if (type == "coreaudio")
+            return SOLOUD_COREAUDIO;
+        else if (type == "opensles")
+            return SOLOUD_OPENSLES;
+        else if (type == "vita")
+            return SOLOUD_VITA_HOMEBREW;
+        else if (type == "miniaudio")
+            return SOLOUD_MINIAUDIO;
+        else if (type == "nosound")
+            return SOLOUD_NOSOUND;
+        else if (type == "null")
+            return SOLOUD_NULLDRIVER;
+        return SOLOUD_AUTO;
+    }
+
     struct SoLoudApi {
         SDL_SharedObject* handle;
         void (SL_API *Soloud_destroy)(Soloud*);
@@ -219,14 +257,23 @@ namespace audio {
                 SDL_UnloadObject(sl.handle);
                 return;
             }
+            // It is supported as a backend for SoLoud
+            tf::str sdl_drv_hint = conf::read_str("sdl2_mixer", "driver", "default");
+            if (sdl_drv_hint.size() == 0 || sdl_drv_hint == "default")
+                SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
+            else if (!SDL_SetHint(SDL_HINT_AUDIO_DRIVER, sdl_drv_hint.c_str()))
+                TF_WARN(<< "Failed to set SDL3 audio hint (" << SDL_GetError() << ")");
             TF_INFO(<< "SoLoud successfully created");
             inited = true;
         }
 
         bool dev_open() {
-            // TODO: conf
+            tf::str need_bk = conf::read_str("soloud", "driver", "auto");
+            unsigned int bk_int = SOLOUD_AUTO;
+            if (need_bk.size() > 0)
+                bk_int = backend_from_str(need_bk);
             int ret;
-            if (SL_HAS_ERROR(ret = sl.Soloud_initEx(sys, SOLOUD_CLIP_ROUNDOFF, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, 2))) {
+            if (SL_HAS_ERROR(ret = sl.Soloud_initEx(sys, SOLOUD_CLIP_ROUNDOFF, bk_int, SOLOUD_AUTO, SOLOUD_AUTO, 2))) {
                 TF_ERROR(<< "Failed to init SoLoud (" << SL_ERROR() << ")");
                 return false;
             }
