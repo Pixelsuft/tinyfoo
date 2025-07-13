@@ -1018,11 +1018,11 @@ void ui::draw_settings() {
         }
         ImGui::EndCombo();
     }
-    if (ImGui::InputInt("Channels", &data->conf.ints[0]))
+    if (ImGui::InputInt("Channels##sdl2", &data->conf.ints[0]))
         data->conf.ints[0] = tf::clamp(data->conf.ints[0], 0, 64);
     if (ImGui::InputInt("Frequency##sdl2", &data->conf.ints[1], 100, 10000))
         data->conf.ints[1] = tf::clamp(data->conf.ints[1], 0, 96000);
-    if (ImGui::InputInt("Chunk Size", &data->conf.ints[2], 32, 256))
+    if (ImGui::InputInt("Chunk Size##sdl2", &data->conf.ints[2], 32, 256))
         data->conf.ints[2] = tf::clamp(data->conf.ints[2], 0, 1024 * 1024);
     ImGui::Checkbox("FLAC", &data->conf.bools[1]);
     ImGui::SameLine();
@@ -1066,6 +1066,25 @@ void ui::draw_settings() {
     ImGui::Checkbox("Force DSound", &data->conf.bools[12]);
     ImGui::SameLine();
     ImGui::Checkbox("Force Software", &data->conf.bools[13]);
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(COOL_CYAN, "SoLoud");
+    ImGui::PopFont();
+    if (ImGui::BeginCombo("Driver##sl", data->conf.soloud_drv.c_str())) {
+        for (int i = 0; i < SDL_arraysize(conf::soloud_drv); i++) {
+            bool is_selected = data->conf.soloud_drv == conf::soloud_drv[i];
+            if (ImGui::Selectable(conf::soloud_drv[i], &is_selected))
+                data->conf.soloud_drv = conf::soloud_drv[i];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGui::InputInt("Channels##sl", &data->conf.ints[7]))
+        data->conf.ints[7] = tf::clamp(data->conf.ints[7], 0, 64);
+    if (ImGui::InputInt("Frequency##sl", &data->conf.ints[8], 100, 10000))
+        data->conf.ints[8] = tf::clamp(data->conf.ints[8], 0, 96000);
+    if (ImGui::InputInt("Chunk Size##sl", &data->conf.ints[9], 32, 256))
+        data->conf.ints[9] = tf::clamp(data->conf.ints[9], 0, 1024 * 1024);
     ImGui::TextUnformatted("WARN: most of the changes require restarting");
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;

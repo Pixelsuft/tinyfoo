@@ -450,6 +450,10 @@ void conf::begin_editing(ConfData& data) {
     data.bools[12] = conf::read_bool("bass", "force_directsound", false);
     data.bools[13] = conf::read_bool("bass", "force_software", false);
     data.ints[3] = conf::read_int("bass", "frequency", 0);
+    data.soloud_drv = conf::read_str("soloud", "driver", "default");
+    data.ints[7] = conf::read_int("soloud", "channels", 0);
+    data.ints[8] = conf::read_int("soloud", "frequency", 0);
+    data.ints[9] = conf::read_int("soloud", "chunksize", 0);
 }
 
 #if ENABLE_TOMLPP
@@ -529,6 +533,12 @@ void conf::end_editing(ConfData& data) {
             {"force_audiotrack", data.bools[11]},
             {"force_directsound", data.bools[12]},
             {"force_software", data.bools[13]}
+        }},
+        {"soloud", toml::table{
+            {"driver", TOML_DUMP_STR(data.soloud_drv)},
+            {"channels", data.ints[7]},
+            {"frequency", data.ints[8]},
+            {"chunksize", data.ints[9]}
         }},
         {"playback", toml::table{
             {"playlists", pl_files},

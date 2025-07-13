@@ -43,6 +43,7 @@ namespace conf {
         tf::str sdl2_drv;
         tf::str sdl2_fmt;
         tf::str fmod_drv;
+        tf::str soloud_drv;
         tf::str ren_drv;
         tf::str au_bk;
         float floats[16];
