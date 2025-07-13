@@ -378,7 +378,7 @@ namespace audio {
     
         bool mus_fill_info(Music* mus) {
             mus->dur = (float)sl.WavStream_getLength(mus_wav);
-            mus->type = Type::NONE; // ?
+            mus->type = Type::NONE;
             // Hacky
             char ext_buf[5];
             if (mus->full_path.size() >= 5) {
@@ -431,7 +431,7 @@ namespace audio {
                 return pause_pos;
             if (!cur_mus || stopped || sl.Soloud_countAudioSource(sys, cur_wav) == 0)
                 return 0.f;
-            // FIXME: it's broken
+            // TODO: FIXME it's broken
             return (float)sl.Soloud_getStreamPosition(sys, ch);
         }
 
