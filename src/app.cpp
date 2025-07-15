@@ -481,8 +481,11 @@ void conf::end_editing(ConfData& data) {
 #else
     tf::vec<tf::str> pl_files;
     pl_files.reserve(pl::pls->size());
-    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
+    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
+        if ((*it)->name == "Unknown")
+            continue;
         pl_files.push_back((*it)->path);
+    }
 #endif
     app::data->conf = toml::table{
         {"renderer", toml::table{
