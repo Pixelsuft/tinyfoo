@@ -28,10 +28,9 @@ void ren::display_available_drivers() {
     int num = SDL_GetNumRenderDrivers();
     if (num <= 0)
         return;
-    // To be shown in release mode
-    TF_WARN(<< "Available renderer drivers: ");
+    TF_INFO(<< "Available renderer drivers: ");
     for (int i = 0; i < num; i++)
-        TF_WARN(<< tf::nfstr(SDL_GetRenderDriver(i)));
+        TF_INFO(<< tf::nfstr(SDL_GetRenderDriver(i)));
 }
 
 bool ren::init(void* win) {
