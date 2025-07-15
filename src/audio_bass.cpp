@@ -650,10 +650,6 @@ namespace audio {
             if (!cur_mus || stopped || bass.BASS_ChannelIsActive(cur_h) == BASS_ACTIVE_STOPPED)
                 return 0.f;
             QWORD b_pos = bass.BASS_ChannelGetPosition(cur_h, BASS_POS_BYTE);
-            if (b_pos < 0) {
-                TF_WARN(<< "Failed to get music position (" << BASS_GetError() << ")");
-                return 0.f;
-            }
             // Actually shouldn't fail
             return (float)bass.BASS_ChannelBytes2Seconds(cur_h, b_pos);
         }

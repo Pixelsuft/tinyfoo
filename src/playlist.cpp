@@ -41,13 +41,13 @@ namespace pl {
 static inline tf::str fn_from_fp(const tf::str& fp) {
     tf::str ret = fp;
     auto t1_find = ret.rfind('\\') + 1;
-    if (t1_find >= 0 && t1_find < ret.size())
+    if (t1_find < ret.size())
         ret = ret.substr(t1_find);
     t1_find = ret.rfind('/') + 1;
-    if (t1_find >= 0 && t1_find < ret.size())
+    if (t1_find < ret.size())
         ret = ret.substr(t1_find);
     t1_find = ret.rfind('.');
-    if (t1_find >= 0 && t1_find < ret.size())
+    if (t1_find < ret.size())
         ret = ret.substr(0, t1_find);
     return ret;
 }
@@ -66,7 +66,7 @@ void pl::file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf
 }
 
 tf::str pl::full_path_for_playlist(const tf::str& path) {
-    if ((path.find('/') < 0 || path.find('/') >= path.size()) && (path.find('\\') < 0 || path.find('\\') >= path.size()))
+    if ((path.find('/') >= path.size()) && (path.find('\\') >= path.size()))
         return app::get_data_path() + path;
     else
         return path;

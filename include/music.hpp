@@ -1,5 +1,6 @@
 #pragma once
 #include <str.hpp>
+#include <unused.hpp>
 #include <cstdint>
 
 namespace audio {
@@ -36,6 +37,7 @@ namespace audio {
         MO3 = 29
     };
 
+    static const char* get_type_str(Type tp) UNUSED_END;
     static const char* get_type_str(Type tp) {
         switch (tp) {
             case Type::NONE: {
