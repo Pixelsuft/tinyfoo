@@ -22,18 +22,18 @@ namespace conf {
 #else
     using toml_table = toml::value;
 #endif
-    static const char* ren_drv[] UNUSED_END = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
-    static const char* ig_style_list[] UNUSED_END = {
+    UNUSED_BEGIN static const char* ren_drv[] UNUSED_END = { "auto", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
+    UNUSED_BEGIN static const char* ig_style_list[] UNUSED_END = {
         "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
         "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",
         "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
         "vgui", "visual_studio", "windark"
     };
-    static const char* au_bk[] UNUSED_END = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass", "soloud" };
-    static const char* sdl2_drv[] UNUSED_END = { "default", "aaudio", "alsa", "coreaudio", "directsound", "disk", "dummy", "emscripten", "haiku", "jack", "n3ds", "netbsd", "ngage", "opensles", "oss", "pipewire", "ps2", "psp", "pulseaudio", "qnx", "sndio", "vita", "wasapi" };
-    static const char* sdl2_fmt[] UNUSED_END = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
-    static const char* fmod_drv[] UNUSED_END = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
-    static const char* soloud_drv[] UNUSED_END = { "default", "alsa", "coreaudio", "jack", "miniaudio", "nosound", "null", "openal", "opensles", "oss", "portaudio", "sdl1", "sdl2", "vita", "wasapi", "winmm", "xaudio2" };
+    UNUSED_BEGIN static const char* au_bk[] UNUSED_END = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass", "soloud" };
+    UNUSED_BEGIN static const char* sdl2_drv[] UNUSED_END = { "default", "aaudio", "alsa", "coreaudio", "directsound", "disk", "dummy", "emscripten", "haiku", "jack", "n3ds", "netbsd", "ngage", "opensles", "oss", "pipewire", "ps2", "psp", "pulseaudio", "qnx", "sndio", "vita", "wasapi" };
+    UNUSED_BEGIN static const char* sdl2_fmt[] UNUSED_END = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
+    UNUSED_BEGIN static const char* fmod_drv[] UNUSED_END = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };
+    UNUSED_BEGIN static const char* soloud_drv[] UNUSED_END = { "default", "alsa", "coreaudio", "jack", "miniaudio", "nosound", "null", "openal", "opensles", "oss", "portaudio", "sdl1", "sdl2", "vita", "wasapi", "winmm", "xaudio2" };
 
     struct ConfData {
         tf::vec<tf::str> dev_names;

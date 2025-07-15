@@ -76,7 +76,9 @@ void* res::read_asset_data(const char* fn, int& size_buf) {
 }
 
 void res::free_asset_data(void* data) {
-#if !IS_RELEASE
+#if IS_RELEASE
+    (void)data;
+#else
     SDL_free(data);
 #endif
 }
