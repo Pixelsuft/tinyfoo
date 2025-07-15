@@ -431,7 +431,6 @@ namespace audio {
                 return pause_pos;
             if (!cur_mus || stopped || sl.Soloud_countAudioSource(sys, cur_wav) == 0)
                 return 0.f;
-            // TODO: FIXME it's broken
             return (float)sl.Soloud_getStreamPosition(sys, ch);
         }
 
@@ -444,6 +443,7 @@ namespace audio {
                 return;
             }
             int ret;
+            // TODO: FIXME it's broken
             if (SL_HAS_ERROR(ret = sl.Soloud_seek(sys, ch, (double)pos)))
                 TF_WARN(<< "Failed to seek music (" << SL_ERROR() << ")");
         }
