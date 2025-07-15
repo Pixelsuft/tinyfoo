@@ -297,9 +297,8 @@ void app::run() {
     data->running = true;
     SDL_ShowWindow(data->win);
     while (data->running) {
-        while (SDL_PollEvent(&ev)) {
+        while (SDL_PollEvent(&ev))
             app::process_event(ev);
-        }
         audio::au->update();
         pl::update_cache();
 #if IS_DLL_BUILD
@@ -312,9 +311,8 @@ void app::run() {
             ui::do_extra_stuff(); // Hack
         if (data->should_play_sel_hack) {
             data->should_play_sel_hack = false;
-            if (ui::get_last_pl(1)) {
+            if (ui::get_last_pl(1))
                 pl::play_selected(ui::get_last_pl(0));
-            }
         }
         ren::end_frame();
     }
@@ -476,8 +474,11 @@ void conf::end_editing(ConfData& data) {
 #if ENABLE_TOMLPP
     toml::array pl_files;
     pl_files.reserve(pl::pls->size());
-    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++)
+    for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
+        if ((*it)->name == "Unknown")
+            continue;
         pl_files.push_back((*it)->path.c_str());
+    }
 #else
     tf::vec<tf::str> pl_files;
     pl_files.reserve(pl::pls->size());
