@@ -86,7 +86,7 @@ if app.stage == 'conf':
         conf_header.write(f'#define IS_RELEASE {is_release}\n')
     conf_header.write(f'#define IS_WIN {is_win}\n')
     conf_header.write(f'#define ENABLE_IMGUI 1\n')
-    can_gdi = app.conf["msvc"]
+    can_gdi = is_win and not app.b_name == 'build'
     if app.conf['msvc']:
         conf_header.write(f'#if _MSVC_LANG >= 201703L\n')
     elif app.conf['mingw']:

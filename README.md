@@ -51,6 +51,6 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
  - Improve UI
  - Support configuring tab columns
  - Other playmodes (like smart_rng to choose track author and then title)
- - Add support for libpng (useful on linux?) (waiting for v2)
+ - Add support for libpng (useful on linux?)
  - Other audio libs (miniaudio, ...)
  - Fix TODOs in code and code cleanup

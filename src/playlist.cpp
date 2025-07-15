@@ -161,6 +161,8 @@ void pl::load_playlists() {
 #else
             tf::str file_name = tf::str(arr.at(i).as_string().c_str());
 #endif
+            if (file_name == "unknown.json")
+                continue;
             if (load_pl_from_fp(full_path_for_playlist(file_name)))
                 pl::pls->at(pl::pls->size() - 1)->path = file_name;
         }
