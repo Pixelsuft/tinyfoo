@@ -132,7 +132,7 @@ bool app::init() {
         TF_WARN(<< "Failed to set window minimum size (" << SDL_GetError() << ")");
 #ifdef ENABLE_IMGUI
     // Hacky
-    ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)SDL_malloc, (ImGuiMemFreeFunc)SDL_free, nullptr);
+    ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)(void*)&SDL_malloc, (ImGuiMemFreeFunc)(void*)&SDL_free, nullptr);
 #endif
     if (!ren::init(data->win)) {
         destroy();
