@@ -150,6 +150,8 @@ TF_EXPORT int tf_threaded_main(int blocking) {
 #include <SDL3/SDL_main.h>
 
 int main(int argc, char* argv[]) {
+	(void)argc;
+	(void)argv;
 	if (!app::init())
 		return 1;
 	app::run();

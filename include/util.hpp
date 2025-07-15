@@ -69,16 +69,18 @@ namespace util {
     }
 
     static inline struct tm* tm_from_sdl_time(uint64_t sdl_time) {
-        static struct tm tm_buf = { 0 };
+        static struct tm tm_buf;
         time_t mod_time = (time_t)(sdl_time / 1000000000);
 #if IS_MSVC
         struct tm* time_s = &tm_buf;
         if (localtime_s(time_s, &mod_time) != 0)
-            tm_buf = { 0 };
+            SDL_zero(tm_buf);
 #else
         struct tm* time_s = std::localtime(&mod_time);
-        if (!time_s)
+        if (!time_s) {
+            SDL_zero(tm_buf);
             time_s = &tm_buf;
+        }
 #endif
         return time_s;
     }

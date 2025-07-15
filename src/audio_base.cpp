@@ -46,6 +46,7 @@ void AudioBase::dev_fill_arr(tf::vec<tf::str>& arr) {
 }
 
 bool AudioBase::mus_open_fp(Music* mus, const char* fp) {
+    (void)fp;
     mus->h1 = mus->h2 = nullptr;
     // mus->dur = -1.f;
     return false;
@@ -56,7 +57,7 @@ void AudioBase::update() {
 }
 
 void AudioBase::mus_close(Music* mus) {
-    
+    (void)mus;
 }
 
 void AudioBase::update_volume() {
@@ -102,6 +103,7 @@ bool AudioBase::cur_stopped() {
 }
 
 bool AudioBase::mus_fill_info(Music* mus) {
+    (void)mus;
     return false;
 }
 

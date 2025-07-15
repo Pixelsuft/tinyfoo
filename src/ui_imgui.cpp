@@ -567,7 +567,6 @@ void ui::draw_position() {
     ImGui::PushItemWidth(data->size.x - (hacky_rect.x + 16.f));
     static bool hack_editing = false;
     float pos = audio::au->cur_get_pos();
-    static float hack_pos = pos;
     static float hack_last_pos = pos;
     if (hack_editing)
         pos = hack_last_pos;
@@ -576,13 +575,10 @@ void ui::draw_position() {
         hack_editing = true;
         hack_last_pos = pos;
     }
-    if (ImGui::IsItemClicked()) {
-        hack_pos = pos;
+    if (ImGui::IsItemClicked())
         hack_editing = true;
-    }
     if (ImGui::IsItemDeactivatedAfterEdit()) {
         hack_editing = false;
-        hack_pos = pos;
         audio::au->cur_set_pos(hack_last_pos);
     }
     ImGui::PopItemWidth();
@@ -935,7 +931,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "Renderer");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Driver##ren", data->conf.ren_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::ren_drv); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::ren_drv); i++) {
             bool is_selected = (data->conf.ren_drv == conf::ren_drv[i]) || (i == 0 && data->conf.ren_drv.size() == 0);
             if (ImGui::Selectable(conf::ren_drv[i], &is_selected))
                 data->conf.ren_drv = conf::ren_drv[i];
@@ -949,7 +945,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "ImGui");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Style", data->conf.style.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::ig_style_list); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::ig_style_list); i++) {
             bool is_selected = (data->conf.style == conf::ig_style_list[i]);
             if (ImGui::Selectable(conf::ig_style_list[i], &is_selected))
                 data->conf.style = conf::ig_style_list[i];
@@ -963,7 +959,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "Audio");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Backend", data->conf.au_bk.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::au_bk); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::au_bk); i++) {
             bool is_selected = (data->conf.au_bk == conf::au_bk[i]) || (i == 0 && data->conf.au_bk.size() == 0);
             if (ImGui::Selectable(conf::au_bk[i], &is_selected))
                 data->conf.au_bk = conf::au_bk[i];
@@ -999,7 +995,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Driver##sdl2", data->conf.sdl2_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::sdl2_drv); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::sdl2_drv); i++) {
             bool is_selected = data->conf.sdl2_drv == conf::sdl2_drv[i];
             if (ImGui::Selectable(conf::sdl2_drv[i], &is_selected))
                 data->conf.sdl2_drv = conf::sdl2_drv[i];
@@ -1009,7 +1005,7 @@ void ui::draw_settings() {
         ImGui::EndCombo();
     }
     if (ImGui::BeginCombo("Format##sdl2", data->conf.sdl2_fmt.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::sdl2_fmt); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::sdl2_fmt); i++) {
             bool is_selected = data->conf.sdl2_fmt == conf::sdl2_fmt[i];
             if (ImGui::Selectable(conf::sdl2_fmt[i], &is_selected))
                 data->conf.sdl2_fmt = conf::sdl2_fmt[i];
@@ -1040,7 +1036,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "FMOD");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Driver##fmod", data->conf.fmod_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::fmod_drv); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::fmod_drv); i++) {
             bool is_selected = data->conf.fmod_drv == conf::fmod_drv[i];
             if (ImGui::Selectable(conf::fmod_drv[i], &is_selected))
                 data->conf.fmod_drv = conf::fmod_drv[i];
@@ -1070,7 +1066,7 @@ void ui::draw_settings() {
     ImGui::TextColored(COOL_CYAN, "SoLoud");
     ImGui::PopFont();
     if (ImGui::BeginCombo("Driver##sl", data->conf.soloud_drv.c_str())) {
-        for (int i = 0; i < SDL_arraysize(conf::soloud_drv); i++) {
+        for (int i = 0; i < (int)SDL_arraysize(conf::soloud_drv); i++) {
             bool is_selected = data->conf.soloud_drv == conf::soloud_drv[i];
             if (ImGui::Selectable(conf::soloud_drv[i], &is_selected))
                 data->conf.soloud_drv = conf::soloud_drv[i];

@@ -584,7 +584,7 @@ void pl::fill_cache() {
 void pl::select_all(Playlist* p) {
     p->selected.clear();
     p->selected.reserve(p->mus.size());
-    for (int i = 0; i < p->mus.size(); i++) {
+    for (int i = 0; i < (int)p->mus.size(); i++) {
         p->selected.push_back(i);
         p->mus[i]->selected = true;
     }

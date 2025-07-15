@@ -48,5 +48,5 @@ void ctrl::set_pos(float pos) {
 }
 
 void ctrl::ch_pos(float delta) {
-    audio::au->cur_set_pos(audio::au->cur_get_pos());
+    audio::au->cur_set_pos(audio::au->cur_get_pos() + delta);
 }

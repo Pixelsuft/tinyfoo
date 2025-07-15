@@ -87,7 +87,7 @@ void ren::begin_frame() {
 
 void ren::end_frame() {
 #if ENABLE_IMGUI
-    ImGuiIO& io = ImGui::GetIO();
+    // ImGuiIO& io = ImGui::GetIO();
     ImGui::Render();
     // SDL_SetRenderScale(data->ren, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), data->ren);

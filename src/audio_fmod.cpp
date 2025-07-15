@@ -1160,7 +1160,10 @@ namespace audio {
 }
 
 FMOD_RESULT F_CALL fmod_channel_callback(FMOD_CHANNELCONTROL* channelcontrol, FMOD_CHANNELCONTROL_TYPE controltype, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype, void* commanddata1, void* commanddata2) {
-	if ((controltype == FMOD_CHANNELCONTROL_CHANNEL) && (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)) {
+	(void)channelcontrol;
+    (void)commanddata1;
+    (void)commanddata2;
+    if ((controltype == FMOD_CHANNELCONTROL_CHANNEL) && (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)) {
 		((audio::AudioFMOD*)audio::au)->ch = nullptr;
 		((audio::AudioFMOD*)audio::au)->was_finished = true;
 		((audio::AudioFMOD*)audio::au)->fading = false;

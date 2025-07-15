@@ -562,10 +562,6 @@ namespace audio {
     
         bool mus_fill_info(Music* mus) {
             QWORD dur = bass.BASS_ChannelGetLength(mus_h, BASS_POS_BYTE);
-            if (dur < 0) {
-                TF_WARN(<< "Failed to get music duration (" << BASS_GetError() << ")");
-                dur = 0;
-            }
             mus->dur = (float)bass.BASS_ChannelBytes2Seconds(mus_h, dur);
             if (mus->dur < 0.f || mus->dur > 86400000.f)
                 mus->dur = 0.f;

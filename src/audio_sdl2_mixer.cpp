@@ -274,7 +274,7 @@ namespace audio {
                 TF_ERROR(<< "Failed to get playback devices (" << SDL_GetError() << ")");
             SDL_AudioSpec spec;
             int sample_frames;
-            if (!SDL_GetAudioDeviceFormat(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &sample_frames)) {
+            if (!SDL_GetAudioDeviceFormat(dev_id, &spec, &sample_frames)) {
                 TF_ERROR(<< "Failed to get output device specs (" << SDL_GetError() << ")");
                 spec.channels = 2;
                 spec.freq = 2;
