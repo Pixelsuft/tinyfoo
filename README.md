@@ -6,7 +6,7 @@ Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are 
  - [SDL2_mixer](https://wiki.libsdl.org/SDL2_mixer/FrontPage)/[SDL-Mixer-X](https://wohlsoft.github.io/SDL-Mixer-X/) via [sdl2-compat](https://github.com/libsdl-org/sdl2-compat) (because there is no stable [SDL3_mixer](https://github.com/libsdl-org/SDL_mixer) release yet)
  - [FMOD](https://www.fmod.com/)
  - [BASS](https://www.un4seen.com/)
- - [SoLoud](https://solhsa.com/soloud/) (setting music position is broken somewhy)
+ - [SoLoud](https://solhsa.com/soloud/)
 ## External dependencies
 All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
  - [SDL3](https://github.com/libsdl-org/SDL)

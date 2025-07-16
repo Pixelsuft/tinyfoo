@@ -108,6 +108,7 @@ enum SOLOUD_ENUMS {
 #define cur_wav ((WavStream*)cur_mus->h1)
 #define mus_wav ((WavStream*)mus->h1)
 
+#if 0
 template<int> const char* SoLoudDefaultDllHelper();
 
 template<> const char* SoLoudDefaultDllHelper<4>() {
@@ -117,6 +118,7 @@ template<> const char* SoLoudDefaultDllHelper<4>() {
 template<> const char* SoLoudDefaultDllHelper<8>() {
     return IS_WIN ? "soloud_x64.dll" : "libsoloud_x64.so";
 }
+#endif
 
 namespace audio {
     unsigned int backend_from_str(const tf::str& type) {
@@ -212,7 +214,8 @@ namespace audio {
             if (max_volume <= 0.f)
                 max_volume = 1.f;
             ch = 0;
-            const char* lib_path = SoLoudDefaultDllHelper<sizeof(void*)>();
+            // const char* lib_path = SoLoudDefaultDllHelper<sizeof(void*)>();
+            const char* lib_path = IS_WIN ? "soloud.dll" : "libsoloud.so";
             sl.handle = SDL_LoadObject(lib_path);
             if (!sl.handle) {
                 TF_ERROR(<< "Failed to load SoLoud library (" << SDL_GetError() << ")");
@@ -444,6 +447,7 @@ namespace audio {
             }
             int ret;
             // TODO: FIXME it's broken
+            sl.Soloud_seek(sys, ch, 0.0);
             if (SL_HAS_ERROR(ret = sl.Soloud_seek(sys, ch, (double)pos)))
                 TF_WARN(<< "Failed to seek music (" << SL_ERROR() << ")");
         }
@@ -462,6 +466,8 @@ namespace audio {
                 return;
             paused = false;
             stopped = false;
+            // FIXME AGAIN
+            sl.Soloud_seek(sys, ch, 0.0);
             sl.Soloud_seek(sys, ch, (double)pause_pos);
             sl.Soloud_setPause(sys, ch, 0);
             sl.Soloud_fadeVolume(sys, ch, volume, (double)fade_resume_time);
