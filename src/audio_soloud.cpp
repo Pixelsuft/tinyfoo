@@ -446,7 +446,7 @@ namespace audio {
                 return;
             }
             int ret;
-            // TODO: FIXME it's broken
+            // FIXME it's broken
             sl.Soloud_seek(sys, ch, 0.0);
             if (SL_HAS_ERROR(ret = sl.Soloud_seek(sys, ch, (double)pos)))
                 TF_WARN(<< "Failed to seek music (" << SL_ERROR() << ")");
