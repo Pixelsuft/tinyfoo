@@ -32,10 +32,12 @@ namespace ui {
 namespace pl {
     tf::vec<Playlist*>* pls;
 
-    bool load_pl_from_fp(const tf::str& fp);
+    bool load_pl_from_fp(const tf::str& fp, const tf::str& cool_path);
     void audio_clear_cache(tf::vec<audio::Music*>& cached, bool keep_cache);
     void file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf);
     void check_music_mod(Playlist* p, audio::Music* mus);
+    void mus_hook_add(Playlist* p, audio::Music* mus);
+    void mus_hook_del(Playlist* p, audio::Music* mus);
 }
 
 static inline tf::str fn_from_fp(const tf::str& fp) {
@@ -50,6 +52,14 @@ static inline tf::str fn_from_fp(const tf::str& fp) {
     if (t1_find < ret.size())
         ret = ret.substr(0, t1_find);
     return ret;
+}
+
+void pl::mus_hook_add(Playlist* p, audio::Music* mus) {
+
+}
+
+void pl::mus_hook_del(Playlist* p, audio::Music* mus) {
+    
 }
 
 void pl::file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf) {
@@ -88,7 +98,7 @@ void pl::add_new_pl() {
     pls->push_back(p);
 }
 
-bool pl::load_pl_from_fp(const tf::str& fp) {
+bool pl::load_pl_from_fp(const tf::str& fp, const tf::str& cool_path) {
     TF_INFO(<< "Loading playlist " << fp);
     size_t sz;
     const char* data = (const char*)SDL_LoadFile(fp.c_str(), &sz);
@@ -103,7 +113,7 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
         return false;
     }
     Playlist* p = tf::nw<pl::Playlist>();
-    // p->path = fp;
+    p->path = cool_path;
     p->name = d["name"].is_string() ? util::json_unpack_str(d["name"]) : "Unknown";
     if (d["sort"].is_string())
         p->sorting = util::json_unpack_str(d["sort"]);
@@ -130,6 +140,7 @@ bool pl::load_pl_from_fp(const tf::str& fp) {
             m->dur = val["dur"].is_number_float() ? (float)val["dur"] : 0.f;
             m->type = (val["tp"].is_number_integer() && val["tp"].is_number_unsigned()) ? (audio::Type)((int)val["tp"]) : audio::Type::NONE;
             p->mus.push_back(m);
+            mus_hook_add(p, m);
         }
     }
     sort_by(p, p->sorting.c_str());
@@ -163,8 +174,9 @@ void pl::load_playlists() {
 #endif
             if (file_name == "unknown.json")
                 continue;
-            if (load_pl_from_fp(full_path_for_playlist(file_name)))
-                pl::pls->at(pl::pls->size() - 1)->path = file_name;
+            if (!load_pl_from_fp(full_path_for_playlist(file_name), file_name)) {
+                // ...
+            }
         }
     }
 }
@@ -202,6 +214,7 @@ void pl::add_file_by_fp(Playlist* p, const char* fp) {
     audio::au->mus_close(m);
     p->mus.push_back(m);
     p->changed = true;
+    mus_hook_add(p, m);
 }
 
 void SDLCALL pl_files_cb(void* data, const char* const* filelist, int filter) {
@@ -346,6 +359,8 @@ void pl::remove_dead(Playlist* p) {
                 audio::au->cache.erase(it);
             p->mus.erase(p->mus.begin() + i - 1);
             p->changed = true;
+            mus_hook_del(p, m);
+            tf::dl(m);
         }
     }
 }
@@ -365,8 +380,10 @@ void pl::remove_pl(Playlist* p) {
         if (std::find(p->mus.begin(), p->mus.end(), m) != p->mus.end())
             audio::au->cache.erase(audio::au->cache.begin() + i - 1);
     }
-    for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++)
+    for (auto mit = p->mus.begin(); mit != p->mus.end(); mit++) {
         audio::au->mus_close(*mit);
+        tf::dl(*mit);
+    }
     if (!SDL_RemovePath(full_path_for_playlist(p->path).c_str()))
         TF_WARN(<< "Failed to remove playlist data file (" << SDL_GetError() << ")");
     auto it = std::find(pls->begin(), pls->end(), p);
@@ -382,10 +399,12 @@ void pl::unload_playlists(bool rage) {
     audio::au->cache.clear();
     for (auto it = pl::pls->begin(); it != pl::pls->end(); it++) {
         Playlist* p = *it;
-        for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++)
-            audio::au->mus_close(*mit);
         if (!rage && p->changed)
             save(p);
+        for (auto mit = (*it)->mus.begin(); mit != (*it)->mus.end(); mit++) {
+            audio::au->mus_close(*mit);
+            tf::dl(*mit);
+        }
         tf::dl(p);
     }
 }
@@ -480,6 +499,8 @@ void pl::remove_selected(Playlist* p) {
             }
         }
         p->mus.erase(p->mus.begin() + (size_t)(*it));
+        mus_hook_del(p, m);
+        tf::dl(m);
     }
     p->changed = true;
     p->selected.clear();
@@ -487,18 +508,16 @@ void pl::remove_selected(Playlist* p) {
 }
 
 void pl::clear_selected(Playlist* p) {
-    for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+    for (auto it = p->selected.begin(); it != p->selected.end(); it++)
         p->mus[*it]->selected = false;
-    }
     p->selected.clear();
     ui::update_meta_info();
 }
 
 void pl::remember_selected(Playlist* p) {
     p->remembering.reserve(p->selected.size());
-    for (auto it = p->selected.begin(); it != p->selected.end(); it++) {
+    for (auto it = p->selected.begin(); it != p->selected.end(); it++)
         p->remembering.push_back(p->mus[*it]);
-    }
 }
 
 void pl::unremember_selected(Playlist* p) {
