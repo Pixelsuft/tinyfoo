@@ -110,6 +110,7 @@ if app.stage == 'conf':
     conf_header.write(f'#define LOG_CACHE_COUNT 1024\n')
     conf_header.write(f'#define MUSIC_SEARCH_LIMIT 2500\n')
     conf_header.write(f'#define DOUBLE_CLICK_TIME 250\n')
+    conf_header.write(f'#define ORDER_COOL_RNG_PATCH 0\n')
     conf_header.write(f'#define WIN_TITLE_PATCH 1\n')
     conf_header.write(f'#define DWM_STATUS_PATCH 0\n')
     conf_header.write(f'#define DWM_STATUS_BUF_SIZE 1024\n')

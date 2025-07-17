@@ -1,10 +1,17 @@
 #pragma once
+#include <lbs.hpp>
 #include <str.hpp>
 #include <vec.hpp>
 #include <music.hpp>
+#if ORDER_COOL_RNG_PATCH
+#include <map.hpp>
+#endif
 
 namespace pl {
     struct Playlist {
+#if ORDER_COOL_RNG_PATCH
+        tf::map<tf::str, tf::vec<audio::Music*>> artist_map;
+#endif
         tf::vec<audio::Music*> mus;
         tf::vec<audio::Music*> remembering;
         tf::vec<int> selected;

@@ -166,5 +166,8 @@
     <ClInclude Include="include\unused.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

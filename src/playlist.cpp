@@ -54,12 +54,49 @@ static inline tf::str fn_from_fp(const tf::str& fp) {
     return ret;
 }
 
-void pl::mus_hook_add(Playlist* p, audio::Music* mus) {
+#if ORDER_COOL_RNG_PATCH
+tf::str get_music_artist(audio::Music* m) {
+    // Is it good?
+    tf::str ret;
+    ret.reserve(m->fn.size());
+    for (auto it = m->fn.begin(); it != m->fn.end(); it++) {
+        if (SDL_isspace(*it))
+            continue;
+        if (*it == '-')
+            break;
+        ret += SDL_tolower(*it);
+    }
+    return ret;
+}
+#endif
 
+void pl::mus_hook_add(Playlist* p, audio::Music* mus) {
+#if ORDER_COOL_RNG_PATCH
+    tf::str art = get_music_artist(mus);
+    auto it = p->artist_map.find(art);
+    if (it == p->artist_map.end())
+        p->artist_map[art] = { mus };
+    else
+        (*it).second.push_back(mus);
+#endif
 }
 
 void pl::mus_hook_del(Playlist* p, audio::Music* mus) {
-    
+#if ORDER_COOL_RNG_PATCH
+    tf::str art = get_music_artist(mus);
+    auto it = p->artist_map.find(art);
+    if (it == p->artist_map.end())
+        TF_UNREACHABLE();
+    if ((*it).second.size() <= 1)
+        p->artist_map.erase(it);
+    else {
+        auto& arr = (*it).second;
+        auto mit = std::find(arr.begin(), arr.end(), mus);
+        if (mit == arr.end())
+            TF_UNREACHABLE();
+        arr.erase(mit);
+    }
+#endif
 }
 
 void pl::file_mod_time(const char* path, uint64_t& mod_t_buf, uint64_t& size_buf) {
