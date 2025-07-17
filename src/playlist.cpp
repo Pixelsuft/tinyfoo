@@ -628,6 +628,19 @@ void pl::fill_cache() {
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
         }
+#if ORDER_COOL_RNG_PATCH
+        else if (audio::au->order_mode == 3) {
+            // Cool RNG
+            int idx = (int)SDL_rand((Sint32)p->artist_map.size());
+            auto it = p->artist_map.begin();
+            // TODO: FIXME performance
+            for (int i = 0; i < idx; i++)
+                it++;
+            m = (*it).second[SDL_rand((Sint32)(*it).second.size())];
+            if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
+                continue;
+        }
+#endif
         if (!m)
             TF_UNREACHABLE();
         mus_open_file(m);

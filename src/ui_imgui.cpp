@@ -518,6 +518,13 @@ void ui::draw_menubar() {
                 audio::au->order_mode = 2;
                 pl::reload_cache(0);
             }
+#if ORDER_COOL_RNG_PATCH
+            need_order = audio::au->order_mode == 3;
+            if (ImGui::MenuItem("Cool Random", nullptr, &need_order) && need_order) {
+                audio::au->order_mode = 3;
+                pl::reload_cache(0);
+            }
+#endif
             ImGui::EndMenu();
         }
         ImGui::EndMenu();
