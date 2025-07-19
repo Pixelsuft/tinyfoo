@@ -33,7 +33,7 @@ cd build
 cmake ..
 make
 ```
-## Example building using MinGW64 in release mode
+## Example building using MinGW in release mode
 ```sh
 # --mingw is not required for MSYS2
 python lbs.py release init --mingw
