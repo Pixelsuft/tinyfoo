@@ -120,10 +120,15 @@ bool app::init() {
         TF_WARN(<< "Failed to get app data path (" << SDL_GetError() << ")");
     read_config();
     data->stage = 1;
+    auto ren_str = conf::read_str("renderer", "driver", "");
+    bool use_opengl = ren_str == "native_opengl3";
+    if (use_opengl)
+        ren::set_opengl3_attribs();
     data->win = SDL_CreateWindow(
         "tinyfoo",
         1024, 768,
-        SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE
+        (use_opengl ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+        SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE
     );
     win_handle = (void*)data->win;
     if (!data->win) {
@@ -139,9 +144,15 @@ bool app::init() {
     ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)(void*)&SDL_malloc, (ImGuiMemFreeFunc)(void*)&SDL_free, nullptr);
 #endif
     ren::rn = nullptr;
-    // TODO
-    ren::rn = ren::create_renderer_sdl3(data->win);
-    // ren::rn = ren::create_renderer_opengl3(data->win);
+    if (use_opengl)
+        ren::rn = ren::create_renderer_opengl3(data->win);
+    if (ren::rn && !ren::rn->inited) {
+        TF_WARN(<< "Falling back to the default renderer");
+        tf::bump_dl(ren::rn); // I don't think it's a serious memory leak
+        ren::rn = nullptr;
+    }
+    if (!ren::rn)
+        ren::rn = ren::create_renderer_sdl3(data->win);
     if (!ren::rn->inited) {
         tf::bump_dl(ren::rn);
         destroy();

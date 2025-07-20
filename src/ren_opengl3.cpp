@@ -62,6 +62,39 @@ namespace ren {
     };
 }
 
+void custom_opengl3_set_attr(SDL_GLAttr attr, int value) {
+    if (!SDL_GL_SetAttribute(attr, value))
+        TF_WARN(<< "Failed to set SDL OpenGL attribute (" << SDL_GetError() << ")");
+}
+
+void ren::set_opengl3_attribs() {
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    const char* glsl_version = "#version 100";
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_FLAGS, 0);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+    const char* glsl_version = "#version 300 es";
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_FLAGS, 0);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+    const char* glsl_version = "#version 150";
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+    const char* glsl_version = "#version 130";
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_FLAGS, 0);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    custom_opengl3_set_attr(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
+}
+
 RendererBase* ren::create_renderer_opengl3(void* win) {
     return tf::bump_nw<RendererOpenGL3>(win);
 }

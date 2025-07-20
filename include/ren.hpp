@@ -22,6 +22,7 @@ namespace ren {
 
     RendererBase* create_renderer_sdl3(void* win);
 #if ENABLE_OPENGL3
+    void set_opengl3_attribs();
     RendererBase* create_renderer_opengl3(void* win);
 #endif
 }
