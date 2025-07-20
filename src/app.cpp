@@ -33,6 +33,10 @@ namespace ui {
     pl::Playlist* get_last_pl(int hacky);
 }
 
+namespace ren {
+    ren::RendererBase* rn;
+}
+
 namespace app {
     void process_event(const SDL_Event& ev);
 
@@ -134,7 +138,11 @@ bool app::init() {
     // Hacky
     ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)(void*)&SDL_malloc, (ImGuiMemFreeFunc)(void*)&SDL_free, nullptr);
 #endif
-    if (!ren::init(data->win)) {
+    ren::rn = nullptr;
+    // TODO: other ren
+    ren::rn = ren::create_renderer_sdl3(data->win);
+    if (!ren::rn->inited) {
+        tf::bump_dl(ren::rn);
         destroy();
         return false;
     }
@@ -217,7 +225,7 @@ void app::process_event(const SDL_Event& ev) {
             break;
         }
         case SDL_EVENT_WINDOW_RESIZED: {
-            ui::update_size(ren::get_size());
+            ui::update_size(ren::rn->get_size());
             break;
         }
         case SDL_EVENT_KEY_DOWN:
@@ -263,11 +271,11 @@ void app::process_event(const SDL_Event& ev) {
             break;
         }
         case SDL_EVENT_DROP_POSITION: {
-            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            drop_pos = ren::rn->point_win_to_ren({ ev.drop.x, ev.drop.y });
             break;
         }
         case SDL_EVENT_DROP_COMPLETE: {
-            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            drop_pos = ren::rn->point_win_to_ren({ ev.drop.x, ev.drop.y });
             drop_state = false;
             can_i_drop = false;
             break;
@@ -275,7 +283,7 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_DROP_FILE: {
             if (!can_i_drop)
                 break;
-            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            drop_pos = ren::rn->point_win_to_ren({ ev.drop.x, ev.drop.y });
             if (ui::get_last_pl(1))
                 pl::add_file_by_fp(ui::get_last_pl(0), ev.drop.data);
             break;
@@ -283,7 +291,7 @@ void app::process_event(const SDL_Event& ev) {
         case SDL_EVENT_DROP_TEXT: {
             if (!can_i_drop)
                 break;
-            drop_pos = ren::point_win_to_ren({ ev.drop.x, ev.drop.y });
+            drop_pos = ren::rn->point_win_to_ren({ ev.drop.x, ev.drop.y });
             if (ui::get_last_pl(1))
                 pl::add_file_by_fp(ui::get_last_pl(0), ev.drop.data);
             break;
@@ -293,7 +301,7 @@ void app::process_event(const SDL_Event& ev) {
 
 void app::run() {
     SDL_Event ev;
-    ui::update_size(ren::get_size());
+    ui::update_size(ren::rn->get_size());
     data->running = true;
     SDL_ShowWindow(data->win);
     while (data->running) {
@@ -304,7 +312,7 @@ void app::run() {
 #if IS_DLL_BUILD
         tf_dll_update();
 #endif
-        ren::begin_frame();
+        ren::rn->begin_frame();
         if (!(SDL_GetWindowFlags(data->win) & SDL_WINDOW_MINIMIZED))
             ui::draw();
         else
@@ -314,7 +322,7 @@ void app::run() {
             if (ui::get_last_pl(1))
                 pl::play_selected(ui::get_last_pl(0));
         }
-        ren::end_frame();
+        ren::rn->end_frame();
     }
     data->running = false;
 }
@@ -334,7 +342,7 @@ void app::destroy() {
         ui::destroy();
     }
     if (data->stage > 2)
-        ren::destroy();
+        tf::bump_dl(ren::rn);
     win_handle = nullptr;
     if (data->stage > 1)
         SDL_DestroyWindow(data->win);

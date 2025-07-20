@@ -298,13 +298,13 @@ bool ui::init() {
     data->show_search = false;
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
-    data->logo_tex = ren::tex_from_io(res::get_asset_io("icon.png"), true);
-    data->icon_stop = ren::tex_from_io(res::get_asset_io("icon_stop.png"), true);
-    data->icon_play = ren::tex_from_io(res::get_asset_io("icon_play.png"), true);
-    data->icon_pause = ren::tex_from_io(res::get_asset_io("icon_pause.png"), true);
-    data->icon_back = ren::tex_from_io(res::get_asset_io("icon_back.png"), true);
-    data->icon_fwd = ren::tex_from_io(res::get_asset_io("icon_fwd.png"), true);
-    data->icon_rng = ren::tex_from_io(res::get_asset_io("icon_rng.png"), true);
+    data->logo_tex = ren::rn->tex_from_io(res::get_asset_io("icon.png"), true);
+    data->icon_stop = ren::rn->tex_from_io(res::get_asset_io("icon_stop.png"), true);
+    data->icon_play = ren::rn->tex_from_io(res::get_asset_io("icon_play.png"), true);
+    data->icon_pause = ren::rn->tex_from_io(res::get_asset_io("icon_pause.png"), true);
+    data->icon_back = ren::rn->tex_from_io(res::get_asset_io("icon_back.png"), true);
+    data->icon_fwd = ren::rn->tex_from_io(res::get_asset_io("icon_fwd.png"), true);
+    data->icon_rng = ren::rn->tex_from_io(res::get_asset_io("icon_rng.png"), true);
     data->meta_fmt.reserve(64);
     data->meta_fn.reserve(1000);
     data->pl_path_buf = (char*)mem::alloc(65536);
@@ -1163,13 +1163,13 @@ void ui::destroy() {
         XCloseDisplay(data->dwm_disp);
 #endif
     mem::free((void*)data->pl_path_buf);
-    ren::tex_destroy(data->icon_stop);
-    ren::tex_destroy(data->icon_play);
-    ren::tex_destroy(data->icon_pause);
-    ren::tex_destroy(data->icon_back);
-    ren::tex_destroy(data->icon_fwd);
-    ren::tex_destroy(data->logo_tex);
-    ren::tex_destroy(data->icon_rng);
+    ren::rn->tex_destroy(data->icon_stop);
+    ren::rn->tex_destroy(data->icon_play);
+    ren::rn->tex_destroy(data->icon_pause);
+    ren::rn->tex_destroy(data->icon_back);
+    ren::rn->tex_destroy(data->icon_fwd);
+    ren::rn->tex_destroy(data->logo_tex);
+    ren::rn->tex_destroy(data->icon_rng);
     tf::bump_dl(data);
     data = nullptr;
 }
