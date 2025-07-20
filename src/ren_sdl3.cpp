@@ -64,6 +64,8 @@ namespace ren {
         }
 
         ~RendererSDL3() {
+            if (!inited)
+                return;
 #if ENABLE_IMGUI
             ImGui_ImplSDLRenderer3_Shutdown();
             ImGui_ImplSDL3_Shutdown();
