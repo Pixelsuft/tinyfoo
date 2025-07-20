@@ -182,6 +182,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mem.cpp" />
     <ClCompile Include="src\playlist.cpp" />
+    <ClCompile Include="src\ren_opengl3.cpp" />
     <ClCompile Include="src\ren_sdl3.cpp" />
     <ClCompile Include="src\res.cpp" />
     <ClCompile Include="src\ui_imgui.cpp" />

@@ -47,7 +47,10 @@ if app.stage == 'fetch':
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdl3.cpp',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdl3.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.cpp',
-        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.h'
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3_loader.h'
     ))
     if not os.path.isdir(os.path.join(app.b_path, 'toml')):
         os.mkdir(os.path.join(app.b_path, 'toml'))
@@ -100,6 +103,7 @@ if app.stage == 'conf':
     conf_header.write(f'#endif\n')
     conf_header.write(f'#define ENABLE_UPNG {int(not can_gdi)}\n')
     conf_header.write(f'#define ENABLE_GDIPLUS {int(can_gdi)}\n')
+    conf_header.write(f'#define ENABLE_OPENGL3 1\n')
     conf_header.write(f'#define ENABLE_SDL2_MIXER 1\n')
     conf_header.write(f'#define ENABLE_FMOD 1\n')
     conf_header.write(f'#define ENABLE_BASS 1\n')

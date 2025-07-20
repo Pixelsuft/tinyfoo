@@ -1,4 +1,5 @@
 #pragma once
+#include <lbs.hpp>
 #include <rect.hpp>
 
 namespace ren {
@@ -20,4 +21,7 @@ namespace ren {
     extern RendererBase* rn;
 
     RendererBase* create_renderer_sdl3(void* win);
+#if ENABLE_OPENGL3
+    RendererBase* create_renderer_opengl3(void* win);
+#endif
 }

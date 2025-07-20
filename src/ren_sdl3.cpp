@@ -21,12 +21,11 @@ static inline void* create_sdl3_fallback_texture() {
 
 namespace ren {
     class RendererSDL3 : public RendererBase {
-        SDL_Window* win;
         SDL_Renderer* r;
         public:
         RendererSDL3(void* _win) {
             inited = false;
-            win = (SDL_Window*)_win;
+            SDL_Window* win = (SDL_Window*)_win;
             SDL_PropertiesID props = SDL_CreateProperties();
             SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, win);
             auto ren_str = conf::read_str("renderer", "driver", "");

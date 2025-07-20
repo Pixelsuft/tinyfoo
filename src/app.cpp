@@ -139,8 +139,9 @@ bool app::init() {
     ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)(void*)&SDL_malloc, (ImGuiMemFreeFunc)(void*)&SDL_free, nullptr);
 #endif
     ren::rn = nullptr;
-    // TODO: other ren
+    // TODO
     ren::rn = ren::create_renderer_sdl3(data->win);
+    // ren::rn = ren::create_renderer_opengl3(data->win);
     if (!ren::rn->inited) {
         tf::bump_dl(ren::rn);
         destroy();
