@@ -130,15 +130,18 @@ namespace ren {
         }
 
         Point point_win_to_ren(const Point& pos) {
-            Point ret;
+            Point ret = pos;
+            // TODO: high DPI
             return ret;
         }
 
         void* tex_from_io(void* ctx, bool free_src) {
+            // TODO
             return nullptr;
         }
 
         void tex_destroy(void* tex) {
+            // TODO
         }
     };
 }
