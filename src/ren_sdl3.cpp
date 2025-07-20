@@ -12,8 +12,6 @@
 #include <imgui_impl_sdlrenderer3.h>
 #endif
 
-// TODO: support native renderers without SDL3 layer (via LBS defines?)
-
 using ren::RendererBase;
 
 static inline void* create_sdl3_fallback_texture() {
@@ -40,10 +38,16 @@ namespace ren {
             SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, vsync_b ? 1 : 0);
             r = SDL_CreateRendererWithProperties(props);
             if (!r) {
-                TF_FATAL(<< "Failed to create SDL renderer (" << SDL_GetError() << ")");
-                SDL_DestroyProperties(props);
-                display_available_drivers();
-                return;
+                TF_ERROR(<< "Failed to create SDL renderer (" << SDL_GetError() << ")");
+                SDL_ClearProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING);
+                // Attempt default renderer
+                r = SDL_CreateRendererWithProperties(props);
+                if (!r) {
+                    TF_FATAL(<< "Failed to create SDL default renderer (" << SDL_GetError() << ")");
+                    SDL_DestroyProperties(props);
+                    display_available_drivers();
+                    return;
+                }
             }
             SDL_DestroyProperties(props);
             const char* ren_name = SDL_GetRendererName(r);
