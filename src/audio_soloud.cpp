@@ -330,7 +330,7 @@ namespace audio {
                 from_rep = true;
             }
             stopped = false;
-            if (cur_mus && sl.Soloud_countAudioSource(sys, cur_wav) > 0) {
+            if (cur_mus && cur_mus->h1 && sl.Soloud_countAudioSource(sys, cur_wav) > 0) {
                 stopped = false;
                 paused = false;
                 sl.Soloud_fadeVolume(sys, ch, 0.f, (double)fade_next_time);
@@ -344,10 +344,11 @@ namespace audio {
                 cache.erase(cache.begin());
             }
             cur_mus->cached = false;
-            pl::mus_open_file(cur_mus);
             stopped = false;
             paused = false;
-            ch = sl.Soloud_playBackgroundEx(sys, cur_wav, volume, 0, 0);
+            ch = 0;
+            if (pl::mus_open_file(cur_mus))
+                ch = sl.Soloud_playBackgroundEx(sys, cur_wav, volume, 0, 0);
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
             pl::fill_cache();
@@ -362,7 +363,6 @@ namespace audio {
                 TF_ERROR(<< "Failed to create wavstream");
                 return false;
             }
-            // Will that softlock??
             if (SL_HAS_ERROR(ret = sl.WavStream_load(mus_wav, fp))) {
                 TF_ERROR(<< "Failed to load music (" << SL_ERROR() << ")");
                 sl.WavStream_destroy(mus_wav);
@@ -405,7 +405,7 @@ namespace audio {
         }
 
         void update() {
-            if (cur_mus && sl.Soloud_countAudioSource(sys, cur_wav) == 0) {
+            if (cur_mus && (!ch || sl.Soloud_countAudioSource(sys, cur_wav) == 0)) {
                 ch = 0;
                 if (!stopped)
                     force_play_cache();
@@ -432,13 +432,13 @@ namespace audio {
         float cur_get_pos() {
             if (cur_paused())
                 return pause_pos;
-            if (!cur_mus || stopped || sl.Soloud_countAudioSource(sys, cur_wav) == 0)
+            if (!cur_mus || !ch || stopped || sl.Soloud_countAudioSource(sys, cur_wav) == 0)
                 return 0.f;
             return (float)sl.Soloud_getStreamPosition(sys, ch);
         }
 
         void cur_set_pos(float pos) {
-            if (!cur_mus)
+            if (!cur_mus || !ch)
                 return;
             pos = tf::clamp(pos, 0.f, cur_mus->dur);
             if (paused) {
@@ -474,7 +474,7 @@ namespace audio {
         }
 
         bool cur_stopped() {
-            return !paused && (!cur_mus || sl.Soloud_countAudioSource(sys, cur_wav) == 0);
+            return !paused && (!cur_mus || !ch || sl.Soloud_countAudioSource(sys, cur_wav) == 0);
         }
 
         bool cur_paused() {
