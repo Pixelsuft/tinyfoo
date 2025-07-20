@@ -122,8 +122,13 @@ bool app::init() {
     data->stage = 1;
     auto ren_str = conf::read_str("renderer", "driver", "");
     bool use_opengl = ren_str == "native_opengl3";
-    if (use_opengl)
+    if (use_opengl) {
         ren::set_opengl3_attribs();
+        if (!SDL_GL_LoadLibrary(nullptr)) {
+            TF_ERROR(<< "Failed to load OpenGL library (" << SDL_GetError() << ")");
+            use_opengl = false;
+        }
+    }
     data->win = SDL_CreateWindow(
         "tinyfoo",
         1024, 768,

@@ -54,6 +54,7 @@ namespace ren {
                 TF_INFO(<< "Renderer created with " << ren_name << " driver");
             else
                 TF_WARN(<< "Failed to get renderer name (" << SDL_GetError() << ")");
+            // TODO: fix vsync not enabled by default on something like direct3d11
 #if ENABLE_IMGUI
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
