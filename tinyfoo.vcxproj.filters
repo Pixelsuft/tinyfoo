@@ -124,7 +124,7 @@
     <ClInclude Include="include\rect.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\audio_base.hpp">
+    <ClInclude Include="include\audio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\conf.hpp">

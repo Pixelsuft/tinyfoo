@@ -1,6 +1,6 @@
 #include <lbs.hpp>
 #if ENABLE_SDL2_MIXER
-#include <audio_base.hpp>
+#include <audio.hpp>
 #include <new.hpp>
 #include <log.hpp>
 #include <break.hpp>

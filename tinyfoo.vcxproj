@@ -190,7 +190,7 @@
   <ItemGroup>
     <ClInclude Include="include\alloc.hpp" />
     <ClInclude Include="include\app.hpp" />
-    <ClInclude Include="include\audio_base.hpp" />
+    <ClInclude Include="include\audio.hpp" />
     <ClInclude Include="include\break.hpp" />
     <ClInclude Include="include\control.hpp" />
     <ClInclude Include="include\image.hpp" />

@@ -1,6 +1,6 @@
 #include <lbs.hpp>
 #if ENABLE_SOLOUD
-#include <audio_base.hpp>
+#include <audio.hpp>
 #include <new.hpp>
 #include <log.hpp>
 #include <break.hpp>
