@@ -15,6 +15,12 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_opengl3.h>
 #endif
+#if IS_WIN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+#endif
 
 #define OGL3_LOAD_FUNC(tp, func_name) do { \
     gl.func_name = (tp)SDL_GL_GetProcAddress(#func_name); \
@@ -33,6 +39,9 @@ namespace ren {
         PFNGLVIEWPORTPROC glViewport;
         PFNGLCLEARCOLORPROC glClearColor;
         PFNGLCLEARPROC glClear;
+#if IS_WIN
+        HRESULT (*DwmFlush)();
+#endif
     };
 
     class RendererOpenGL3 : public RendererBase {
@@ -59,9 +68,16 @@ namespace ren {
                 SDL_GL_UnloadLibrary();
                 return;
             }
+#if IS_WIN
+            gl.DwmFlush = nullptr;
+            auto dwm_api = GetModuleHandleW(L"dwmapi.dll");
+            if (dwm_api)
+                *(void**)&gl.DwmFlush = (void*)GetProcAddress(dwm_api, "DwmFlush");
+            if (!gl.DwmFlush)
+                TF_WARN(<< "Failed to find DwmFlush for OpenGL vsync");
+#endif
             // TODO: conf vsync
-            // TODO: it doesn't work
-            if (!SDL_GL_SetSwapInterval(1))
+            if (!SDL_GL_SetSwapInterval(0))
                 TF_WARN(<< "Failed to set OpenGL swap interval (" << SDL_GetError() << ")");
 #if ENABLE_IMGUI
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -113,6 +129,11 @@ namespace ren {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             SDL_GL_SwapWindow(win);
+#if IS_WIN
+            // Ugly way to fix vsync
+            if (gl.DwmFlush)
+                gl.DwmFlush();
+#endif
 #endif
         }
 
