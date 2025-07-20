@@ -53,19 +53,25 @@ namespace ren {
             OGL3_LOAD_FUNC(PFNGLVIEWPORTPROC, glViewport);
             OGL3_LOAD_FUNC(PFNGLCLEARCOLORPROC, glClearColor);
             OGL3_LOAD_FUNC(PFNGLCLEARPROC, glClear);
-            if (!SDL_GL_MakeCurrent(win, ctx))
-                TF_WARN(<< "Failed to set current OpenGL context (" << SDL_GetError() << ")");
+            if (!SDL_GL_MakeCurrent(win, ctx)) {
+                TF_ERROR(<< "Failed to set current OpenGL context (" << SDL_GetError() << ")");
+                SDL_GL_DestroyContext(ctx);
+                SDL_GL_UnloadLibrary();
+                return;
+            }
             // TODO: conf vsync
-            SDL_GL_SetSwapInterval(1);
+            // TODO: it doesn't work
+            if (!SDL_GL_SetSwapInterval(1))
+                TF_WARN(<< "Failed to set OpenGL swap interval (" << SDL_GetError() << ")");
 #if ENABLE_IMGUI
 #if defined(IMGUI_IMPL_OPENGL_ES2)
-    const char* glsl_version = "#version 100";
+            const char* glsl_version = "#version 100";
 #elif defined(IMGUI_IMPL_OPENGL_ES3)
-    const char* glsl_version = "#version 300 es";
+            const char* glsl_version = "#version 300 es";
 #elif defined(__APPLE__)
-    const char* glsl_version = "#version 150";
+            const char* glsl_version = "#version 150";
 #else
-    const char* glsl_version = "#version 130";
+            const char* glsl_version = "#version 130";
 #endif
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
@@ -111,9 +117,15 @@ namespace ren {
         }
 
         Point get_size() {
+            int w_buf, h_buf;
+            if (!SDL_GetWindowSizeInPixels(win, &w_buf, &h_buf)) {
+                TF_ERROR(<< "Failed to get window size in pixels (" << SDL_GetError() << ")");
+                w_buf = 640;
+                h_buf = 480;
+            }
             Point res;
-            res.x = 640;
-            res.y = 480;
+            res.x = (float)w_buf;
+            res.y = (float)h_buf;
             return res;
         }
 
