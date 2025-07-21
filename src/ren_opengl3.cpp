@@ -33,6 +33,11 @@ namespace ren {
         PFNGLVIEWPORTPROC glViewport;
         PFNGLCLEARCOLORPROC glClearColor;
         PFNGLCLEARPROC glClear;
+        PFNGLGENTEXTURESPROC glGenTextures;
+        PFNGLBINDTEXTUREPROC glBindTexture;
+        PFNGLTEXIMAGE2DPROC glTexImage2D;
+        PFNGLTEXPARAMETERIPROC glTexParameteri;
+        PFNGLPIXELSTOREIPROC glPixelStorei;
     };
 
     class RendererOpenGL3 : public RendererBase {
@@ -55,6 +60,11 @@ namespace ren {
             OGL3_LOAD_FUNC(PFNGLVIEWPORTPROC, glViewport);
             OGL3_LOAD_FUNC(PFNGLCLEARCOLORPROC, glClearColor);
             OGL3_LOAD_FUNC(PFNGLCLEARPROC, glClear);
+            OGL3_LOAD_FUNC(PFNGLGENTEXTURESPROC, glGenTextures);
+            OGL3_LOAD_FUNC(PFNGLBINDTEXTUREPROC, glBindTexture);
+            OGL3_LOAD_FUNC(PFNGLTEXIMAGE2DPROC, glTexImage2D);
+            OGL3_LOAD_FUNC(PFNGLTEXPARAMETERIPROC, glTexParameteri);
+            OGL3_LOAD_FUNC(PFNGLPIXELSTOREIPROC, glPixelStorei);
             if (!SDL_GL_MakeCurrent(win, ctx)) {
                 TF_ERROR(<< "Failed to set current OpenGL context (" << SDL_GetError() << ")");
                 SDL_GL_DestroyContext(ctx);
@@ -144,12 +154,44 @@ namespace ren {
         }
 
         void* tex_from_io(void* ctx, bool free_src) {
-            // TODO
-            return nullptr;
+            SDL_Surface* surf = (SDL_Surface*)img::surf_from_io(ctx, free_src);
+            if (!surf)
+                return create_fallback_texture();
+            // int w = (int)std::pow(2, (int)std::ceil(std::log2f((float)surf->w)));
+            // int h = (int)std::pow(2, (int)std::ceil(std::log2f((float)surf->h)));
+            int w = surf->w;
+            int h = surf->h;
+            SDL_Surface* ns = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR8888);
+            if (!ns) {
+                // TODO error
+                SDL_DestroySurface(surf);
+                return create_fallback_texture();
+            }
+            if (!SDL_BlitSurface(surf, nullptr, ns, nullptr)) {
+                // TODO error
+                SDL_DestroySurface(ns);
+                SDL_DestroySurface(surf);
+                return create_fallback_texture();
+            }
+            SDL_DestroySurface(surf);
+            GLuint image_texture;
+            gl.glGenTextures(1, &image_texture);
+            gl.glBindTexture(GL_TEXTURE_2D, image_texture);
+            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            gl.glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+            gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, ns->pixels);
+            SDL_DestroySurface(ns);
+            return (void*)(intptr_t)image_texture;
         }
 
         void tex_destroy(void* tex) {
             // TODO
+        }
+
+        void* create_fallback_texture() {
+            TF_WARN(<< "Returning fallback texture");
+            return nullptr;
         }
     };
 }
