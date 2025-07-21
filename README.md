@@ -53,4 +53,5 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
  - Support other native renderers (direct3d9, ...)
  - Add support for libpng (useful on linux?)
  - Support other audio libs (miniaudio, ...)
+ - Custom RNG (C++ instead of SDL3?)
  - Fix TODOs in code and code cleanup
