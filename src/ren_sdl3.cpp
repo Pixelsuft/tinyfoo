@@ -50,11 +50,17 @@ namespace ren {
             }
             SDL_DestroyProperties(props);
             const char* ren_name = SDL_GetRendererName(r);
-            if (ren_name)
-                TF_INFO(<< "Renderer created with " << ren_name << " driver");
+            bool fix_vsync = false;
+            if (ren_name) {
+                tf::str sn(ren_name);
+                TF_INFO(<< "Renderer created with " << sn << " driver");
+                // FIXME WTF
+                if (sn == "direct3d11" || sn == "direct3d12" || sn == "gpu" || sn == "vulkan") {
+                    fix_vsync = IS_WIN;
+                }
+            }
             else
                 TF_WARN(<< "Failed to get renderer name (" << SDL_GetError() << ")");
-            // TODO: fix vsync not enabled by default on something like direct3d11
 #if ENABLE_IMGUI
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
@@ -64,6 +70,10 @@ namespace ren {
             ImGui_ImplSDL3_InitForSDLRenderer(win, r);
             ImGui_ImplSDLRenderer3_Init(r);
 #endif
+            if (fix_vsync) {
+                if (init_fake_vsync())
+                    SDL_SetRenderVSync(r, 0);
+            }
             inited = true;
         }
 
@@ -98,6 +108,7 @@ namespace ren {
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), r);
 #endif
             SDL_RenderPresent(r);
+            do_fake_vsync();
         }
 
         Point get_size() {

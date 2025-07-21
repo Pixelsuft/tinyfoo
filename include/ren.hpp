@@ -4,13 +4,17 @@
 
 namespace ren {
     class RendererBase {
+        protected:
+#if IS_WIN
+        long (__stdcall *DwmFlush_ptr)();
+#endif
         public:
         bool inited;
 
-        RendererBase() {
-            inited = false;
-        }
-        virtual ~RendererBase() {}
+        RendererBase();
+        virtual ~RendererBase();
+        bool init_fake_vsync();
+        void do_fake_vsync();
         virtual void begin_frame() = 0;
         virtual void end_frame() = 0;
         virtual Point get_size() = 0;
