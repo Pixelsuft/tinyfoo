@@ -82,10 +82,9 @@ namespace ren {
                 SDL_GL_UnloadLibrary();
                 return;
             }
-            // TODO: conf vsync
-            if (!SDL_GL_SetSwapInterval(0))
+            auto vsync_b = conf::read_bool("renderer", "vsync", true);
+            if (!SDL_GL_SetSwapInterval(vsync_b ? (init_fake_vsync() ? 0 : 1) : 0))
                 TF_WARN(<< "Failed to set OpenGL3 swap interval (" << SDL_GetError() << ")");
-            init_fake_vsync();
 #if ENABLE_IMGUI
 #if defined(IMGUI_IMPL_OPENGL_ES2)
             const char* glsl_version = "#version 100";
