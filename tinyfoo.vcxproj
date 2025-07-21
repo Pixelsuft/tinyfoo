@@ -185,6 +185,7 @@
     <ClCompile Include="src\mem.cpp" />
     <ClCompile Include="src\playlist.cpp" />
     <ClCompile Include="src\ren_base.cpp" />
+    <ClCompile Include="src\ren_opengl2.cpp" />
     <ClCompile Include="src\ren_opengl3.cpp" />
     <ClCompile Include="src\ren_sdl3.cpp" />
     <ClCompile Include="src\res.cpp" />

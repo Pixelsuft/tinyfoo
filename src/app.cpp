@@ -10,6 +10,7 @@
 #include <audio.hpp>
 #include <conf.hpp>
 #include <playlist.hpp>
+#include <unreachable.hpp>
 #include <SDL3/SDL.h>
 #if ENABLE_IMGUI
 #include <imgui.h>
@@ -121,18 +122,31 @@ bool app::init() {
     read_config();
     data->stage = 1;
     auto ren_str = conf::read_str("renderer", "driver", "");
-    bool use_opengl = ren_str == "native_opengl3";
-    if (use_opengl) {
+#if ENABLE_OPENGL3
+    bool use_opengl3 = ren_str == "native_opengl3";
+    if (use_opengl3) {
         ren::set_opengl3_attribs();
         if (!SDL_GL_LoadLibrary(nullptr)) {
             TF_ERROR(<< "Failed to load OpenGL library (" << SDL_GetError() << ")");
-            use_opengl = false;
+            use_opengl3 = false;
         }
     }
+#else
+    bool use_opengl3 = false;
+#endif
+#if ENABLE_OPENGL2
+    bool use_opengl2 = ren_str == "native_opengl2";
+    if (use_opengl2)
+        ren::set_opengl2_attribs();
+#else
+    bool use_opengl2 = false;
+#endif
+    if (use_opengl3 && use_opengl2)
+        TF_UNREACHABLE();
     data->win = SDL_CreateWindow(
         "tinyfoo",
         1024, 768,
-        (use_opengl ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+        ((use_opengl3 || use_opengl2) ? SDL_WINDOW_OPENGL : 0) | SDL_WINDOW_HIGH_PIXEL_DENSITY |
         SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE
     );
     win_handle = (void*)data->win;
@@ -149,8 +163,14 @@ bool app::init() {
     ImGui::SetAllocatorFunctions((ImGuiMemAllocFunc)(void*)&SDL_malloc, (ImGuiMemFreeFunc)(void*)&SDL_free, nullptr);
 #endif
     ren::rn = nullptr;
-    if (use_opengl)
+#if ENABLE_OPENGL3
+    if (use_opengl3)
         ren::rn = ren::create_renderer_opengl3(data->win);
+#endif
+#if ENABLE_OPENGL2
+    if (use_opengl2)
+        ren::rn = ren::create_renderer_opengl2(data->win);
+#endif
     if (ren::rn && !ren::rn->inited) {
         TF_WARN(<< "Falling back to the default renderer");
         tf::bump_dl(ren::rn); // I don't think it's a serious memory leak

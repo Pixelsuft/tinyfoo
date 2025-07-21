@@ -103,7 +103,6 @@ namespace ren {
             ImGui_ImplSDL3_InitForOpenGL(win, ctx);
             ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
-            custom_opengl3_set_attr(SDL_GL_DOUBLEBUFFER, 0);
             TF_INFO(<< "OpenGL3 native renderer created");
             inited = true;
         }

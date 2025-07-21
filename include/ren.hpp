@@ -29,4 +29,8 @@ namespace ren {
     void set_opengl3_attribs();
     RendererBase* create_renderer_opengl3(void* win);
 #endif
+#if ENABLE_OPENGL2
+    void set_opengl2_attribs();
+    RendererBase* create_renderer_opengl2(void* win);
+#endif
 }
