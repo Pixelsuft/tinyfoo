@@ -189,7 +189,6 @@ namespace ren {
         }
 
         void tex_destroy(void* tex) {
-            // TODO
             GLuint image_tex = (GLuint)(intptr_t)tex;
             gl.glDeleteTextures(1, &image_tex);
         }
