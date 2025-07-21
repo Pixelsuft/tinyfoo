@@ -205,7 +205,9 @@ class LbsApp:
             if os.path.isfile(dst):
                 pass
             else:
-                if not made_dir:
+                if made_dir:
+                    self.info(f'"{fn}"')
+                else:
                     self.warn(f'ImGui "{fn}" not found, fetching...')
                 data = self.request_bin(url)
                 open(dst, 'wb').write(data)

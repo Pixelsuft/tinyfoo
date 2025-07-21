@@ -48,6 +48,8 @@ if app.stage == 'fetch':
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdl3.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.cpp',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_sdlrenderer3.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl2.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl2.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.cpp',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3_loader.h'

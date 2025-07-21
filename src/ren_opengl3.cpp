@@ -9,7 +9,11 @@
 #include <conf.hpp>
 #include <image.hpp>
 #include <SDL3/SDL.h>
+#ifdef IMGUI_IMPL_OPENGL_ES2
+#include <SDL3/SDL_opengles2.h>
+#else
 #include <SDL3/SDL_opengl.h>
+#endif
 #if ENABLE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -27,6 +31,11 @@
 } while (0)
 
 using ren::RendererBase;
+
+void custom_opengl3_set_attr(SDL_GLAttr attr, int value) {
+    if (!SDL_GL_SetAttribute(attr, value))
+        TF_WARN(<< "Failed to set SDL OpenGL attribute (" << SDL_GetError() << ")");
+}
 
 namespace ren {
     struct OpenGLApi {
@@ -94,6 +103,7 @@ namespace ren {
             ImGui_ImplSDL3_InitForOpenGL(win, ctx);
             ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
+            custom_opengl3_set_attr(SDL_GL_DOUBLEBUFFER, 0);
             TF_INFO(<< "OpenGL native renderer created");
             inited = true;
         }
@@ -200,11 +210,6 @@ namespace ren {
     };
 }
 
-void custom_opengl3_set_attr(SDL_GLAttr attr, int value) {
-    if (!SDL_GL_SetAttribute(attr, value))
-        TF_WARN(<< "Failed to set SDL OpenGL attribute (" << SDL_GetError() << ")");
-}
-
 void ren::set_opengl3_attribs() {
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     custom_opengl3_set_attr(SDL_GL_CONTEXT_FLAGS, 0);
@@ -227,6 +232,10 @@ void ren::set_opengl3_attribs() {
     custom_opengl3_set_attr(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     custom_opengl3_set_attr(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #endif
+    // FIXME: black screen when disabled
+    custom_opengl3_set_attr(SDL_GL_DOUBLEBUFFER, 1);
+    custom_opengl3_set_attr(SDL_GL_DEPTH_SIZE, 24);
+    custom_opengl3_set_attr(SDL_GL_STENCIL_SIZE, 8);
 }
 
 RendererBase* ren::create_renderer_opengl3(void* win) {
