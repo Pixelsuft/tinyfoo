@@ -55,9 +55,8 @@ namespace ren {
                 tf::str sn(ren_name);
                 TF_INFO(<< "Renderer created with " << sn << " driver");
                 // FIXME WTF
-                if (sn == "direct3d11" || sn == "direct3d12" || sn == "gpu" || sn == "vulkan") {
+                if (sn == "direct3d11" || sn == "direct3d12" || sn == "gpu" || sn == "vulkan")
                     fix_vsync = IS_WIN;
-                }
             }
             else
                 TF_WARN(<< "Failed to get renderer name (" << SDL_GetError() << ")");

@@ -50,7 +50,7 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
 ## TODO
  - Improve UI
  - Support configuring tab columns
- - Support native renderers instead of SDL_Renderer
+ - Support native renderers (direct3d9, ...)
  - Add support for libpng (useful on linux?)
  - Other audio libs (miniaudio, ...)
  - Fix TODOs in code and code cleanup

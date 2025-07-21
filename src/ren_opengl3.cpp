@@ -38,6 +38,7 @@ namespace ren {
         PFNGLTEXIMAGE2DPROC glTexImage2D;
         PFNGLTEXPARAMETERIPROC glTexParameteri;
         PFNGLPIXELSTOREIPROC glPixelStorei;
+        PFNGLDELETETEXTURESPROC glDeleteTextures;
     };
 
     class RendererOpenGL3 : public RendererBase {
@@ -65,6 +66,7 @@ namespace ren {
             OGL3_LOAD_FUNC(PFNGLTEXIMAGE2DPROC, glTexImage2D);
             OGL3_LOAD_FUNC(PFNGLTEXPARAMETERIPROC, glTexParameteri);
             OGL3_LOAD_FUNC(PFNGLPIXELSTOREIPROC, glPixelStorei);
+            OGL3_LOAD_FUNC(PFNGLDELETETEXTURESPROC, glDeleteTextures);
             if (!SDL_GL_MakeCurrent(win, ctx)) {
                 TF_ERROR(<< "Failed to set current OpenGL context (" << SDL_GetError() << ")");
                 SDL_GL_DestroyContext(ctx);
@@ -92,6 +94,7 @@ namespace ren {
             ImGui_ImplSDL3_InitForOpenGL(win, ctx);
             ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
+            TF_INFO(<< "OpenGL native renderer created");
             inited = true;
         }
 
@@ -163,12 +166,12 @@ namespace ren {
             int h = surf->h;
             SDL_Surface* ns = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR8888);
             if (!ns) {
-                // TODO error
+                TF_ERROR(<< "Failed to create surface copy for texture (" << SDL_GetError() << ")");
                 SDL_DestroySurface(surf);
                 return create_fallback_texture();
             }
             if (!SDL_BlitSurface(surf, nullptr, ns, nullptr)) {
-                // TODO error
+                TF_ERROR(<< "Failed to blit surface for texture (" << SDL_GetError() << ")");
                 SDL_DestroySurface(ns);
                 SDL_DestroySurface(surf);
                 return create_fallback_texture();
@@ -177,8 +180,8 @@ namespace ren {
             GLuint image_texture;
             gl.glGenTextures(1, &image_texture);
             gl.glBindTexture(GL_TEXTURE_2D, image_texture);
-            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
+            gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
             gl.glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
             gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, ns->pixels);
             SDL_DestroySurface(ns);
@@ -187,6 +190,8 @@ namespace ren {
 
         void tex_destroy(void* tex) {
             // TODO
+            GLuint image_tex = (GLuint)(intptr_t)tex;
+            gl.glDeleteTextures(1, &image_tex);
         }
 
         void* create_fallback_texture() {
