@@ -34,7 +34,7 @@ using ren::RendererBase;
 
 void custom_opengl3_set_attr(SDL_GLAttr attr, int value) {
     if (!SDL_GL_SetAttribute(attr, value))
-        TF_WARN(<< "Failed to set SDL OpenGL attribute (" << SDL_GetError() << ")");
+        TF_WARN(<< "Failed to set SDL OpenGL3 attribute (" << SDL_GetError() << ")");
 }
 
 namespace ren {
@@ -63,7 +63,7 @@ namespace ren {
             scale.x = scale.y = 1.f;
             ctx = SDL_GL_CreateContext(win);
             if (!ctx) {
-                TF_ERROR(<< "Failed to create OpenGL context (" << SDL_GetError() << ")");
+                TF_ERROR(<< "Failed to create OpenGL3 context (" << SDL_GetError() << ")");
                 SDL_GL_UnloadLibrary();
                 return;
             }
@@ -77,14 +77,14 @@ namespace ren {
             OGL3_LOAD_FUNC(PFNGLPIXELSTOREIPROC, glPixelStorei);
             OGL3_LOAD_FUNC(PFNGLDELETETEXTURESPROC, glDeleteTextures);
             if (!SDL_GL_MakeCurrent(win, ctx)) {
-                TF_ERROR(<< "Failed to set current OpenGL context (" << SDL_GetError() << ")");
+                TF_ERROR(<< "Failed to set current OpenGL3 context (" << SDL_GetError() << ")");
                 SDL_GL_DestroyContext(ctx);
                 SDL_GL_UnloadLibrary();
                 return;
             }
             // TODO: conf vsync
             if (!SDL_GL_SetSwapInterval(0))
-                TF_WARN(<< "Failed to set OpenGL swap interval (" << SDL_GetError() << ")");
+                TF_WARN(<< "Failed to set OpenGL3 swap interval (" << SDL_GetError() << ")");
             init_fake_vsync();
 #if ENABLE_IMGUI
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -104,7 +104,7 @@ namespace ren {
             ImGui_ImplOpenGL3_Init(glsl_version);
 #endif
             custom_opengl3_set_attr(SDL_GL_DOUBLEBUFFER, 0);
-            TF_INFO(<< "OpenGL native renderer created");
+            TF_INFO(<< "OpenGL3 native renderer created");
             inited = true;
         }
 

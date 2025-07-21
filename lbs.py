@@ -54,6 +54,14 @@ if app.stage == 'fetch':
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3_loader.h'
     ))
+    # UGLY OpenGL2 hack because of static linking
+    ogl2_path = os.path.join(app.b_path, 'imgui', 'imgui_impl_opengl2.cpp')
+    if os.path.isfile(ogl2_path):
+        data = open(ogl2_path, 'r', encoding='utf-8').read()
+        if not data.startswith('#include <lbs.hpp>'):
+            app.info('Patching ImGui OpenGL2')
+            data = '#include <lbs.hpp>\n#if ENABLE_OPENGL2\n' + data + '\n#endif\n'
+            open(ogl2_path, 'w', encoding='utf-8').write(data)
     if not os.path.isdir(os.path.join(app.b_path, 'toml')):
         os.mkdir(os.path.join(app.b_path, 'toml'))
     app.download_toml11_lib(os.path.join(app.b_path, 'toml', 'toml11.hpp'))
@@ -105,6 +113,7 @@ if app.stage == 'conf':
     conf_header.write(f'#endif\n')
     conf_header.write(f'#define ENABLE_UPNG {int(not can_gdi)}\n')
     conf_header.write(f'#define ENABLE_GDIPLUS {int(can_gdi)}\n')
+    conf_header.write(f'#define ENABLE_OPENGL2 0\n')
     conf_header.write(f'#define ENABLE_OPENGL3 1\n')
     conf_header.write(f'#define ENABLE_SDL2_MIXER 1\n')
     conf_header.write(f'#define ENABLE_FMOD 1\n')

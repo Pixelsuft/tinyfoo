@@ -98,6 +98,9 @@
     <ClCompile Include="src\ren_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="msvc\imgui\imgui_impl_opengl2.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.hpp">
