@@ -37,6 +37,7 @@ namespace ren {
 
     class RendererOpenGL3 : public RendererBase {
         OpenGLApi gl;
+        SDL_FPoint scale;
         SDL_Window* win;
         SDL_GLContext ctx;
         public:
@@ -44,6 +45,7 @@ namespace ren {
             // WARN: SDL_GL_LoadLibrary is called in app.cpp before window creation
             win = (SDL_Window*)_win;
             inited = false;
+            scale.x = scale.y = 1.f;
             ctx = SDL_GL_CreateContext(win);
             if (!ctx) {
                 TF_ERROR(<< "Failed to create OpenGL context (" << SDL_GetError() << ")");
@@ -127,12 +129,17 @@ namespace ren {
             Point res;
             res.x = (float)w_buf;
             res.y = (float)h_buf;
+            if (SDL_GetWindowSize(win, &w_buf, &h_buf)) {
+                scale.x = res.x / (float)w_buf;
+                scale.y = res.y / (float)h_buf;
+            }
+            else
+                scale.x = scale.y = 1.f;
             return res;
         }
 
         Point point_win_to_ren(const Point& pos) {
-            Point ret = pos;
-            // TODO: high DPI
+            Point ret = { pos.x * scale.x, pos.y * scale.y };
             return ret;
         }
 
