@@ -17,6 +17,8 @@ if (1)
 		"build/imgui/imgui.cpp"
 		"build/imgui/imgui_impl_sdl3.cpp"
 		"build/imgui/imgui_impl_sdlrenderer3.cpp"
+		"build/imgui/imgui_impl_opengl2.cpp"
+		"build/imgui/imgui_impl_opengl3.cpp"
 	)
 endif()
 add_compile_definitions(CMAKE_BUILD=1)
