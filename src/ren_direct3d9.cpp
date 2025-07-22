@@ -170,12 +170,49 @@ namespace ren {
         }
 
         void* tex_from_io(void* ctx, bool free_src) {
-            // TODO
-            return nullptr;
+            SDL_Surface* surf = (SDL_Surface*)img::surf_from_io(ctx, free_src);
+            if (!surf)
+                return create_fallback_texture();
+            // Assuming original surface format is cool
+            IDirect3DTexture9* pTex = nullptr;
+            HRESULT hr = pd3dDevice->CreateTexture(
+                surf->w,
+                surf->h,
+                1,
+                0,
+                D3DFMT_A8R8G8B8,
+                D3DPOOL_MANAGED,
+                &pTex,
+                nullptr
+            );
+            if (!SUCCEEDED(hr)) {
+                TF_ERROR(<< "Failed to create Direct3D9 texture");
+                return nullptr;
+            }
+            D3DLOCKED_RECT lockedRect;
+            hr = pTex->LockRect(0, &lockedRect, NULL, 0);
+            if(SUCCEEDED(hr)) {
+                char* src = (char*)surf->pixels;
+                char* dst = (char*)lockedRect.pBits;
+                size_t numRows = surf->h;
+                size_t rowSize = surf->pitch;
+                while(numRows--) {
+                    SDL_memcpy(dst, src, rowSize);
+                    src += surf->pitch;
+                    dst += lockedRect.Pitch;
+                }
+                hr = pTex->UnlockRect(0);
+            }
+            else
+                TF_WARN(<< "Failed to lock Direct3D9 texture");
+            return (void*)(intptr_t)pTex;
         }
 
         void tex_destroy(void* tex) {
-            // TODO
+            if (!tex)
+                return;
+            IDirect3DTexture9* pTex = (IDirect3DTexture9*)(intptr_t)tex;
+            pTex->Release();
         }
 
         void* create_fallback_texture() {
