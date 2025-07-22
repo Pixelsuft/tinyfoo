@@ -421,6 +421,21 @@ void app::read_config() {
     SDL_free((void*)content);
 }
 
+void rng::reseed() {
+    SDL_Time ticks;
+    if (SDL_GetCurrentTime(&ticks)) {
+        SDL_srand((Uint64)ticks);
+    }
+    else {
+        TF_WARN(<< "Failed to get current time (" << SDL_GetError() << ")");
+        SDL_srand(0);
+    }
+}
+
+int rng::gen_int(int end) {
+    return (int)SDL_rand((Sint32)end);
+}
+
 conf::toml_table& conf::get() {
     return app::data->conf;
 }
