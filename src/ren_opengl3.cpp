@@ -135,9 +135,9 @@ namespace ren {
 #if ENABLE_IMGUI
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
             SDL_GL_SwapWindow(win);
             do_fake_vsync();
-#endif
         }
 
         Point get_size() {

@@ -76,7 +76,7 @@ if app.stage == 'fetch':
         data = open(p_path, 'r', encoding='utf-8').read()
         if not data.startswith('#include <lbs.hpp>'):
             app.info('Patching ImGui DirectX9')
-            data = '#include <lbs.hpp>\n#if ENABLE_D3D9\n' + data + '\n#endif\n'
+            data = '#include <lbs.hpp>\n#if ENABLE_DIRECT3D9\n' + data + '\n#endif\n'
             open(p_path, 'w', encoding='utf-8').write(data)
     if not os.path.isdir(os.path.join(app.b_path, 'toml')):
         os.mkdir(os.path.join(app.b_path, 'toml'))
