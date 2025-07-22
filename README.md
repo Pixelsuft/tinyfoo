@@ -50,8 +50,6 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
 ## TODO
  - Improve UI
  - Support configuring tab columns
- - Fix VSync conf on windows
  - Add support for libpng (useful on linux?)
- - Support other audio libs (miniaudio, ...)
  - Custom RNG (C++ instead of SDL3?)
  - Fix TODOs in code and code cleanup

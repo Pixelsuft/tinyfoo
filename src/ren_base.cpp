@@ -1,6 +1,7 @@
 #include <ren.hpp>
-#include <log.hpp>
 #if IS_WIN
+#include <log.hpp>
+#include <conf.hpp>
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -25,6 +26,9 @@ RendererBase::~RendererBase() {
 
 bool RendererBase::init_fake_vsync() {
 #if IS_WIN
+    auto vfb = conf::read_bool("renderer", "vsync_fix", true);
+    if (!vfb)
+        return false;
     auto handle = GetModuleHandleW(L"dwmapi.dll");
     if (!handle)
         return false;

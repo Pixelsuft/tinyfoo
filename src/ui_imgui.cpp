@@ -948,6 +948,7 @@ void ui::draw_settings() {
         ImGui::EndCombo();
     }
     ImGui::Checkbox("VSync", &data->conf.bools[0]);
+    ImGui::Checkbox("VSync Fix (Windows)", &data->conf.bools[14]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "ImGui");
     ImGui::PopFont();

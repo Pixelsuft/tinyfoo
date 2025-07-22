@@ -501,6 +501,7 @@ void conf::begin_editing(ConfData& data) {
     data.ints[7] = conf::read_int("soloud", "channels", 0);
     data.ints[8] = conf::read_int("soloud", "frequency", 0);
     data.ints[9] = conf::read_int("soloud", "chunksize", 0);
+    data.bools[14] = conf::read_bool("renderer", "vsync_fix", true);
 }
 
 #if ENABLE_TOMLPP
@@ -540,7 +541,8 @@ void conf::end_editing(ConfData& data) {
     app::data->conf = toml::table{
         {"renderer", toml::table{
             {"driver", TOML_DUMP_STR(data.ren_drv)},
-            {"vsync", data.bools[0]}
+            {"vsync", data.bools[0]},
+            {"vsync_fix", data.bools[14]}
         }},
         {"imgui", toml::table{
             {"style", TOML_DUMP_STR(data.style)},
