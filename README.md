@@ -51,5 +51,4 @@ g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Ii
  - Improve UI
  - Support configuring tab columns
  - Add support for libpng (useful on linux?)
- - Custom RNG (C++ instead of SDL3?)
  - Fix TODOs in code and code cleanup
