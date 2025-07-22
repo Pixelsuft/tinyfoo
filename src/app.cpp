@@ -8,6 +8,7 @@
 #include <res.hpp>
 #include <image.hpp>
 #include <audio.hpp>
+#include <rng.hpp>
 #include <conf.hpp>
 #include <playlist.hpp>
 #include <unreachable.hpp>
@@ -237,14 +238,7 @@ bool app::init() {
     }
     audio::au->update_volume();
     pl::load_playlists();
-    if (1) {
-        SDL_Time ticks;
-        if (SDL_GetCurrentTime(&ticks)) {
-            SDL_srand((Uint64)ticks);
-        }
-        else
-            TF_ERROR(<< "Failed to get current time (" << SDL_GetError() << ")");
-    }
+    rng::reseed();
     return true;
 }
 

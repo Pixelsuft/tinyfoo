@@ -5,6 +5,7 @@
 #include <lbs.hpp>
 #include <audio.hpp>
 #include <conf.hpp>
+#include <rng.hpp>
 #include <json.hpp>
 #include <util.hpp>
 #include <algorithm>
@@ -624,19 +625,19 @@ void pl::fill_cache() {
         else if (audio::au->order_mode == 2) {
             // Default RNG
             // TODO: don't repeat until X tracks
-            m = p->mus[SDL_rand((Sint32)p->mus.size())];
+            m = p->mus[rng::gen_int(p->mus.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
         }
 #if ORDER_COOL_RNG_PATCH
         else if (audio::au->order_mode == 3) {
             // Cool RNG
-            int idx = (int)SDL_rand((Sint32)p->artist_map.size());
+            int idx = rng::gen_int(p->artist_map.size());
             auto it = p->artist_map.begin();
             // TODO: FIXME performance
             for (int i = 0; i < idx; i++)
                 it++;
-            m = (*it).second[SDL_rand((Sint32)(*it).second.size())];
+            m = (*it).second[rng::gen_int((*it).second.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
         }

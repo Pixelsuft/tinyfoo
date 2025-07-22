@@ -204,6 +204,7 @@
     <ClInclude Include="include\imgui_styles.hpp" />
     <ClInclude Include="include\map.hpp" />
     <ClInclude Include="include\res.hpp" />
+    <ClInclude Include="include\rng.hpp" />
     <ClInclude Include="include\set.hpp" />
     <ClInclude Include="include\stl.hpp" />
     <ClInclude Include="include\unused.hpp" />
