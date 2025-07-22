@@ -19,6 +19,7 @@ if (1)
 		"build/imgui/imgui_impl_sdlrenderer3.cpp"
 		"build/imgui/imgui_impl_opengl2.cpp"
 		"build/imgui/imgui_impl_opengl3.cpp"
+		"build/imgui/imgui_impl_dx9.cpp"
 	)
 endif()
 add_compile_definitions(CMAKE_BUILD=1)

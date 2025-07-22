@@ -52,7 +52,9 @@ if app.stage == 'fetch':
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl2.h',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.cpp',
         f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3.h',
-        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3_loader.h'
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_opengl3_loader.h',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_dx9.cpp',
+        f'https://github.com/ocornut/imgui/raw/refs/heads/{ig_branch}/backends/imgui_impl_dx9.h',
     ))
     # UGLY hacks because of static linking and unused code
     p_path = os.path.join(app.b_path, 'imgui', 'imgui_impl_opengl2.cpp')
@@ -68,6 +70,13 @@ if app.stage == 'fetch':
         if not data.startswith('#include <lbs.hpp>'):
             app.info('Patching ImGui OpenGL3')
             data = '#include <lbs.hpp>\n#if ENABLE_OPENGL3\n' + data + '\n#endif\n'
+            open(p_path, 'w', encoding='utf-8').write(data)
+    p_path = os.path.join(app.b_path, 'imgui', 'imgui_impl_dx9.cpp')
+    if os.path.isfile(p_path):
+        data = open(p_path, 'r', encoding='utf-8').read()
+        if not data.startswith('#include <lbs.hpp>'):
+            app.info('Patching ImGui DirectX9')
+            data = '#include <lbs.hpp>\n#if ENABLE_D3D9\n' + data + '\n#endif\n'
             open(p_path, 'w', encoding='utf-8').write(data)
     if not os.path.isdir(os.path.join(app.b_path, 'toml')):
         os.mkdir(os.path.join(app.b_path, 'toml'))
@@ -122,6 +131,7 @@ if app.stage == 'conf':
     conf_header.write(f'#define ENABLE_GDIPLUS {int(can_gdi)}\n')
     conf_header.write(f'#define ENABLE_OPENGL2 0\n')
     conf_header.write(f'#define ENABLE_OPENGL3 1\n')
+    conf_header.write(f'#define ENABLE_DIRECT3D9 {is_win}\n')
     conf_header.write(f'#define ENABLE_SDL2_MIXER 1\n')
     conf_header.write(f'#define ENABLE_FMOD 1\n')
     conf_header.write(f'#define ENABLE_BASS 1\n')

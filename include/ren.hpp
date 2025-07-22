@@ -33,4 +33,7 @@ namespace ren {
     void set_opengl2_attribs();
     RendererBase* create_renderer_opengl2(void* win);
 #endif
+#if ENABLE_DIRECT3D9
+    RendererBase* create_renderer_direct3d9(void* win);
+#endif
 }

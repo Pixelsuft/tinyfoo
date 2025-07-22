@@ -22,7 +22,7 @@ namespace conf {
 #else
     using toml_table = toml::value;
 #endif
-    UNUSED_BEGIN static const char* ren_drv[] UNUSED_END = { "auto", "native_opengl2", "native_opengl3", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
+    UNUSED_BEGIN static const char* ren_drv[] UNUSED_END = { "auto", "native_direct3d9", "native_opengl2", "native_opengl3", "direct3d", "direct3d11", "direct3d12", "opengl", "opengles", "opengles2", "vulkan", "gpu", "software" };
     UNUSED_BEGIN static const char* ig_style_list[] UNUSED_END = {
         "dark", "light", "classic", "adobe", "cherry", "darky", "deep_dark", "discord",
         "dracula", "duck_red", "enemymouse", "gold", "gpulib", "green_font",

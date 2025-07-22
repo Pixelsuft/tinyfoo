@@ -171,6 +171,10 @@ bool app::init() {
     if (use_opengl2)
         ren::rn = ren::create_renderer_opengl2(data->win);
 #endif
+#if ENABLE_DIRECT3D9
+    if (ren_str == "native_direct3d9")
+        ren::rn = ren::create_renderer_direct3d9(data->win);
+#endif
     if (ren::rn && !ren::rn->inited) {
         TF_WARN(<< "Falling back to the default renderer");
         tf::bump_dl(ren::rn); // I don't think it's a serious memory leak

@@ -166,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="msvc\imgui\imgui.cpp" />
     <ClCompile Include="msvc\imgui\imgui_draw.cpp" />
+    <ClCompile Include="msvc\imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="msvc\imgui\imgui_impl_opengl2.cpp" />
     <ClCompile Include="msvc\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="msvc\imgui\imgui_impl_sdl3.cpp" />
@@ -185,6 +186,7 @@
     <ClCompile Include="src\mem.cpp" />
     <ClCompile Include="src\playlist.cpp" />
     <ClCompile Include="src\ren_base.cpp" />
+    <ClCompile Include="src\ren_direct3d9.cpp" />
     <ClCompile Include="src\ren_opengl2.cpp" />
     <ClCompile Include="src\ren_opengl3.cpp" />
     <ClCompile Include="src\ren_sdl3.cpp" />
