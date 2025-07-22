@@ -287,6 +287,7 @@ void ui::do_extra_stuff() {
 
 bool ui::init() {
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;  // We don't need it
     data = tf::bump_nw<UiData>();
     data->last_pl = data->sel_pl = data->prev_cache_pl = data->need_conf_pl = nullptr;
     data->search_buf[0] = '\0';
