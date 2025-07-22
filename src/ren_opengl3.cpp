@@ -168,31 +168,17 @@ namespace ren {
             SDL_Surface* surf = (SDL_Surface*)img::surf_from_io(ctx, free_src);
             if (!surf)
                 return create_fallback_texture();
-            // int w = (int)std::pow(2, (int)std::ceil(std::log2f((float)surf->w)));
-            // int h = (int)std::pow(2, (int)std::ceil(std::log2f((float)surf->h)));
+            // Assuming original surface format is cool
             int w = surf->w;
             int h = surf->h;
-            SDL_Surface* ns = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR8888);
-            if (!ns) {
-                TF_ERROR(<< "Failed to create surface copy for texture (" << SDL_GetError() << ")");
-                SDL_DestroySurface(surf);
-                return create_fallback_texture();
-            }
-            if (!SDL_BlitSurface(surf, nullptr, ns, nullptr)) {
-                TF_ERROR(<< "Failed to blit surface for texture (" << SDL_GetError() << ")");
-                SDL_DestroySurface(ns);
-                SDL_DestroySurface(surf);
-                return create_fallback_texture();
-            }
-            SDL_DestroySurface(surf);
             GLuint image_texture;
             gl.glGenTextures(1, &image_texture);
             gl.glBindTexture(GL_TEXTURE_2D, image_texture);
             gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
             gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
             gl.glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-            gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, ns->pixels);
-            SDL_DestroySurface(ns);
+            gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels);
+            SDL_DestroySurface(surf);
             return (void*)(intptr_t)image_texture;
         }
 

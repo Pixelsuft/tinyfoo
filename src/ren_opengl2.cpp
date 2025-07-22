@@ -121,27 +121,14 @@ namespace ren {
                 return create_fallback_texture();
             int w = surf->w;
             int h = surf->h;
-            SDL_Surface* ns = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR8888);
-            if (!ns) {
-                TF_ERROR(<< "Failed to create surface copy for texture (" << SDL_GetError() << ")");
-                SDL_DestroySurface(surf);
-                return create_fallback_texture();
-            }
-            if (!SDL_BlitSurface(surf, nullptr, ns, nullptr)) {
-                TF_ERROR(<< "Failed to blit surface for texture (" << SDL_GetError() << ")");
-                SDL_DestroySurface(ns);
-                SDL_DestroySurface(surf);
-                return create_fallback_texture();
-            }
-            SDL_DestroySurface(surf);
             GLuint image_texture;
             glGenTextures(1, &image_texture);
             glBindTexture(GL_TEXTURE_2D, image_texture);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (w == 2 && h == 2) ? GL_NEAREST : GL_LINEAR);
             glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, ns->pixels);
-            SDL_DestroySurface(ns);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels);
+            SDL_DestroySurface(surf);
             return (void*)(intptr_t)image_texture;
         }
 

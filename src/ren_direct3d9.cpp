@@ -23,6 +23,7 @@ using ren::RendererBase;
 
 namespace ren {
     class RendererDirect3D9 : public RendererBase {
+        SDL_FPoint scale;
         IDirect3D9* (*Direct3DCreate9_ptr)(UINT);
         SDL_Window* win;
         HWND hwnd;
@@ -37,6 +38,7 @@ namespace ren {
             hwnd = nullptr;
             dev_lost = false;
             inited = false;
+            scale.x = scale.y = 1.f;
             SDL_PropertiesID props = SDL_GetWindowProperties(win);
             if (props) {
                 hwnd = (HWND)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
@@ -65,14 +67,14 @@ namespace ren {
                 FreeLibrary(dll);
                 return;
             }
+            auto vsync_b = conf::read_bool("renderer", "vsync", true);
             ZeroMemory(&d3dpp, sizeof(D3DPRESENT_PARAMETERS));
             d3dpp.Windowed = TRUE;
             d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
             d3dpp.EnableAutoDepthStencil = TRUE;
             d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-            // TODO: vsync
-            d3dpp.PresentationInterval = 1 ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+            d3dpp.PresentationInterval = vsync_b ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
             if (pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pd3dDevice) < 0) {
                 TF_ERROR(<< "Failed to create Direct3D9 device");
                 pD3D->Release();
@@ -156,6 +158,12 @@ namespace ren {
             Point res;
             res.x = (float)w_buf;
             res.y = (float)h_buf;
+            if (SDL_GetWindowSize(win, &w_buf, &h_buf)) {
+                scale.x = res.x / (float)w_buf;
+                scale.y = res.y / (float)h_buf;
+            }
+            else
+                scale.x = scale.y = 1.f;
             // Assuming this function is called rarely
             d3dpp.BackBufferWidth = (UINT)w_buf;
             d3dpp.BackBufferHeight = (UINT)h_buf;
@@ -164,8 +172,7 @@ namespace ren {
         }
 
         Point point_win_to_ren(const Point& pos) {
-            // TODO
-            Point ret = { pos.x, pos.y };
+            Point ret = { pos.x * scale.x, pos.y * scale.y };
             return ret;
         }
 
