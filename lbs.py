@@ -136,6 +136,8 @@ if app.stage == 'conf':
     conf_header.write(f'#define ENABLE_FMOD 1\n')
     conf_header.write(f'#define ENABLE_BASS 1\n')
     conf_header.write(f'#define ENABLE_SOLOUD 1\n')
+    conf_header.write(f'#define ENABLE_C_RNG 0\n')
+    conf_header.write(f'#define ENABLE_MT19937_RNG 1\n')
     conf_header.write(f'#define ENABLE_STDOUT_LOGGING 1\n')
     conf_header.write(f'#define BUMP_SIZE 4096\n')
     conf_header.write(f'#define MIN_LOG_LEVEL {1 if is_release else 0}\n')

@@ -17,6 +17,14 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #endif
+#if (ENABLE_C_RNG + ENABLE_MT19937_RNG) > 1
+#error "Too many RNG backends"
+#endif
+#if ENABLE_C_RNG
+#include <cstdlib>
+#elif ENABLE_MT19937_RNG
+#include <random>
+#endif
 
 #if IS_DLL_BUILD
 void tf_dll_update();
@@ -43,6 +51,10 @@ namespace app {
     void process_event(const SDL_Event& ev);
 
     struct AppData {
+#if ENABLE_MT19937_RNG
+        // Too big so it will be dynamically allocated
+        std::mt19937* mt_rng;
+#endif
 #if ENABLE_TOMLPP
         toml::table conf;
 #else
@@ -86,6 +98,9 @@ bool app::init() {
         return false;
     }
     data = tf::bump_nw<AppData>();
+#if ENABLE_MT19937_RNG
+    data->mt_rng = nullptr;
+#endif
     data->orig_bump = temp_bump;
     data->stage = 0;
     data->should_play_sel_hack = false;
@@ -238,6 +253,9 @@ bool app::init() {
     }
     audio::au->update_volume();
     pl::load_playlists();
+#if ENABLE_MT19937_RNG
+    data->mt_rng = tf::nw<std::mt19937>();
+#endif
     rng::reseed();
     return true;
 }
@@ -369,6 +387,10 @@ void app::stop(bool rage) {
 
 void app::destroy() {
     data->running = false;
+#if ENABLE_MT19937_RNG
+    if (data->mt_rng)
+        tf::dl(data->mt_rng);
+#endif
     if (data->stage > 3) {
         if (!data->rage_quit && data->should_save_conf)
             conf::save_to_file();
@@ -423,17 +445,29 @@ void app::read_config() {
 
 void rng::reseed() {
     SDL_Time ticks;
-    if (SDL_GetCurrentTime(&ticks)) {
-        SDL_srand((Uint64)ticks);
-    }
-    else {
+    if (!SDL_GetCurrentTime(&ticks)) {
         TF_WARN(<< "Failed to get current time (" << SDL_GetError() << ")");
-        SDL_srand(0);
+        ticks = 0;
     }
+#if ENABLE_C_RNG
+    std::srand((unsigned int)ticks);
+#elif ENABLE_MT19937_RNG
+    app::data->mt_rng->seed((uint_fast32_t)ticks);
+#else
+    SDL_srand((Uint64)ticks);
+#endif
 }
 
 int rng::gen_int(int end) {
+#if ENABLE_C_RNG
+    return (int)((double)rand() * (double)end / (double)(RAND_MAX + 1));
+#elif ENABLE_MT19937_RNG
+    std::uniform_int_distribution<int> dist(0, end - 1);
+    // WTF deref
+    return (int)dist(*app::data->mt_rng);
+#else
     return (int)SDL_rand((Sint32)end);
+#endif
 }
 
 conf::toml_table& conf::get() {
