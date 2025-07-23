@@ -41,7 +41,6 @@ stderr.txt
 out.txt
 logo.txt
 temp.bin
-ui_eid_gen.cpp
 *.res
 *.pch
 *.o

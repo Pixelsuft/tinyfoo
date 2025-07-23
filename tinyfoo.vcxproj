@@ -223,7 +223,6 @@
     <ClInclude Include="include\conf.hpp" />
     <ClInclude Include="include\vec.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="tinyfoo.rc" />
