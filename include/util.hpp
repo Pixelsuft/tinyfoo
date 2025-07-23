@@ -27,7 +27,7 @@ namespace util {
     static inline bool str_matches_mask(const tf::str& inp, const tf::str& mask) {
         if (mask.size() > inp.size())
             return false;
-        for (auto it = inp.begin(); it != inp.end() - mask.size(); it++) {
+        for (auto it = inp.begin(); it != inp.end() - mask.size() + 1; it++) {
             if (SDL_strncasecmp(&(*it), &mask[0], mask.size()) == 0)
                 return true;
             /*
