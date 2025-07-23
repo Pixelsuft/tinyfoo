@@ -230,13 +230,17 @@ namespace ren {
         }
 
         void reset_device() {
+#if ENABLE_IMGUI
             ImGui_ImplDX9_InvalidateDeviceObjects();
+#endif
             HRESULT hr = pd3dDevice->Reset(&d3dpp);
             if (hr == D3DERR_INVALIDCALL) {
-                TF_ERROR(<< "Failed to release Direct3D9 device");
+                TF_ERROR(<< "Failed to reset Direct3D9 device");
                 dev_lost = true; // ???
             }
+#if ENABLE_IMGUI
             ImGui_ImplDX9_CreateDeviceObjects();
+#endif
         }
     };
 }
