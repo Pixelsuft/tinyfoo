@@ -1000,6 +1000,8 @@ void ui::draw_settings() {
         data->conf.floats[6] = tf::clamp(data->conf.floats[6], 0.f, 10000.f);
     if (ImGui::InputFloat("Resume Fading Time (ms)", &data->conf.floats[7]))
         data->conf.floats[7] = tf::clamp(data->conf.floats[7], 0.f, 10000.f);
+    if (ImGui::InputInt("RNG repeat blocks", &data->conf.ints[10]))
+        data->conf.ints[10] = tf::clamp(data->conf.ints[10], 0, 1000);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "SDL2_mixer");
     ImGui::PopFont();

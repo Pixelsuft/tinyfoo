@@ -20,8 +20,7 @@ AudioBase::AudioBase() {
     order_mode = conf::read_int("playback", "order", 1);
     if (order_mode == 3 && !ORDER_COOL_RNG_PATCH)
         order_mode = 2;
-    // TODO: configure that
-    repeat_blocks = 10;
+    repeat_blocks = conf::read_int("audio", "repeat_blocks", 0);
     need_dev = conf::read_str("audio", "device", need_dev);
     max_volume = conf::read_float("audio", "max_volume", 100.f) / 100.f;
     volume = conf::read_float("audio", "volume", 25.f) / 100.f;

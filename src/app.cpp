@@ -510,6 +510,7 @@ void conf::begin_editing(ConfData& data) {
     data.floats[7] = audio::au->fade_resume_time * 1000.f;
     data.ints[6] = audio::au->order_mode;
     data.floats[8] = conf::read_float("audio", "max_volume", 100.f);
+    data.ints[10] = conf::read_int("audio", "repeat_blocks", 0);
     data.style = data.def_style = conf::read_str("imgui", "style", "dark");
     data.font1_path = conf::read_str("imgui", "font1_path", "");
     data.font2_path = conf::read_str("imgui", "font2_path", "");
@@ -518,6 +519,7 @@ void conf::begin_editing(ConfData& data) {
     data.floats[2] = conf::read_float("imgui", "img_scale", 1.f);
     data.ren_drv = conf::read_str("renderer", "driver", "auto");
     data.bools[0] = conf::read_bool("renderer", "vsync", true);
+    data.bools[14] = conf::read_bool("renderer", "vsync_fix", true);
     data.au_bk = conf::read_str("audio", "backend", "dummy");
     data.sdl2_drv = conf::read_str("sdl2_mixer", "driver", "default");
     data.sdl2_fmt = conf::read_str("sdl2_mixer", "format", "SDL_AUDIO_S16");
@@ -544,7 +546,6 @@ void conf::begin_editing(ConfData& data) {
     data.ints[7] = conf::read_int("soloud", "channels", 0);
     data.ints[8] = conf::read_int("soloud", "frequency", 0);
     data.ints[9] = conf::read_int("soloud", "chunksize", 0);
-    data.bools[14] = conf::read_bool("renderer", "vsync_fix", true);
 }
 
 #if ENABLE_TOMLPP
@@ -603,7 +604,8 @@ void conf::end_editing(ConfData& data) {
             {"fade_stop_time", data.floats[5]},
             {"fade_pause_time", data.floats[6]},
             {"fade_resume_time", data.floats[7]},
-            {"max_volume", data.floats[8]}
+            {"max_volume", data.floats[8]},
+            {"repeat_blocks", data.ints[10]}
         }},
         {"sdl2_mixer", toml::table{
             {"driver", TOML_DUMP_STR(data.sdl2_drv)},

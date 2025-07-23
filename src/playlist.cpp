@@ -646,7 +646,9 @@ void pl::fill_cache() {
         if (!m)
             TF_UNREACHABLE();
         if ((audio::au->order_mode == 2 || audio::au->order_mode == 3) && audio::au->repeat_blocks > 0) {
-            int need_cnt = std::min((int)p->mus.size() - (int)audio::au->cache.size() - audio::au->temp_cache_cnt - 10, audio::au->repeat_blocks);
+            int test_sz = (int)((double)p->mus.size() / 1.5) - (int)audio::au->cache.size() - audio::au->temp_cache_cnt - 4;
+            // Prevent softlocks in an ugly way
+            int need_cnt = std::min(test_sz, audio::au->repeat_blocks);
             if (need_cnt > 0) {
                 while ((int)p->repeating.size() > need_cnt)
                     p->repeating.erase(p->repeating.begin());
