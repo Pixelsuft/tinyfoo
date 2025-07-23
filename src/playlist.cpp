@@ -398,6 +398,9 @@ void pl::remove_dead(Playlist* p) {
             if (it != audio::au->cache.end())
                 audio::au->cache.erase(it);
             p->mus.erase(p->mus.begin() + i - 1);
+            auto rit = std::find(p->repeating.begin(), p->repeating.end(), m);
+            if (rit != p->repeating.end())
+                p->repeating.erase(rit);
             p->changed = true;
             mus_hook_del(p, m);
             tf::dl(m);
@@ -539,6 +542,9 @@ void pl::remove_selected(Playlist* p) {
             }
         }
         p->mus.erase(p->mus.begin() + (size_t)(*it));
+        auto rit = std::find(p->repeating.begin(), p->repeating.end(), m);
+        if (rit != p->repeating.end())
+            p->repeating.erase(rit);
         mus_hook_del(p, m);
         tf::dl(m);
     }
@@ -649,11 +655,11 @@ void pl::fill_cache() {
             int test_sz = (int)((double)p->mus.size() / 1.5) - (int)audio::au->cache.size() - audio::au->temp_cache_cnt - 4;
             // Prevent softlocks in an ugly way
             int need_cnt = std::min(test_sz, audio::au->repeat_blocks);
-            if (need_cnt > 0) {
-                while ((int)p->repeating.size() > need_cnt)
-                    p->repeating.erase(p->repeating.begin());
+            if (need_cnt > 1) {
                 if (std::find(p->repeating.begin(), p->repeating.end(), m) != p->repeating.end())
                     continue;
+                while ((int)p->repeating.size() >= need_cnt)
+                    p->repeating.erase(p->repeating.begin());
                 p->repeating.push_back(m);
             }
         }

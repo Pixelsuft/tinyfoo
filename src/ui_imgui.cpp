@@ -672,13 +672,16 @@ void ui::draw_meta() {
             if (audio::au->mus_opened(*it))
                 op_cnt++;
         }
+        ImGui::Text("Cache (%i):", (int)audio::au->cache.size());
+        for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++)
+            ImGui::TextUnformatted((*it)->fn.c_str());
         ImGui::Text("Opened (%i):", op_cnt);
         for (auto it = data->last_pl->mus.begin(); it != data->last_pl->mus.end(); it++) {
             if (audio::au->mus_opened(*it))
                 ImGui::TextUnformatted((*it)->fn.c_str());
         }
-        ImGui::Text("Cache (%i):", (int)audio::au->cache.size());
-        for (auto it = audio::au->cache.begin(); it != audio::au->cache.end(); it++)
+        ImGui::Text("Repeat blocks (%i):", (int)data->last_pl->repeating.size());
+        for (auto it = data->last_pl->repeating.begin(); it != data->last_pl->repeating.end(); it++)
             ImGui::TextUnformatted((*it)->fn.c_str());
     }
     // TODO: improve?
