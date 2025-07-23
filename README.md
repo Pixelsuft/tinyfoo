@@ -42,10 +42,11 @@ python lbs.py release conf --release
 python lbs.py release gen_res
 python lbs.py release join_code
 cd release
+windres ../tinyfoo.rc -O coff -o tinyfoo.res
 # MinGW64
-g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++2a -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
+g++ tinyfoo.cpp tinyfoo.res -o tinyfoo.exe -std=gnu++2a -Ofast -fno-rtti -Iimgui -Ilbs -ISDL/x86_64-w64-mingw32/include -LSDL/x86_64-w64-mingw32/lib -lSDL3 -lgdiplus
 # MSYS2
-g++ tinyfoo.cpp -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Iimgui -Ilbs -lSDL3 -lgdiplus
+g++ tinyfoo.cpp tinyfoo.res -o tinyfoo.exe -std=gnu++23 -Ofast -fno-rtti -fno-exceptions -Iimgui -Ilbs -lSDL3 -lgdiplus
 ```
 ## TODO
  - Improve UI
