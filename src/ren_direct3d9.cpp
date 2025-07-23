@@ -137,15 +137,17 @@ namespace ren {
                 return;
 #if ENABLE_IMGUI
             ImGui::EndFrame();
+#endif
             if (pd3dDevice->BeginScene() >= 0) {
+#if ENABLE_IMGUI
                 ImGui::Render();
                 ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+#endif
                 pd3dDevice->EndScene();
             }
             HRESULT result = pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
             if (result == D3DERR_DEVICELOST)
                 dev_lost = true;
-#endif
         }
 
         Point get_size() {
