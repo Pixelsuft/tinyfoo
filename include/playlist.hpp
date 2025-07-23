@@ -13,6 +13,7 @@ namespace pl {
         tf::map<tf::str, tf::vec<audio::Music*>> artist_map;
 #endif
         tf::vec<audio::Music*> mus;
+        tf::vec<audio::Music*> repeating;
         tf::vec<audio::Music*> remembering;
         tf::vec<int> selected;
         tf::str path;

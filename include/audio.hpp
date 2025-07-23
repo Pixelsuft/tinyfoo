@@ -16,6 +16,7 @@ namespace audio {
         float fade_resume_time;
         float volume;
         float max_volume;
+        int repeat_blocks;
         int cache_opened_cnt;
         int temp_cache_cnt;
         int order_mode;

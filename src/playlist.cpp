@@ -129,6 +129,7 @@ void pl::add_new_pl() {
     p->path = "unknown.json";
     p->name = "Unknown";
     p->sorting = "none";
+    p->repeating.reserve((size_t)audio::au->repeat_blocks);
     p->reserve_sorting = false;
     p->last_sel = p->last_shift_sel = p->last_shift_sel2 = 0;
     p->changed = false;
@@ -184,6 +185,7 @@ bool pl::load_pl_from_fp(const tf::str& fp, const tf::str& cool_path) {
     sort_by(p, p->sorting.c_str());
     if (p->reserve_sorting)
         sort_by(p, "reverse");
+    p->repeating.reserve((size_t)audio::au->repeat_blocks);
     pl::pls->push_back(p);
     return true;
 }
@@ -624,7 +626,6 @@ void pl::fill_cache() {
         }
         else if (audio::au->order_mode == 2) {
             // Default RNG
-            // TODO: don't repeat until X tracks
             m = p->mus[rng::gen_int((int)p->mus.size())];
             if (audio::au->cur_mus == m || std::find(audio::au->cache.begin(), audio::au->cache.end(), m) != audio::au->cache.end())
                 continue;
@@ -644,6 +645,16 @@ void pl::fill_cache() {
 #endif
         if (!m)
             TF_UNREACHABLE();
+        if ((audio::au->order_mode == 2 || audio::au->order_mode == 3) && audio::au->repeat_blocks > 0) {
+            int need_cnt = std::min((int)p->mus.size() - (int)audio::au->cache.size() - audio::au->temp_cache_cnt - 10, audio::au->repeat_blocks);
+            if (need_cnt > 0) {
+                while ((int)p->repeating.size() > need_cnt)
+                    p->repeating.erase(p->repeating.begin());
+                if (std::find(p->repeating.begin(), p->repeating.end(), m) != p->repeating.end())
+                    continue;
+                p->repeating.push_back(m);
+            }
+        }
         mus_open_file(m);
         m->cached = true;
         check_music_mod(p, m);
