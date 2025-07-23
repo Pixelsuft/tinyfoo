@@ -41,6 +41,7 @@ stderr.txt
 out.txt
 logo.txt
 temp.bin
+tinyfoo.aps
 *.res
 *.pch
 *.o
