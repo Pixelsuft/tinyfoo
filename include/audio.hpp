@@ -58,8 +58,11 @@ namespace audio {
 #if ENABLE_BASS
     AudioBase* create_bass();
 #endif
-#if ENABLE_BASS
+#if ENABLE_SOLOUD
     AudioBase* create_soloud();
+#endif
+#if ENABLE_VLC
+    AudioBase* create_vlc();
 #endif
     void free_audio(AudioBase* handle);
 }

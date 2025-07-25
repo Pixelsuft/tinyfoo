@@ -29,7 +29,7 @@ namespace conf {
         "material_flat", "mediacy", "photoshop", "red_font", "ruda", "sonic_riders", "ue4",
         "vgui", "visual_studio", "windark"
     };
-    UNUSED_BEGIN static const char* au_bk[] UNUSED_END = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass", "soloud" };
+    UNUSED_BEGIN static const char* au_bk[] UNUSED_END = { "dummy", "sdl2_mixer", "sdl2_mixer_ext", "fmod", "bass", "soloud", "vlc" };
     UNUSED_BEGIN static const char* sdl2_drv[] UNUSED_END = { "default", "aaudio", "alsa", "coreaudio", "directsound", "disk", "dummy", "emscripten", "haiku", "jack", "n3ds", "netbsd", "ngage", "opensles", "oss", "pipewire", "ps2", "psp", "pulseaudio", "qnx", "sndio", "vita", "wasapi" };
     UNUSED_BEGIN static const char* sdl2_fmt[] UNUSED_END = { "SDL_AUDIO_UNKNOWN", "SDL_AUDIO_U8", "SDL_AUDIO_S8", "SDL_AUDIO_S16LE", "SDL_AUDIO_S16BE", "SDL_AUDIO_S32LE", "SDL_AUDIO_S32BE", "SDL_AUDIO_F32LE", "SDL_AUDIO_F32BE", "SDL_AUDIO_S16", "SDL_AUDIO_S32", "SDL_AUDIO_F32" };
     UNUSED_BEGIN static const char* fmod_drv[] UNUSED_END = { "default", "nosound", "wavwriter", "nosound_nrt", "wavwriter_nrt", "wasapi", "asio", "pulseaudio", "alsa", "coreaudio", "audiotrack", "opensl", "audioout", "audio3d", "webaudio", "nnaudio", "winsonic", "aaudio", "audioworklet", "phase", "ohaudio" };

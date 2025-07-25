@@ -179,6 +179,7 @@
     <ClCompile Include="src\audio_fmod.cpp" />
     <ClCompile Include="src\audio_sdl2_mixer.cpp" />
     <ClCompile Include="src\audio_soloud.cpp" />
+    <ClCompile Include="src\audio_vlc.cpp" />
     <ClCompile Include="src\control.cpp" />
     <ClCompile Include="src\image.cpp" />
     <ClCompile Include="src\log.cpp" />

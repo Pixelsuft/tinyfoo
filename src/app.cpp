@@ -245,6 +245,10 @@ bool app::init() {
     else if (backend_au == "soloud")
         audio::au = audio::create_soloud();
 #endif
+#if ENABLE_VLC
+    else if (backend_au == "vlc")
+        audio::au = audio::create_vlc();
+#endif
     if (!audio::au || !audio::au->inited || !audio::au->dev_open()) {
         if (audio::au)
             audio::free_audio(audio::au);
