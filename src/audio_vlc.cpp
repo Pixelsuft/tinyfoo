@@ -40,6 +40,7 @@ typedef enum libvlc_media_parse_flag_t {
 #endif
 #define mus_h ((libvlc_media_player_t*)mus->h1)
 #define cur_h ((libvlc_media_player_t*)cur_mus->h1)
+#define med_h ((libvlc_media_t*)mus->h2)
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 namespace audio {
@@ -52,6 +53,7 @@ namespace audio {
         void (LIBVLC_API *libvlc_set_app_id)(libvlc_instance_t*, const char*, const char*, const char*);
         libvlc_media_t* (LIBVLC_API *libvlc_media_new_path)(const char*);
         void (LIBVLC_API *libvlc_media_release)(libvlc_media_t*);
+        libvlc_time_t (LIBVLC_API *libvlc_media_get_duration)(libvlc_media_t*);
         libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new_from_media)(libvlc_instance_t*, libvlc_media_t*);
         int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
@@ -100,6 +102,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_set_app_id);
             VLC_LOAD_FUNC(libvlc_media_new_path);
             VLC_LOAD_FUNC(libvlc_media_release);
+            VLC_LOAD_FUNC(libvlc_media_get_duration);
             VLC_LOAD_FUNC(libvlc_media_player_new_from_media);
             VLC_LOAD_FUNC(libvlc_media_player_play);
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
@@ -152,22 +155,33 @@ namespace audio {
                 return false;
             }
             mus->h1 = (void*)vlc.libvlc_media_player_new_from_media(inst, med);
-            if (!mus->h1)
+            if (!mus->h1) {
                 TF_ERROR(<< "Failed to open music (" << VLC_ERROR() << ")");
-            vlc.libvlc_media_release(med);
-            return mus->h1 != nullptr;
+                vlc.libvlc_media_release(med);
+                return false;
+            }
+            mus->h2 = (void*)med;
+            return true;
         }
 
         void mus_close(Music* mus) {
             if (!mus->h1)
                 return;
             vlc.libvlc_media_player_release(mus_h);
+            vlc.libvlc_media_release(med_h);
             mus->h1 = nullptr;
         }
     
         bool mus_fill_info(Music* mus) {
-            if (mus->dur <= 0.f)
+            if (vlc.libvlc_media_parse_request(inst, med_h, libvlc_media_parse_local, 0) < 0) {
+                TF_WARN(<< "Failed to send music parse request (" << VLC_ERROR() << ")");
                 return false;
+            }
+            libvlc_time_t temp_dur = -1;
+            // TODO: handle errors properly?
+            while (temp_dur == -1)
+                temp_dur = vlc.libvlc_media_get_duration(med_h);
+            mus->dur = (float)temp_dur / 1000.f;
             mus->type = Type::NONE;
             // Hacky
             char ext_buf[5];
