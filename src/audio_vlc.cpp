@@ -120,11 +120,13 @@ namespace audio {
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
+            TF_INFO(<< fp);
             libvlc_media_t* med = vlc.libvlc_media_new_path(fp);
             if (!med) {
                 TF_ERROR(<< "Failed create media from file (" << VLC_ERROR() << ")");
                 return false;
             }
+            TF_INFO(<< (void*)med);
             mus->h1 = (void*)vlc.libvlc_media_player_new_from_media(inst, med);
             if (!mus->h1)
                 TF_ERROR(<< "Failed to open music (" << VLC_ERROR() << ")");
