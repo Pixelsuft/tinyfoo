@@ -8,11 +8,12 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
-#define VLC_API
+#define LIBVLC_API
 #if 1
 typedef struct libvlc_instance_t libvlc_instance_t;
 typedef struct libvlc_media_player_t libvlc_media_player_t;
 typedef struct libvlc_media_t libvlc_media_t;
+typedef int64_t libvlc_time_t;
 
 #define VLC_LOAD_FUNC(func_name) do { \
     *(void**)&vlc.func_name = (void*)SDL_LoadFunction(vlc.handle, #func_name); \
@@ -28,16 +29,23 @@ typedef struct libvlc_media_t libvlc_media_t;
 namespace audio {
     struct VLCApi {
         SDL_SharedObject* handle;
-        libvlc_instance_t* (VLC_API *libvlc_new)(int, const char* const*);
-        void (VLC_API *libvlc_release)(libvlc_instance_t*);
-        const char* (VLC_API *libvlc_errmsg)();
+        libvlc_instance_t* (LIBVLC_API *libvlc_new)(int, const char* const*);
+        void (LIBVLC_API *libvlc_release)(libvlc_instance_t*);
+        const char* (LIBVLC_API *libvlc_errmsg)();
+        void (LIBVLC_API *libvlc_set_app_id)(libvlc_instance_t*, const char*, const char*, const char*);
+        libvlc_media_t* (LIBVLC_API *libvlc_media_new_path)(const char*);
+        void (LIBVLC_API *libvlc_media_release)(libvlc_media_t*);
+        int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
+        bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
+        libvlc_time_t (LIBVLC_API *libvlc_media_player_get_time)(libvlc_media_player_t*);
+        int (LIBVLC_API *libvlc_media_player_stop)(libvlc_media_player_t*);
+        void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
     };
 
     class AudioVLC : public AudioBase {
         protected:
         VLCApi vlc;
         libvlc_instance_t* inst;
-        libvlc_media_player_t* mp;
         public:
         float pause_pos;
         bool stopped;
@@ -45,7 +53,6 @@ namespace audio {
 
         AudioVLC() : AudioBase() {
             inst = nullptr;
-            mp = nullptr;
             lib_name = "VLC";
             stopped = false;
             paused = false;
@@ -61,12 +68,22 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_new);
             VLC_LOAD_FUNC(libvlc_release);
             VLC_LOAD_FUNC(libvlc_errmsg);
+            VLC_LOAD_FUNC(libvlc_set_app_id);
+            VLC_LOAD_FUNC(libvlc_media_new_path);
+            VLC_LOAD_FUNC(libvlc_media_release);
+            VLC_LOAD_FUNC(libvlc_media_player_play);
+            VLC_LOAD_FUNC(libvlc_media_player_is_playing);
+            VLC_LOAD_FUNC(libvlc_media_player_get_time);
+            VLC_LOAD_FUNC(libvlc_media_player_stop);
+            VLC_LOAD_FUNC(libvlc_media_player_release);
+            // TODO: maybe this should be in dev_open?
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
                 TF_ERROR(<< "Failed to init VLC (" << VLC_ERROR() << ")");
                 SDL_UnloadObject(vlc.handle);
                 return;
             }
+            vlc.libvlc_set_app_id(inst, "com.pixelsuft.tinyfoo", "1.0.0", "tinyfoo");
             TF_INFO(<< "VLC successfully created");
             inited = true;
         }
