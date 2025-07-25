@@ -8,8 +8,8 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
-#define LIBVLC_API
 #if 1
+#define LIBVLC_API SDLCALL
 typedef struct libvlc_instance_t libvlc_instance_t;
 typedef struct libvlc_media_player_t libvlc_media_player_t;
 typedef struct libvlc_media_t libvlc_media_t;
@@ -24,6 +24,14 @@ typedef int64_t libvlc_time_t;
     } \
 } while (0)
 #endif
+#ifdef mus_h
+#undef mus_h
+#endif
+#ifdef cur_h
+#undef cur_h
+#endif
+#define mus_h ((libvlc_media_player_t*)mus->h1)
+#define cur_h ((libvlc_media_player_t*)cur_mus->h1)
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 namespace audio {
@@ -35,6 +43,7 @@ namespace audio {
         void (LIBVLC_API *libvlc_set_app_id)(libvlc_instance_t*, const char*, const char*, const char*);
         libvlc_media_t* (LIBVLC_API *libvlc_media_new_path)(const char*);
         void (LIBVLC_API *libvlc_media_release)(libvlc_media_t*);
+        libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new_from_media)(libvlc_instance_t*, libvlc_media_t*);
         int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_time)(libvlc_media_player_t*);
@@ -71,6 +80,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_set_app_id);
             VLC_LOAD_FUNC(libvlc_media_new_path);
             VLC_LOAD_FUNC(libvlc_media_release);
+            VLC_LOAD_FUNC(libvlc_media_player_new_from_media);
             VLC_LOAD_FUNC(libvlc_media_player_play);
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
             VLC_LOAD_FUNC(libvlc_media_player_get_time);
@@ -110,12 +120,22 @@ namespace audio {
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
-            return true;
+            libvlc_media_t* med = vlc.libvlc_media_new_path(fp);
+            if (!med) {
+                TF_ERROR(<< "Failed create media from file (" << VLC_ERROR() << ")");
+                return false;
+            }
+            mus->h1 = (void*)vlc.libvlc_media_player_new_from_media(inst, med);
+            if (!mus->h1)
+                TF_ERROR(<< "Failed to open music (" << VLC_ERROR() << ")");
+            vlc.libvlc_media_release(med);
+            return mus->h1 != nullptr;
         }
 
         void mus_close(Music* mus) {
             if (!mus->h1)
                 return;
+            vlc.libvlc_media_player_release(mus_h);
             mus->h1 = nullptr;
         }
     
