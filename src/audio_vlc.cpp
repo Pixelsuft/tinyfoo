@@ -38,9 +38,7 @@ typedef enum libvlc_media_parse_flag_t {
 #ifdef cur_h
 #undef cur_h
 #endif
-#define mus_h ((libvlc_media_player_t*)mus->h1)
-#define cur_h ((libvlc_media_player_t*)cur_mus->h1)
-#define med_h ((libvlc_media_t*)mus->h2)
+#define med_h ((libvlc_media_t*)mus->h1)
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 namespace audio {
@@ -54,6 +52,7 @@ namespace audio {
         libvlc_media_t* (LIBVLC_API *libvlc_media_new_path)(const char*);
         void (LIBVLC_API *libvlc_media_release)(libvlc_media_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_get_duration)(libvlc_media_t*);
+        libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new)(libvlc_instance_t*);
         libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new_from_media)(libvlc_instance_t*, libvlc_media_t*);
         int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
@@ -72,6 +71,7 @@ namespace audio {
         protected:
         VLCApi vlc;
         libvlc_instance_t* inst;
+        libvlc_media_player_t* mp;
         public:
         float pause_pos;
         bool stopped;
@@ -103,6 +103,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_new_path);
             VLC_LOAD_FUNC(libvlc_media_release);
             VLC_LOAD_FUNC(libvlc_media_get_duration);
+            VLC_LOAD_FUNC(libvlc_media_player_new);
             VLC_LOAD_FUNC(libvlc_media_player_new_from_media);
             VLC_LOAD_FUNC(libvlc_media_player_play);
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
@@ -123,6 +124,13 @@ namespace audio {
                 return;
             }
             vlc.libvlc_set_app_id(inst, "com.pixelsuft.tinyfoo", "1.0.0", "tinyfoo");
+            mp = vlc.libvlc_media_player_new(inst);
+            if (!mp) {
+                TF_ERROR(<< "Failed create VLC media player (" << VLC_ERROR() << ")");
+                vlc.libvlc_release(inst);
+                SDL_UnloadObject(vlc.handle);
+                return;
+            }
             TF_INFO(<< "VLC successfully created");
             inited = true;
         }
@@ -154,20 +162,13 @@ namespace audio {
                 TF_ERROR(<< "Failed create media from file (" << VLC_ERROR() << ")");
                 return false;
             }
-            mus->h1 = (void*)vlc.libvlc_media_player_new_from_media(inst, med);
-            if (!mus->h1) {
-                TF_ERROR(<< "Failed to open music (" << VLC_ERROR() << ")");
-                vlc.libvlc_media_release(med);
-                return false;
-            }
-            mus->h2 = (void*)med;
+            mus->h1 = (void*)med;
             return true;
         }
 
         void mus_close(Music* mus) {
             if (!mus->h1)
                 return;
-            vlc.libvlc_media_player_release(mus_h);
             vlc.libvlc_media_release(med_h);
             mus->h1 = nullptr;
         }
@@ -246,6 +247,7 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
+            vlc.libvlc_media_player_release(mp);
             vlc.libvlc_release(inst);
             inited = false;
             SDL_UnloadObject(vlc.handle);
