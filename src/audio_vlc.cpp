@@ -14,6 +14,14 @@ typedef struct libvlc_instance_t libvlc_instance_t;
 typedef struct libvlc_media_player_t libvlc_media_player_t;
 typedef struct libvlc_media_t libvlc_media_t;
 typedef int64_t libvlc_time_t;
+typedef enum libvlc_media_parse_flag_t {
+    libvlc_media_parse_local    = 0x01,
+    libvlc_media_parse_network  = 0x02,
+    libvlc_media_parse_forced   = 0x04,
+    libvlc_media_fetch_local    = 0x08,
+    libvlc_media_fetch_network  = 0x10,
+    libvlc_media_do_interact    = 0x20,
+} libvlc_media_parse_flag_t;
 
 #define VLC_LOAD_FUNC(func_name) do { \
     *(void**)&vlc.func_name = (void*)SDL_LoadFunction(vlc.handle, #func_name); \
@@ -53,7 +61,9 @@ namespace audio {
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_length)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_pause)(libvlc_media_player_t*);
-        void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned,unsigned);
+        void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
+        int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
+        void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
     };
 
     class AudioVLC : public AudioBase {
@@ -100,6 +110,8 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_get_length);
             VLC_LOAD_FUNC(libvlc_media_player_pause);
             VLC_LOAD_FUNC(libvlc_audio_set_format);
+            VLC_LOAD_FUNC(libvlc_media_parse_request);
+            VLC_LOAD_FUNC(libvlc_media_parse_stop);
             // TODO: maybe this should be in dev_open?
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
@@ -154,7 +166,28 @@ namespace audio {
         }
     
         bool mus_fill_info(Music* mus) {
-            return false;
+            if (mus->dur <= 0.f)
+                return false;
+            mus->type = Type::NONE;
+            // Hacky
+            char ext_buf[5];
+            if (mus->full_path.size() >= 5) {
+                ext_buf[0] = SDL_tolower(mus->full_path[mus->full_path.size() - 5]);
+                ext_buf[1] = SDL_tolower(mus->full_path[mus->full_path.size() - 4]);
+                ext_buf[2] = SDL_tolower(mus->full_path[mus->full_path.size() - 3]);
+                ext_buf[3] = SDL_tolower(mus->full_path[mus->full_path.size() - 2]);
+                ext_buf[4] = SDL_tolower(mus->full_path[mus->full_path.size() - 1]);
+            }
+            else
+                ext_buf[0] = ext_buf[1] = ext_buf[2] = ext_buf[3] = ext_buf[4] = '\0';
+            if (SDL_memcmp(ext_buf + 1, ".mp3", 4) == 0)
+                mus->type = Type::MP3;
+            else if (SDL_memcmp(ext_buf + 1, ".ogg", 4) == 0)
+                mus->type = Type::OGG;
+            else if (SDL_memcmp(ext_buf + 1, ".wav", 4) == 0)
+                mus->type = Type::WAV;
+            else if (SDL_memcmp(ext_buf, ".flac", 5) == 0)
+                mus->type = Type::FLAC;
             return true;
         }
 
