@@ -8,33 +8,63 @@
 #include <stl.hpp>
 #include <conf.hpp>
 #include <SDL3/SDL.h>
+#define VLC_API
 #if 1
+typedef struct libvlc_instance_t libvlc_instance_t;
+typedef struct libvlc_media_player_t libvlc_media_player_t;
+typedef struct libvlc_media_t libvlc_media_t;
+
+#define VLC_LOAD_FUNC(func_name) do { \
+    *(void**)&vlc.func_name = (void*)SDL_LoadFunction(vlc.handle, #func_name); \
+    if (!vlc.func_name) { \
+        TF_ERROR(<< "Failed to load " << lib_name << " function \"" << #func_name << "\" (" << SDL_GetError() << ")"); \
+        SDL_UnloadObject(vlc.handle); \
+        return; \
+    } \
+} while (0)
 #endif
+#define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 namespace audio {
     struct VLCApi {
         SDL_SharedObject* handle;
+        libvlc_instance_t* (VLC_API *libvlc_new)(int, const char* const*);
+        void (VLC_API *libvlc_release)(libvlc_instance_t*);
+        const char* (VLC_API *libvlc_errmsg)();
     };
 
     class AudioVLC : public AudioBase {
         protected:
         VLCApi vlc;
+        libvlc_instance_t* inst;
+        libvlc_media_player_t* mp;
         public:
         float pause_pos;
         bool stopped;
         bool paused;
 
         AudioVLC() : AudioBase() {
+            inst = nullptr;
+            mp = nullptr;
             lib_name = "VLC";
             stopped = false;
             paused = false;
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
-            const char* lib_path = IS_WIN ? "libvlccore.dll" : "libvlccore.so";
+            const char* lib_path = IS_WIN ? "libvlc.dll" : "libvlc.so";
             vlc.handle = SDL_LoadObject(lib_path);
             if (!vlc.handle) {
                 TF_ERROR(<< "Failed to load VLC library (" << SDL_GetError() << ")");
+                return;
+            }
+            VLC_LOAD_FUNC(libvlc_new);
+            VLC_LOAD_FUNC(libvlc_release);
+            VLC_LOAD_FUNC(libvlc_errmsg);
+            inst = vlc.libvlc_new(0, nullptr);
+            if (!inst) {
+                TF_ERROR(<< "Failed to init VLC (" << VLC_ERROR() << ")");
+                SDL_UnloadObject(vlc.handle);
                 return;
             }
             TF_INFO(<< "VLC successfully created");
@@ -118,6 +148,7 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
+            vlc.libvlc_release(inst);
             inited = false;
             SDL_UnloadObject(vlc.handle);
         }

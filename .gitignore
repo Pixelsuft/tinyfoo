@@ -31,6 +31,7 @@ Debug
 x64
 keystore
 enc_temp_folder
+plugins
 embuild
 miniaudio
 push.bat
