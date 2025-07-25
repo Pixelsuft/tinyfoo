@@ -37,6 +37,7 @@ typedef int64_t libvlc_time_t;
 namespace audio {
     struct VLCApi {
         SDL_SharedObject* handle;
+        const char* (LIBVLC_API *libvlc_get_version)();        
         libvlc_instance_t* (LIBVLC_API *libvlc_new)(int, const char* const*);
         void (LIBVLC_API *libvlc_release)(libvlc_instance_t*);
         const char* (LIBVLC_API *libvlc_errmsg)();
@@ -47,7 +48,7 @@ namespace audio {
         int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_time)(libvlc_media_player_t*);
-        int (LIBVLC_API *libvlc_media_player_stop)(libvlc_media_player_t*);
+        int (LIBVLC_API *libvlc_media_player_stop_async)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
     };
 
@@ -74,6 +75,11 @@ namespace audio {
                 TF_ERROR(<< "Failed to load VLC library (" << SDL_GetError() << ")");
                 return;
             }
+            VLC_LOAD_FUNC(libvlc_get_version);
+            const char* ver_str = vlc.libvlc_get_version();
+            // Maybe support version 3?
+            if (!ver_str || ver_str[0] != '4')
+                TF_WARN(<< "Incorrect libvlc version (4 is required, got " << tf::nfstr(ver_str) << "), expect problems");
             VLC_LOAD_FUNC(libvlc_new);
             VLC_LOAD_FUNC(libvlc_release);
             VLC_LOAD_FUNC(libvlc_errmsg);
@@ -84,7 +90,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_play);
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
             VLC_LOAD_FUNC(libvlc_media_player_get_time);
-            VLC_LOAD_FUNC(libvlc_media_player_stop);
+            VLC_LOAD_FUNC(libvlc_media_player_stop_async);
             VLC_LOAD_FUNC(libvlc_media_player_release);
             // TODO: maybe this should be in dev_open?
             inst = vlc.libvlc_new(0, nullptr);
