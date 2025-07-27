@@ -9,7 +9,7 @@
 #include <conf.hpp>
 #include <SDL3/SDL.h>
 #if 1
-#define LIBVLC_API SDLCALL
+#define LIBVLC_API
 typedef struct libvlc_instance_t libvlc_instance_t;
 typedef struct libvlc_media_player_t libvlc_media_player_t;
 typedef struct libvlc_media_t libvlc_media_t;
@@ -62,6 +62,7 @@ namespace audio {
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_time)(libvlc_media_player_t*);
         int (LIBVLC_API *libvlc_media_player_set_time)(libvlc_media_player_t*, libvlc_time_t, bool);
+        double (LIBVLC_API *libvlc_media_player_get_position)(libvlc_media_player_t*);
         int (LIBVLC_API *libvlc_media_player_stop_async)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_length)(libvlc_media_player_t*);
@@ -119,6 +120,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
             VLC_LOAD_FUNC(libvlc_media_player_get_time);
             VLC_LOAD_FUNC(libvlc_media_player_set_time);
+            VLC_LOAD_FUNC(libvlc_media_player_get_position);
             VLC_LOAD_FUNC(libvlc_media_player_stop_async);
             VLC_LOAD_FUNC(libvlc_media_player_release);
             VLC_LOAD_FUNC(libvlc_media_player_get_length);
@@ -274,6 +276,10 @@ namespace audio {
             if (!cur_mus || stopped || !vlc.libvlc_media_player_is_playing(mp))
                 return 0.f;
             auto ret = vlc.libvlc_media_player_get_time(mp);
+            if (ret < 0) {
+                TF_WARN(<< "Failed to get music position (" << VLC_ERROR() << ")");
+                return 0.f;
+            }
             return (float)ret / 1000.f;
         }
 
