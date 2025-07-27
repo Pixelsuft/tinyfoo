@@ -38,8 +38,11 @@ typedef enum libvlc_media_parse_flag_t {
 #ifdef cur_h
 #undef cur_h
 #endif
+#define cur_h ((libvlc_media_t*)cur_mus->h1)
 #define med_h ((libvlc_media_t*)mus->h1)
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
+
+// VLC doesn't seem to support fading API
 
 namespace audio {
     struct VLCApi {
@@ -62,6 +65,7 @@ namespace audio {
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_length)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_pause)(libvlc_media_player_t*);
+        void (LIBVLC_API *libvlc_media_player_set_media)(libvlc_media_player_t*, libvlc_media_t*);
         void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
         void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
@@ -113,6 +117,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_release);
             VLC_LOAD_FUNC(libvlc_media_player_get_length);
             VLC_LOAD_FUNC(libvlc_media_player_pause);
+            VLC_LOAD_FUNC(libvlc_media_player_set_media);
             VLC_LOAD_FUNC(libvlc_audio_set_format);
             VLC_LOAD_FUNC(libvlc_media_parse_request);
             VLC_LOAD_FUNC(libvlc_media_parse_stop);
@@ -151,6 +156,44 @@ namespace audio {
         void force_play_cache() {
             if (cache.size() == 0)
                 return;
+            bool from_rep = false;
+            if (cache[0] == cur_mus) {
+                if (stopped) {
+                    cur_mus = nullptr;
+                    force_play_cache();
+                    pl::fill_cache();
+                    return;
+                }
+                cache.erase(cache.begin());
+                if (paused || 1) {
+                    paused = false;
+                    update_volume();
+                    pl::fill_cache();
+                    return;
+                }
+                from_rep = true;
+            }
+            stopped = false;
+            if (cur_mus && 0) {
+                stopped = false;
+                paused = false;
+                return;
+            }
+            Music* prev = nullptr;
+            if (!from_rep) {
+                prev = cur_mus;
+                cur_mus = cache[0];
+                cache.erase(cache.begin());
+            }
+            cur_mus->cached = false;
+            stopped = false;
+            paused = false;
+            pl::mus_open_file(cur_mus);
+            vlc.libvlc_media_player_set_media(mp, cur_h);
+            if (vlc.libvlc_media_player_play(mp) < 0)
+                TF_WARN(<< "Failed to play media (" << VLC_ERROR() << ")");
+            if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
+                mus_close(prev);
             pl::fill_cache();
         }
 
@@ -207,35 +250,66 @@ namespace audio {
         }
 
         void update() {
-
+            if (cur_mus && !paused && !vlc.libvlc_media_player_is_playing(mp)) {
+                if (!stopped)
+                    force_play_cache();
+                pl::fill_cache();
+                pre_open();
+            }
         }
 
         void cur_stop() {
-
+            if (!cur_mus)
+                return;
+            stopped = true;
+            // TODO: should I acually wait until stop?
+            vlc.libvlc_media_player_stop_async(mp);
+            pl::fill_cache();
         }
 
         float cur_get_pos() {
-            return 0.f;
+            if (cur_paused())
+                return pause_pos;
+            if (!cur_mus || stopped || !vlc.libvlc_media_player_is_playing(mp))
+                return 0.f;
+            auto ret = vlc.libvlc_media_player_get_time(mp);
+            return (float)ret / 1000.f;
         }
 
         void cur_set_pos(float pos) {
-
+            if (!cur_mus)
+                return;
+            pos = tf::clamp(pos, 0.f, cur_mus->dur);
+            if (paused) {
+                pause_pos = pos;
+                return;
+            }
+            // TODO
         }
 
         void cur_pause() {
-
+            if (!cur_mus || paused)
+                return;
+            pause_pos = cur_get_pos();
+            paused = true;
+            vlc.libvlc_media_player_pause(mp);
         }
 
         void cur_resume() {
-
+            if (!cur_mus || !paused)
+                return;
+            paused = false;
+            stopped = false;
+            vlc.libvlc_media_player_pause(mp);
+            // TODO: seek
         }
 
         bool cur_stopped() {
-            return true;
+            return !cur_mus || (!paused && !vlc.libvlc_media_player_is_playing(mp));
         }
 
         bool cur_paused() {
-            return paused;
+            return cur_mus && paused;
         }
 
         void update_volume() {
