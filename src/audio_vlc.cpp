@@ -69,6 +69,7 @@ namespace audio {
         void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
         void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
+        int (LIBVLC_API *libvlc_audio_set_volume)(libvlc_media_player_t*, int);
     };
 
     class AudioVLC : public AudioBase {
@@ -123,6 +124,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_audio_set_format);
             VLC_LOAD_FUNC(libvlc_media_parse_request);
             VLC_LOAD_FUNC(libvlc_media_parse_stop);
+            VLC_LOAD_FUNC(libvlc_audio_set_volume);
             // TODO: maybe this should be in dev_open?
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
@@ -318,7 +320,9 @@ namespace audio {
         }
 
         void update_volume() {
-            volume = tf::clamp(volume, 0.f, std::min(max_volume, 1.f));
+            volume = tf::clamp(volume, 0.f, max_volume);
+            if (vlc.libvlc_audio_set_volume(mp, (int)(volume * 100.f)) < 0)
+                TF_WARN(<< "Failed to set audio volume (" << VLC_ERROR() << ")");
         }
 
         ~AudioVLC() {
