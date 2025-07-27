@@ -43,6 +43,7 @@ typedef enum libvlc_media_parse_flag_t {
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 // VLC doesn't seem to support fading API
+// TODO: fix seeking
 
 namespace audio {
     struct VLCApi {
@@ -82,6 +83,7 @@ namespace audio {
         bool stopped;
         bool paused;
         bool real_paused;
+        bool fast_seek;
 
         AudioVLC() : AudioBase() {
             inst = nullptr;
@@ -89,6 +91,7 @@ namespace audio {
             stopped = false;
             paused = false;
             real_paused = false;
+            fast_seek = true; // TODO: conf this
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
@@ -125,7 +128,6 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_parse_request);
             VLC_LOAD_FUNC(libvlc_media_parse_stop);
             VLC_LOAD_FUNC(libvlc_audio_set_volume);
-            // TODO: maybe this should be in dev_open?
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
                 TF_ERROR(<< "Failed to init VLC (" << VLC_ERROR() << ")");
@@ -160,7 +162,6 @@ namespace audio {
         void force_play_cache() {
             if (cache.size() == 0)
                 return;
-            bool from_rep = false;
             if (cache[0] == cur_mus) {
                 if (stopped) {
                     cur_mus = nullptr;
@@ -169,28 +170,21 @@ namespace audio {
                     return;
                 }
                 cache.erase(cache.begin());
-                if (paused || 1) {
-                    paused = real_paused = false;
-                    update_volume();
-                    pl::fill_cache();
-                    return;
+                if (paused) {
+                    pause_pos = 0.f;
+                    cur_resume();
                 }
-                from_rep = true;
-            }
-            stopped = false;
-            if (cur_mus && 0) {
-                stopped = false;
-                paused = real_paused = false;
+                else
+                    cur_set_pos(0.f);
+                update_volume();
+                pl::fill_cache();
                 return;
             }
-            Music* prev = nullptr;
-            if (!from_rep) {
-                prev = cur_mus;
-                cur_mus = cache[0];
-                cache.erase(cache.begin());
-            }
-            cur_mus->cached = false;
             stopped = false;
+            Music* prev = cur_mus;
+            cur_mus = cache[0];
+            cache.erase(cache.begin());
+            cur_mus->cached = false;
             paused = real_paused = false;
             pl::mus_open_file(cur_mus);
             vlc.libvlc_media_player_set_media(mp, cur_h);
@@ -269,7 +263,8 @@ namespace audio {
                 return;
             stopped = true;
             // TODO: should I acually wait until stop?
-            vlc.libvlc_media_player_stop_async(mp);
+            if (vlc.libvlc_media_player_stop_async(mp))
+                TF_WARN(<< "Failed to stop audio (" << VLC_ERROR() << ")");
             pl::fill_cache();
         }
 
@@ -290,7 +285,8 @@ namespace audio {
                 pause_pos = pos;
                 return;
             }
-            // TODO
+            if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pos * 1000.f), fast_seek) < 0)
+                TF_WARN(<< "Failed to set audio position (" << VLC_ERROR() << ")");
         }
 
         void cur_pause() {
@@ -308,7 +304,8 @@ namespace audio {
             paused = false;
             stopped = false;
             vlc.libvlc_media_player_pause(mp);
-            // TODO: seek
+            if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pause_pos * 1000.f), fast_seek) < 0)
+                TF_WARN(<< "Failed to set audio resume position (" << VLC_ERROR() << ")");
         }
 
         bool cur_stopped() {
@@ -316,7 +313,7 @@ namespace audio {
         }
 
         bool cur_paused() {
-            return cur_mus && paused;
+            return cur_mus && real_paused;
         }
 
         void update_volume() {

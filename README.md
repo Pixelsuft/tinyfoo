@@ -7,6 +7,7 @@ Backends are loaded dynamically in runtime. Only dynamic (shared) lib files are 
  - [FMOD](https://www.fmod.com/)
  - [BASS](https://www.un4seen.com/)
  - [SoLoud](https://solhsa.com/soloud/)
+ - [VLC](https://www.videolan.org/vlc/) (Doesn't support audio fading)
 ## External dependencies
 All of them (except SDL3 for non-msvc and non-mingw builds) are fetched automatically using LBS script
  - [SDL3](https://github.com/libsdl-org/SDL)
