@@ -80,12 +80,14 @@ namespace audio {
         float pause_pos;
         bool stopped;
         bool paused;
+        bool real_paused;
 
         AudioVLC() : AudioBase() {
             inst = nullptr;
             lib_name = "VLC";
             stopped = false;
             paused = false;
+            real_paused = false;
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
@@ -129,7 +131,7 @@ namespace audio {
                 return;
             }
             vlc.libvlc_set_app_id(inst, "com.pixelsuft.tinyfoo", "1.0.0", "tinyfoo");
-            TF_INFO(<< "VLC successfully created");
+            TF_INFO(<< "VLC inited");
             inited = true;
         }
 
@@ -139,6 +141,7 @@ namespace audio {
                 TF_ERROR(<< "Failed create VLC media player (" << VLC_ERROR() << ")");
                 return false;
             }
+            TF_INFO(<< "VLC media player created");
             dev_opened = true;
             return true;
         }
@@ -165,7 +168,7 @@ namespace audio {
                 }
                 cache.erase(cache.begin());
                 if (paused || 1) {
-                    paused = false;
+                    paused = real_paused = false;
                     update_volume();
                     pl::fill_cache();
                     return;
@@ -175,7 +178,7 @@ namespace audio {
             stopped = false;
             if (cur_mus && 0) {
                 stopped = false;
-                paused = false;
+                paused = real_paused = false;
                 return;
             }
             Music* prev = nullptr;
@@ -186,7 +189,7 @@ namespace audio {
             }
             cur_mus->cached = false;
             stopped = false;
-            paused = false;
+            paused = real_paused = false;
             pl::mus_open_file(cur_mus);
             vlc.libvlc_media_player_set_media(mp, cur_h);
             if (vlc.libvlc_media_player_play(mp) < 0)
@@ -249,6 +252,8 @@ namespace audio {
         }
 
         void update() {
+            if (real_paused && vlc.libvlc_media_player_is_playing(mp))
+                real_paused = false;
             if (cur_mus && !paused && !vlc.libvlc_media_player_is_playing(mp)) {
                 if (!stopped)
                     force_play_cache();
@@ -267,7 +272,7 @@ namespace audio {
         }
 
         float cur_get_pos() {
-            if (cur_paused())
+            if (real_paused)
                 return pause_pos;
             if (!cur_mus || stopped || !vlc.libvlc_media_player_is_playing(mp))
                 return 0.f;
@@ -291,6 +296,7 @@ namespace audio {
                 return;
             pause_pos = cur_get_pos();
             paused = true;
+            real_paused = true;
             vlc.libvlc_media_player_pause(mp);
         }
 
