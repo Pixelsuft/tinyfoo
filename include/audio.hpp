@@ -65,4 +65,5 @@ namespace audio {
     AudioBase* create_vlc();
 #endif
     void free_audio(AudioBase* handle);
+    void mus_fill_format_default(Music* mus);
 }

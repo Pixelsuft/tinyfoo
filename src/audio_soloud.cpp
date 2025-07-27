@@ -381,26 +381,7 @@ namespace audio {
     
         bool mus_fill_info(Music* mus) {
             mus->dur = (float)sl.WavStream_getLength(mus_wav);
-            mus->type = Type::NONE;
-            // Hacky
-            char ext_buf[5];
-            if (mus->full_path.size() >= 5) {
-                ext_buf[0] = SDL_tolower(mus->full_path[mus->full_path.size() - 5]);
-                ext_buf[1] = SDL_tolower(mus->full_path[mus->full_path.size() - 4]);
-                ext_buf[2] = SDL_tolower(mus->full_path[mus->full_path.size() - 3]);
-                ext_buf[3] = SDL_tolower(mus->full_path[mus->full_path.size() - 2]);
-                ext_buf[4] = SDL_tolower(mus->full_path[mus->full_path.size() - 1]);
-            }
-            else
-                ext_buf[0] = ext_buf[1] = ext_buf[2] = ext_buf[3] = ext_buf[4] = '\0';
-            if (SDL_memcmp(ext_buf + 1, ".mp3", 4) == 0)
-                mus->type = Type::MP3;
-            else if (SDL_memcmp(ext_buf + 1, ".ogg", 4) == 0)
-                mus->type = Type::OGG;
-            else if (SDL_memcmp(ext_buf + 1, ".wav", 4) == 0)
-                mus->type = Type::WAV;
-            else if (SDL_memcmp(ext_buf, ".flac", 5) == 0)
-                mus->type = Type::FLAC;
+            audio::mus_fill_format_default(mus);
             return true;
         }
 
