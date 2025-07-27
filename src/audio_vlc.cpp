@@ -43,7 +43,7 @@ typedef enum libvlc_media_parse_flag_t {
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
 
 // VLC doesn't seem to support fading API
-// TODO: fix seeking
+// TODO: fix position get/set lags
 
 namespace audio {
     struct VLCApi {
@@ -192,6 +192,7 @@ namespace audio {
             vlc.libvlc_media_player_set_media(mp, cur_h);
             if (vlc.libvlc_media_player_play(mp) < 0)
                 TF_WARN(<< "Failed to play media (" << VLC_ERROR() << ")");
+            update_volume();
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
             pl::fill_cache();
