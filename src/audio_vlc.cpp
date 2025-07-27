@@ -129,23 +129,22 @@ namespace audio {
                 return;
             }
             vlc.libvlc_set_app_id(inst, "com.pixelsuft.tinyfoo", "1.0.0", "tinyfoo");
-            mp = vlc.libvlc_media_player_new(inst);
-            if (!mp) {
-                TF_ERROR(<< "Failed create VLC media player (" << VLC_ERROR() << ")");
-                vlc.libvlc_release(inst);
-                SDL_UnloadObject(vlc.handle);
-                return;
-            }
             TF_INFO(<< "VLC successfully created");
             inited = true;
         }
 
         bool dev_open() {
+            mp = vlc.libvlc_media_player_new(inst);
+            if (!mp) {
+                TF_ERROR(<< "Failed create VLC media player (" << VLC_ERROR() << ")");
+                return false;
+            }
             dev_opened = true;
             return true;
         }
 
         void dev_close() {
+            vlc.libvlc_media_player_release(mp);
             dev_opened = false;
         }
 
@@ -321,7 +320,6 @@ namespace audio {
                 return;
             if (dev_opened)
                 dev_close();
-            vlc.libvlc_media_player_release(mp);
             vlc.libvlc_release(inst);
             inited = false;
             SDL_UnloadObject(vlc.handle);
