@@ -1095,6 +1095,10 @@ void ui::draw_settings() {
         data->conf.ints[8] = tf::clamp(data->conf.ints[8], 0, 96000);
     if (ImGui::InputInt("Chunk Size##sl", &data->conf.ints[9], 32, 256))
         data->conf.ints[9] = tf::clamp(data->conf.ints[9], 0, 1024 * 1024);
+    ImGui::PushFont(data->font2);
+    ImGui::TextColored(COOL_CYAN, "VLC");
+    ImGui::PopFont();
+    ImGui::Checkbox("Fast Seeking", &data->conf.bools[15]);
     ImGui::TextUnformatted("WARN: most of the changes require restarting");
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;

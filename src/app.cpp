@@ -485,7 +485,7 @@ void conf::request_save() {
 bool conf::save_to_file() {
 #if ENABLE_TOMLPP
     std::stringstream stream;
-    stream << app::data->conf;
+    stream << app::data->conf << "\n";
     auto data = stream.str();
 #else
     auto data = toml::format(app::data->conf);
@@ -550,6 +550,7 @@ void conf::begin_editing(ConfData& data) {
     data.ints[7] = conf::read_int("soloud", "channels", 0);
     data.ints[8] = conf::read_int("soloud", "frequency", 0);
     data.ints[9] = conf::read_int("soloud", "chunksize", 0);
+    data.bools[15] = conf::read_bool("vlc", "fast_seek", true);
 }
 
 #if ENABLE_TOMLPP
@@ -643,6 +644,9 @@ void conf::end_editing(ConfData& data) {
             {"channels", data.ints[7]},
             {"frequency", data.ints[8]},
             {"chunksize", data.ints[9]}
+        }},
+        {"vlc", toml::table{
+            {"fast_seek", data.bools[15]}
         }},
         {"playback", toml::table{
             {"playlists", pl_files},

@@ -92,7 +92,7 @@ namespace audio {
             stopped = false;
             paused = false;
             real_paused = false;
-            fast_seek = true; // TODO: conf this
+            fast_seek = conf::read_bool("vlc", "fast_seek", true);
             pause_pos = 0.f;
             if (max_volume <= 0.f)
                 max_volume = 1.f;
@@ -223,7 +223,7 @@ namespace audio {
                 return false;
             }
             libvlc_time_t temp_dur = -1;
-            // TODO: handle errors properly?
+            // Seems to be returning 0 when can't get length, but I'm not really sure
             while (temp_dur == -1)
                 temp_dur = vlc.libvlc_media_get_duration(med_h);
             mus->dur = (float)temp_dur / 1000.f;
@@ -247,6 +247,8 @@ namespace audio {
                 mus->type = Type::WAV;
             else if (SDL_memcmp(ext_buf, ".flac", 5) == 0)
                 mus->type = Type::FLAC;
+            else if (SDL_memcmp(ext_buf, ".midi", 5) == 0 || SDL_memcmp(ext_buf + 1, ".mid", 4) == 0)
+                mus->type = Type::MID;
             return true;
         }
 
