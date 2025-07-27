@@ -286,7 +286,7 @@ namespace audio {
             if (!cur_mus)
                 return;
             stopped = true;
-            // TODO: should I acually wait until stop?
+            // Works fine
             if (vlc.libvlc_media_player_stop_async(mp) < 0)
                 TF_WARN(<< "Failed to stop audio (" << VLC_ERROR() << ")");
             pl::fill_cache();

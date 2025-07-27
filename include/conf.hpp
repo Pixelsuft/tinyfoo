@@ -49,7 +49,7 @@ namespace conf {
         tf::str au_bk;
         float floats[16];
         int ints[16];
-        bool bools[16];
+        bool bools[24];
     };
 
     void begin_editing(ConfData& data);

@@ -521,6 +521,7 @@ void conf::begin_editing(ConfData& data) {
     data.floats[0] = conf::read_float("imgui", "font1_size", 16.f);
     data.floats[1] = conf::read_float("imgui", "font2_size", 24.f);
     data.floats[2] = conf::read_float("imgui", "img_scale", 1.f);
+    data.bools[16] = conf::read_bool("imgui", "show_meta", true);
     data.ren_drv = conf::read_str("renderer", "driver", "auto");
     data.bools[0] = conf::read_bool("renderer", "vsync", true);
     data.bools[14] = conf::read_bool("renderer", "vsync_fix", true);
@@ -599,7 +600,8 @@ void conf::end_editing(ConfData& data) {
             {"font1_path", TOML_DUMP_STR(data.font1_path)},
             {"font1_size", data.floats[0]},
             {"font2_path", TOML_DUMP_STR(data.font2_path)},
-            {"font2_size", data.floats[1]}
+            {"font2_size", data.floats[1]},
+            {"show_meta", data.bools[16]}
         }},
         {"audio", toml::table{
             {"backend", TOML_DUMP_STR(data.au_bk)},

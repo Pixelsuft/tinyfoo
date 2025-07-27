@@ -76,6 +76,7 @@ namespace ui {
         size_t meta_mod;
         float img_scale;
         bool searching;
+        bool show_meta;
         bool show_app_conf;
         bool show_about;
         bool show_logs;
@@ -297,6 +298,7 @@ bool ui::init() {
     data->show_app_conf = false;
     data->searching = false;
     data->show_search = false;
+    data->show_meta = conf::read_bool("imgui", "show_meta", true);
     data->show_meta_debug = !IS_RELEASE;
     data->img_scale = 1.f;
     data->logo_tex = ren::rn->tex_from_io(res::get_asset_io("icon.png"), true);
@@ -865,6 +867,10 @@ void ui::draw_playlist_view() {
 }
 
 void ui::draw_tab() {
+    if (!data->show_meta) {
+        draw_playlist_view();
+        return;
+    }
     //ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, { 0.f, 0.f });
     if (ImGui::BeginTable("PlaylistTableMain", 2, ImGuiTableFlags_Resizable)) {
         ImGui::TableSetupColumn("PlaylistMetaCol", ImGuiTableColumnFlags_IndentDisable);
@@ -967,6 +973,7 @@ void ui::draw_settings() {
         ImGui::EndCombo();
     }
     apply_theme(data->conf.style);
+    ImGui::Checkbox("Show Meta Tab", &data->conf.bools[16]);
     ImGui::PushFont(data->font2);
     ImGui::TextColored(COOL_CYAN, "Audio");
     ImGui::PopFont();
