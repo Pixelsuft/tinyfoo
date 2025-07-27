@@ -75,7 +75,7 @@ namespace audio {
         int (LIBVLC_API *libvlc_media_player_stop_async)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_length)(libvlc_media_player_t*);
-        void (LIBVLC_API *libvlc_media_player_pause)(libvlc_media_player_t*);
+        void (LIBVLC_API *libvlc_media_player_set_pause)(libvlc_media_player_t*, int);
         void (LIBVLC_API *libvlc_media_player_set_media)(libvlc_media_player_t*, libvlc_media_t*);
         void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
@@ -134,7 +134,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_stop_async);
             VLC_LOAD_FUNC(libvlc_media_player_release);
             VLC_LOAD_FUNC(libvlc_media_player_get_length);
-            VLC_LOAD_FUNC(libvlc_media_player_pause);
+            VLC_LOAD_FUNC(libvlc_media_player_set_pause);
             VLC_LOAD_FUNC(libvlc_media_player_set_media);
             VLC_LOAD_FUNC(libvlc_audio_set_format);
             VLC_LOAD_FUNC(libvlc_media_parse_request);
@@ -287,7 +287,7 @@ namespace audio {
                 return;
             stopped = true;
             // TODO: should I acually wait until stop?
-            if (vlc.libvlc_media_player_stop_async(mp))
+            if (vlc.libvlc_media_player_stop_async(mp) < 0)
                 TF_WARN(<< "Failed to stop audio (" << VLC_ERROR() << ")");
             pl::fill_cache();
         }
@@ -323,7 +323,7 @@ namespace audio {
             pause_pos = cur_get_pos();
             paused = true;
             real_paused = true;
-            vlc.libvlc_media_player_pause(mp);
+            vlc.libvlc_media_player_set_pause(mp, 1);
         }
 
         void cur_resume() {
@@ -331,7 +331,7 @@ namespace audio {
                 return;
             paused = false;
             stopped = false;
-            vlc.libvlc_media_player_pause(mp);
+            vlc.libvlc_media_player_set_pause(mp, 0);
             if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pause_pos * 1000.f), fast_seek) < 0)
                 TF_WARN(<< "Failed to set audio resume position (" << VLC_ERROR() << ")");
         }
