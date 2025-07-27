@@ -22,6 +22,15 @@ typedef enum libvlc_media_parse_flag_t {
     libvlc_media_fetch_network  = 0x10,
     libvlc_media_do_interact    = 0x20,
 } libvlc_media_parse_flag_t;
+typedef enum libvlc_media_parsed_status_t {
+    libvlc_media_parsed_status_none,
+    libvlc_media_parsed_status_pending,
+    libvlc_media_parsed_status_skipped,
+    libvlc_media_parsed_status_failed,
+    libvlc_media_parsed_status_timeout,
+    libvlc_media_parsed_status_cancelled,
+    libvlc_media_parsed_status_done,
+} libvlc_media_parsed_status_t;
 
 #define VLC_LOAD_FUNC(func_name) do { \
     *(void**)&vlc.func_name = (void*)SDL_LoadFunction(vlc.handle, #func_name); \
@@ -71,6 +80,7 @@ namespace audio {
         void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
         void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
+        libvlc_media_parsed_status_t (LIBVLC_API *libvlc_media_get_parsed_status)(libvlc_media_t*);
         int (LIBVLC_API *libvlc_audio_set_volume)(libvlc_media_player_t*, int);
     };
 
@@ -129,6 +139,7 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_audio_set_format);
             VLC_LOAD_FUNC(libvlc_media_parse_request);
             VLC_LOAD_FUNC(libvlc_media_parse_stop);
+            VLC_LOAD_FUNC(libvlc_media_get_parsed_status);
             VLC_LOAD_FUNC(libvlc_audio_set_volume);
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
@@ -222,10 +233,18 @@ namespace audio {
                 TF_WARN(<< "Failed to send music parse request (" << VLC_ERROR() << ")");
                 return false;
             }
-            libvlc_time_t temp_dur = -1;
-            // Seems to be returning 0 when can't get length, but I'm not really sure
-            while (temp_dur == -1)
-                temp_dur = vlc.libvlc_media_get_duration(med_h);
+            libvlc_media_parsed_status_t status = libvlc_media_parsed_status_pending;
+            while (status == libvlc_media_parsed_status_pending)
+                status = vlc.libvlc_media_get_parsed_status(med_h);
+            if (status != libvlc_media_parsed_status_done) {
+                TF_WARN(<< "Failed parse music information (" << VLC_ERROR() << ")");
+                return false;
+            }
+            auto temp_dur = vlc.libvlc_media_get_duration(med_h);
+            if (temp_dur < 0) {
+                TF_WARN(<< "Failed to get music duration (" << VLC_ERROR() << ")");
+                return false;
+            }
             mus->dur = (float)temp_dur / 1000.f;
             mus->type = Type::NONE;
             // Hacky
