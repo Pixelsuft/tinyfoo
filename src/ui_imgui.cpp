@@ -868,6 +868,8 @@ void ui::draw_playlist_view() {
 
 void ui::draw_tab() {
     if (!data->show_meta) {
+        if (data->show_search)
+            draw_search();
         draw_playlist_view();
         return;
     }

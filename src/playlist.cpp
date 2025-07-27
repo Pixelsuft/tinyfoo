@@ -482,6 +482,7 @@ void pl::play_selected(Playlist* p) {
     audio::au->cache.push_back(mus);
     audio::au->force_play_cache();
     check_music_mod(p, mus);
+    p->repeating.clear();
     int cnt = 0;
     for (auto it = p->selected.begin() + 1; it != p->selected.end(); it++) {
         mus = p->mus[*it];
