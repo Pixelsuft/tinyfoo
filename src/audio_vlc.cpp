@@ -50,6 +50,7 @@ typedef enum libvlc_media_parsed_status_t {
 #define cur_h ((libvlc_media_t*)cur_mus->h1)
 #define med_h ((libvlc_media_t*)mus->h1)
 #define VLC_ERROR() tf::nfstr(vlc.libvlc_errmsg())
+#define VLC_IS_PLAYING() (is4 ? vlc.libvlc_media_player_is_playing(mp) : (vlc.libvlc_media_player_is_playing_old(mp) > 0))
 
 // VLC doesn't seem to support fading API
 // TODO: fix position get/set lags
@@ -63,21 +64,21 @@ namespace audio {
         const char* (LIBVLC_API *libvlc_errmsg)();
         void (LIBVLC_API *libvlc_set_app_id)(libvlc_instance_t*, const char*, const char*, const char*);
         libvlc_media_t* (LIBVLC_API *libvlc_media_new_path)(const char*);
+        libvlc_media_t* (LIBVLC_API *libvlc_media_new_path_old)(libvlc_instance_t*, const char*);
         void (LIBVLC_API *libvlc_media_release)(libvlc_media_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_get_duration)(libvlc_media_t*);
         libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new)(libvlc_instance_t*);
-        libvlc_media_player_t* (LIBVLC_API *libvlc_media_player_new_from_media)(libvlc_instance_t*, libvlc_media_t*);
         int (LIBVLC_API *libvlc_media_player_play)(libvlc_media_player_t*);
         bool (LIBVLC_API *libvlc_media_player_is_playing)(libvlc_media_player_t*);
+        int (LIBVLC_API *libvlc_media_player_is_playing_old)(libvlc_media_player_t*);
         libvlc_time_t (LIBVLC_API *libvlc_media_player_get_time)(libvlc_media_player_t*);
         int (LIBVLC_API *libvlc_media_player_set_time)(libvlc_media_player_t*, libvlc_time_t, bool);
-        double (LIBVLC_API *libvlc_media_player_get_position)(libvlc_media_player_t*);
+        void (LIBVLC_API *libvlc_media_player_set_time_old)(libvlc_media_player_t*, libvlc_time_t);
         int (LIBVLC_API *libvlc_media_player_stop_async)(libvlc_media_player_t*);
+        void (LIBVLC_API *libvlc_media_player_stop)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_release)(libvlc_media_player_t*);
-        libvlc_time_t (LIBVLC_API *libvlc_media_player_get_length)(libvlc_media_player_t*);
         void (LIBVLC_API *libvlc_media_player_set_pause)(libvlc_media_player_t*, int);
         void (LIBVLC_API *libvlc_media_player_set_media)(libvlc_media_player_t*, libvlc_media_t*);
-        void (LIBVLC_API *libvlc_audio_set_format)(libvlc_media_player_t*, const char*, unsigned, unsigned);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
         void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
         libvlc_media_parsed_status_t (LIBVLC_API *libvlc_media_get_parsed_status)(libvlc_media_t*);
@@ -95,6 +96,7 @@ namespace audio {
         bool paused;
         bool real_paused;
         bool fast_seek;
+        bool is4;
 
         AudioVLC() : AudioBase() {
             inst = nullptr;
@@ -108,15 +110,17 @@ namespace audio {
                 max_volume = 1.f;
             const char* lib_path = IS_WIN ? "libvlc.dll" : "libvlc.so";
             vlc.handle = SDL_LoadObject(lib_path);
+            if (!IS_WIN && !vlc.handle)
+                vlc.handle = SDL_LoadObject("libvlc.so.5");
             if (!vlc.handle) {
                 TF_ERROR(<< "Failed to load VLC library (" << SDL_GetError() << ")");
                 return;
             }
             VLC_LOAD_FUNC(libvlc_get_version);
             const char* ver_str = vlc.libvlc_get_version();
-            // Maybe support version 3?
-            if (!ver_str || ver_str[0] != '4')
-                TF_WARN(<< "Incorrect libvlc version (4 is required, got " << tf::nfstr(ver_str) << "), expect problems");
+            if (!ver_str || (ver_str[0] != '4' && ver_str[0] != '3'))
+                TF_WARN(<< "Incorrect libvlc version (3/4 is required, got " << tf::nfstr(ver_str) << "), expect problems");
+            is4 = SDL_atoi(ver_str) >= 4;
             VLC_LOAD_FUNC(libvlc_new);
             VLC_LOAD_FUNC(libvlc_release);
             VLC_LOAD_FUNC(libvlc_errmsg);
@@ -125,22 +129,24 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_release);
             VLC_LOAD_FUNC(libvlc_media_get_duration);
             VLC_LOAD_FUNC(libvlc_media_player_new);
-            VLC_LOAD_FUNC(libvlc_media_player_new_from_media);
             VLC_LOAD_FUNC(libvlc_media_player_play);
             VLC_LOAD_FUNC(libvlc_media_player_is_playing);
             VLC_LOAD_FUNC(libvlc_media_player_get_time);
             VLC_LOAD_FUNC(libvlc_media_player_set_time);
-            VLC_LOAD_FUNC(libvlc_media_player_get_position);
-            VLC_LOAD_FUNC(libvlc_media_player_stop_async);
+            if (is4)
+                VLC_LOAD_FUNC(libvlc_media_player_stop_async);
+            else
+                VLC_LOAD_FUNC(libvlc_media_player_stop);
             VLC_LOAD_FUNC(libvlc_media_player_release);
-            VLC_LOAD_FUNC(libvlc_media_player_get_length);
             VLC_LOAD_FUNC(libvlc_media_player_set_pause);
             VLC_LOAD_FUNC(libvlc_media_player_set_media);
-            VLC_LOAD_FUNC(libvlc_audio_set_format);
             VLC_LOAD_FUNC(libvlc_media_parse_request);
             VLC_LOAD_FUNC(libvlc_media_parse_stop);
             VLC_LOAD_FUNC(libvlc_media_get_parsed_status);
             VLC_LOAD_FUNC(libvlc_audio_set_volume);
+            *(void**)&vlc.libvlc_media_new_path_old = (void*)vlc.libvlc_media_new_path;
+            *(void**)&vlc.libvlc_media_player_is_playing_old = (void*)vlc.libvlc_media_player_is_playing;
+            *(void**)&vlc.libvlc_media_player_set_time_old = (void*)vlc.libvlc_media_player_set_time;
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
                 TF_ERROR(<< "Failed to init VLC (" << VLC_ERROR() << ")");
@@ -212,7 +218,7 @@ namespace audio {
         bool mus_open_fp(Music* mus, const char* fp) {
             if (mus->h1)
                 return true;
-            libvlc_media_t* med = vlc.libvlc_media_new_path(fp);
+            libvlc_media_t* med = is4 ? vlc.libvlc_media_new_path(fp) : vlc.libvlc_media_new_path_old(inst, fp);
             if (!med) {
                 TF_ERROR(<< "Failed create media from file (" << VLC_ERROR() << ")");
                 return false;
@@ -251,9 +257,9 @@ namespace audio {
         }
 
         void update() {
-            if (real_paused && vlc.libvlc_media_player_is_playing(mp))
+            if (real_paused && VLC_IS_PLAYING())
                 real_paused = false;
-            if (cur_mus && !paused && !vlc.libvlc_media_player_is_playing(mp)) {
+            if (cur_mus && !paused && !VLC_IS_PLAYING()) {
                 if (!stopped)
                     force_play_cache();
                 pl::fill_cache();
@@ -265,16 +271,20 @@ namespace audio {
             if (!cur_mus)
                 return;
             stopped = true;
-            // Works fine
-            if (vlc.libvlc_media_player_stop_async(mp) < 0)
-                TF_WARN(<< "Failed to stop audio (" << VLC_ERROR() << ")");
+            if (is4) {
+                // Works fine
+                if (vlc.libvlc_media_player_stop_async(mp) < 0)
+                    TF_WARN(<< "Failed to stop audio (" << VLC_ERROR() << ")");
+            }
+            else
+                vlc.libvlc_media_player_stop(mp);
             pl::fill_cache();
         }
 
         float cur_get_pos() {
             if (real_paused)
                 return pause_pos;
-            if (!cur_mus || stopped || !vlc.libvlc_media_player_is_playing(mp))
+            if (!cur_mus || stopped || !VLC_IS_PLAYING())
                 return 0.f;
             auto ret = vlc.libvlc_media_player_get_time(mp);
             if (ret < 0) {
@@ -292,8 +302,12 @@ namespace audio {
                 pause_pos = pos;
                 return;
             }
-            if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pos * 1000.f), fast_seek) < 0)
-                TF_WARN(<< "Failed to set audio position (" << VLC_ERROR() << ")");
+            if (is4) {
+                if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pos * 1000.f), fast_seek) < 0)
+                    TF_WARN(<< "Failed to set audio position (" << VLC_ERROR() << ")");
+            }
+            else
+                vlc.libvlc_media_player_set_time_old(mp, (libvlc_time_t)(pos * 1000.f));
         }
 
         void cur_pause() {
@@ -311,12 +325,16 @@ namespace audio {
             paused = false;
             stopped = false;
             vlc.libvlc_media_player_set_pause(mp, 0);
-            if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pause_pos * 1000.f), fast_seek) < 0)
-                TF_WARN(<< "Failed to set audio resume position (" << VLC_ERROR() << ")");
+            if (is4) {
+                if (vlc.libvlc_media_player_set_time(mp, (libvlc_time_t)(pause_pos * 1000.f), fast_seek) < 0)
+                    TF_WARN(<< "Failed to set audio resume position (" << VLC_ERROR() << ")");
+            }
+            else
+                vlc.libvlc_media_player_set_time_old(mp, (libvlc_time_t)(pause_pos * 1000.f));
         }
 
         bool cur_stopped() {
-            return !cur_mus || (!paused && !vlc.libvlc_media_player_is_playing(mp));
+            return !cur_mus || (!paused && !VLC_IS_PLAYING());
         }
 
         bool cur_paused() {
