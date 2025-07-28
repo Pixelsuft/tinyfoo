@@ -79,6 +79,9 @@ void pl::mus_hook_add(Playlist* p, audio::Music* mus) {
         p->artist_map[art] = { mus };
     else
         (*it).second.push_back(mus);
+#else
+    (void)p;
+    (void)mus;
 #endif
 }
 
@@ -97,6 +100,9 @@ void pl::mus_hook_del(Playlist* p, audio::Music* mus) {
             TF_UNREACHABLE();
         arr.erase(mit);
     }
+#else
+    (void)p;
+    (void)mus;
 #endif
 }
 
