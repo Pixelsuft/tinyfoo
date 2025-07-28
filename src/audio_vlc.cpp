@@ -132,8 +132,8 @@ namespace audio {
             }
             VLC_LOAD_FUNC(libvlc_get_version);
             const char* ver_str = vlc.libvlc_get_version();
-            if (!ver_str || (ver_str[0] != '4' && ver_str[0] != '3'))
-                TF_WARN(<< "Incorrect libvlc version (3/4 is required, got " << tf::nfstr(ver_str) << "), expect problems");
+            if (!ver_str || ver_str[0] != '4')
+                TF_WARN(<< "Incorrect libvlc version (4 is required, got " << tf::nfstr(ver_str) << "), expect problems");
             is4 = SDL_atoi(ver_str) >= 4;
             VLC_LOAD_FUNC(libvlc_new);
             VLC_LOAD_FUNC(libvlc_release);
@@ -226,6 +226,10 @@ namespace audio {
             vlc.libvlc_media_player_set_media(mp, cur_h);
             if (vlc.libvlc_media_player_play(mp) < 0)
                 TF_WARN(<< "Failed to play media (" << VLC_ERROR() << ")");
+            if (!is4) {
+                // WTF
+                while (!VLC_IS_PLAYING()) {}
+            }
             update_volume();
             if (prev && prev != cur_mus && std::find(cache.begin(), cache.end(), prev) == cache.end())
                 mus_close(prev);
