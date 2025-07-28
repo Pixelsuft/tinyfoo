@@ -20,8 +20,15 @@ typedef enum libvlc_media_parse_flag_t {
     libvlc_media_parse_forced   = 0x04,
     libvlc_media_fetch_local    = 0x08,
     libvlc_media_fetch_network  = 0x10,
-    libvlc_media_do_interact    = 0x20,
+    libvlc_media_do_interact    = 0x20
 } libvlc_media_parse_flag_t;
+typedef enum libvlc_media_parse_flag_old_t {
+    libvlc_media_parse_local_old    = 0x00,
+    libvlc_media_parse_network_old  = 0x01,
+    libvlc_media_fetch_local_old    = 0x02,
+    libvlc_media_fetch_network_old  = 0x04,
+    libvlc_media_do_interact_old    = 0x08
+} libvlc_media_parse_flag_old_t;
 typedef enum libvlc_media_parsed_status_t {
     libvlc_media_parsed_status_none,
     libvlc_media_parsed_status_pending,
@@ -29,8 +36,14 @@ typedef enum libvlc_media_parsed_status_t {
     libvlc_media_parsed_status_failed,
     libvlc_media_parsed_status_timeout,
     libvlc_media_parsed_status_cancelled,
-    libvlc_media_parsed_status_done,
+    libvlc_media_parsed_status_done
 } libvlc_media_parsed_status_t;
+typedef enum libvlc_media_parsed_status_old_t {
+    libvlc_media_parsed_status_skipped_old = 1,
+    libvlc_media_parsed_status_failed_old,
+    libvlc_media_parsed_status_timeout_old,
+    libvlc_media_parsed_status_done_old
+} libvlc_media_parsed_status_old_t;
 
 #define VLC_LOAD_FUNC(func_name) do { \
     *(void**)&vlc.func_name = (void*)SDL_LoadFunction(vlc.handle, #func_name); \
@@ -80,8 +93,9 @@ namespace audio {
         void (LIBVLC_API *libvlc_media_player_set_pause)(libvlc_media_player_t*, int);
         void (LIBVLC_API *libvlc_media_player_set_media)(libvlc_media_player_t*, libvlc_media_t*);
         int (LIBVLC_API *libvlc_media_parse_request)(libvlc_instance_t*, libvlc_media_t*, libvlc_media_parse_flag_t, int);
-        void (LIBVLC_API *libvlc_media_parse_stop)(libvlc_instance_t*, libvlc_media_t*);
+        int (LIBVLC_API *libvlc_media_parse_with_options)(libvlc_media_t*, libvlc_media_parse_flag_old_t, int);
         libvlc_media_parsed_status_t (LIBVLC_API *libvlc_media_get_parsed_status)(libvlc_media_t*);
+        libvlc_media_parsed_status_old_t (LIBVLC_API *libvlc_media_get_parsed_status_old)(libvlc_media_t*);
         int (LIBVLC_API *libvlc_audio_set_volume)(libvlc_media_player_t*, int);
     };
 
@@ -140,13 +154,16 @@ namespace audio {
             VLC_LOAD_FUNC(libvlc_media_player_release);
             VLC_LOAD_FUNC(libvlc_media_player_set_pause);
             VLC_LOAD_FUNC(libvlc_media_player_set_media);
-            VLC_LOAD_FUNC(libvlc_media_parse_request);
-            VLC_LOAD_FUNC(libvlc_media_parse_stop);
+            if (is4)
+                VLC_LOAD_FUNC(libvlc_media_parse_request);
+            else
+                VLC_LOAD_FUNC(libvlc_media_parse_with_options);
             VLC_LOAD_FUNC(libvlc_media_get_parsed_status);
             VLC_LOAD_FUNC(libvlc_audio_set_volume);
             *(void**)&vlc.libvlc_media_new_path_old = (void*)vlc.libvlc_media_new_path;
             *(void**)&vlc.libvlc_media_player_is_playing_old = (void*)vlc.libvlc_media_player_is_playing;
             *(void**)&vlc.libvlc_media_player_set_time_old = (void*)vlc.libvlc_media_player_set_time;
+            *(void**)&vlc.libvlc_media_get_parsed_status_old = (void*)vlc.libvlc_media_get_parsed_status;
             inst = vlc.libvlc_new(0, nullptr);
             if (!inst) {
                 TF_ERROR(<< "Failed to init VLC (" << VLC_ERROR() << ")");
@@ -235,16 +252,28 @@ namespace audio {
         }
     
         bool mus_fill_info(Music* mus) {
-            if (vlc.libvlc_media_parse_request(inst, med_h, libvlc_media_parse_local, 0) < 0) {
+            if ((is4 ? vlc.libvlc_media_parse_request(inst, med_h, libvlc_media_parse_local, 0) : vlc.libvlc_media_parse_with_options(med_h, libvlc_media_parse_local_old, 0)) < 0) {
                 TF_WARN(<< "Failed to send music parse request (" << VLC_ERROR() << ")");
                 return false;
             }
-            libvlc_media_parsed_status_t status = libvlc_media_parsed_status_pending;
-            while (status == libvlc_media_parsed_status_pending)
-                status = vlc.libvlc_media_get_parsed_status(med_h);
-            if (status != libvlc_media_parsed_status_done) {
-                TF_WARN(<< "Failed parse music information (" << VLC_ERROR() << ")");
-                return false;
+            if (is4) {
+                libvlc_media_parsed_status_t status = libvlc_media_parsed_status_pending;
+                while (status == libvlc_media_parsed_status_pending)
+                    status = vlc.libvlc_media_get_parsed_status(med_h);
+                if (status != libvlc_media_parsed_status_done) {
+                    TF_WARN(<< "Failed parse music information (" << VLC_ERROR() << ")");
+                    return false;
+                }
+            }
+            else {
+                // TODO: FIXME
+                libvlc_media_parsed_status_old_t status = libvlc_media_parsed_status_timeout_old;
+                while (status != libvlc_media_parsed_status_done_old)
+                    status = vlc.libvlc_media_get_parsed_status_old(med_h);
+                if (status != libvlc_media_parsed_status_done_old) {
+                    TF_WARN(<< "Failed parse music information (" << VLC_ERROR() << ")");
+                    return false;
+                }
             }
             auto temp_dur = vlc.libvlc_media_get_duration(med_h);
             if (temp_dur < 0) {
