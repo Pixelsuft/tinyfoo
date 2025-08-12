@@ -1022,7 +1022,8 @@ namespace audio {
             FMOD_RESULT err;
             unsigned int buf;
             if (FMOD_HAS_ERROR(err = fmod.FMOD_Channel_GetPosition(ch, &buf, FMOD_TIMEUNIT_MS))) {
-                TF_WARN(<< "Failed to get music pos (" << FMOD_ErrorString(err) << ")");
+                if (!IS_RELEASE)
+                    TF_WARN(<< "Failed to get music pos (" << FMOD_ErrorString(err) << ")");
                 return 0.f;
             }
             return (float)buf / 1000.f;

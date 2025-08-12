@@ -321,7 +321,8 @@ namespace audio {
                 return 0.f;
             auto ret = vlc.libvlc_media_player_get_time(mp);
             if (ret < 0) {
-                TF_WARN(<< "Failed to get music position (" << VLC_ERROR() << ")");
+                if (!IS_RELEASE)
+                    TF_WARN(<< "Failed to get music position (" << VLC_ERROR() << ")");
                 return 0.f;
             }
             return (float)ret / 1000.f;

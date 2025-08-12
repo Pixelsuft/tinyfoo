@@ -1112,6 +1112,7 @@ void ui::draw_settings() {
     if (ImGui::Button("Save and Close")) {
         data->show_app_conf = false;
         conf::end_editing(data->conf);
+        data->show_meta = data->conf.bools[16];
     }
     ImGui::SameLine();
     if (ImGui::Button("Cancel"))

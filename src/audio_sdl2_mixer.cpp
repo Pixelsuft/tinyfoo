@@ -516,7 +516,8 @@ namespace audio {
                 return 0.f;
             double ret = mix.Mix_GetMusicPosition(cur_h);
             if (ret < 0.0) {
-                TF_WARN(<< "Failed to get current music pos (" << SDL_GetError() << ")");
+                if (!IS_RELEASE)
+                    TF_WARN(<< "Failed to get current music pos (" << SDL_GetError() << ")");
                 return 0.f;
             }
             return (float)ret;
