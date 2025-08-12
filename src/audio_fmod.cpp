@@ -796,7 +796,7 @@ namespace audio {
                 }
                 // TF_INFO(<< "Found device: " << name_buf);
             }
-            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 2, FMOD_INIT_NORMAL, NULL))) {
+            if (FMOD_HAS_ERROR(err = fmod.FMOD_System_Init(sys, 2, FMOD_INIT_THREAD_UNSAFE, NULL))) {
                 TF_ERROR(<< "Failed to create FMOD system (" << FMOD_ErrorString(err) << ")");
                 return true;
             }
