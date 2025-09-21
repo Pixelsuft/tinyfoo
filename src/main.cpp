@@ -28,6 +28,10 @@ struct TF_Cmd {
 	float val;
 };
 
+namespace ui {
+	extern void (*global_status_cb)(const char*);
+}
+
 tf::vec<TF_Cmd>* tf_dll_commands;
 SDL_Mutex* tf_dll_mut;
 int tf_dll_inited;
@@ -116,6 +120,13 @@ TF_EXPORT void tf_time_delay(int ms) {
 
 TF_EXPORT int tf_get_init_state() {
 	return tf_dll_inited;
+}
+
+TF_EXPORT void tf_set_status_callback(void (*status_cb)(const char*)) {
+	// TODO: make this safe
+	SDL_LockMutex(tf_dll_mut);
+	ui::global_status_cb = status_cb;
+	SDL_UnlockMutex(tf_dll_mut);
 }
 
 TF_EXPORT int tf_thread_cmd(TF_Cmd cmd) {

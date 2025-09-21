@@ -49,9 +49,11 @@ namespace ui {
 #if WIN_TITLE_PATCH
         tf::str last_cap;
 #endif
-#if DWM_STATUS_PATCH
-        SDL_Time dwm_last_upd;
+#if DWM_STATUS_PATCH || IS_DLL_BUILD
         audio::Music* dwm_last_m;
+        SDL_Time dwm_last_upd;
+#endif
+#if DWM_STATUS_PATCH
         Display* dwm_disp;
         Window dwm_root;
 #endif
@@ -86,6 +88,9 @@ namespace ui {
     };
 
     UiData* data;
+#if IS_DLL_BUILD
+    void (*global_status_cb)(const char*) = nullptr;
+#endif
 
     pl::Playlist* get_last_pl(int hacky) {
         if (hacky == 1 && (data->searching || data->show_about || data->show_logs || data->show_playlist_conf || data->show_app_conf))
@@ -247,7 +252,9 @@ void ui::do_extra_stuff() {
         SDL_SetWindowTitle((SDL_Window*)app::win_handle, new_cap.c_str());
     }
 #endif
-#if DWM_STATUS_PATCH
+#if DWM_STATUS_PATCH || IS_DLL_BUILD
+    if (!DWM_STATUS_PATCH && !global_status_cb)
+        return;
     SDL_Time ticks;
     if (data->dwm_last_m != audio::au->cur_mus) {
         data->dwm_last_m = audio::au->cur_mus;
@@ -277,8 +284,12 @@ void ui::do_extra_stuff() {
                     time_s->tm_hour, time_s->tm_min, time_s->tm_sec
                 );
             }
+#if DWM_STATUS_PATCH
             XStoreName(data->dwm_disp, data->dwm_root, buf);
             XFlush(data->dwm_disp);
+#else
+            global_status_cb(buf);
+#endif
         }
     }
     else
@@ -379,8 +390,11 @@ bool ui::init() {
         res::free_asset_data(font_data);
     }
     data->log_cache.reserve(LOG_CACHE_COUNT);
-#if DWM_STATUS_PATCH
+#if DWM_STATUS_PATCH || IS_DLL_BUILD
     data->dwm_last_m = nullptr;
+    data->dwm_last_upd = 0;
+#endif
+#if DWM_STATUS_PATCH
     data->dwm_disp = XOpenDisplay(nullptr);
     if (data->dwm_disp) {
         data->dwm_root = XRootWindow(data->dwm_disp, XDefaultScreen(data->dwm_disp));
@@ -391,7 +405,6 @@ bool ui::init() {
         data->dwm_root = 0;
         TF_ERROR(<< "Failed to open X display");
     }
-    data->dwm_last_upd = 0;
 #endif
     return true;
 }

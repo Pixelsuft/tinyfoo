@@ -45,3 +45,5 @@ TF_API int tf_thread_cmd(TF_Cmd cmd);
 TF_API void tf_time_delay(int ms);
 // Returns 1 when inited, 0 when not inited, -1 on error
 TF_API int tf_get_init_state(TF_NO_FUNC_ARGS);
+// Set status callback
+TF_API void tf_set_status_callback(void (*status_cb)(const char*));
